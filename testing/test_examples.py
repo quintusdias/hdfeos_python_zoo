@@ -2,18 +2,9 @@
 Tests for hdfeos zoo example codes.
 """
 import os
-import re
-import shutil
-import struct
-import sys
-import tempfile
 import unittest
-import uuid
-from xml.etree import cElementTree as ET
 
-import warnings
-
-import numpy as np
+import matplotlib.pyplot as plt
 
 import zoo
 
@@ -27,14 +18,26 @@ class TestGesdisc(unittest.TestCase):
     """
     Run GESDISC codes.
     """
-    def test_omi_l2_o2_cloudfraction(self):
+    def tearDown(self):
         """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_omi_l2_o2_cloudfraction_netcdf4(self):
+        """
+        Run using netCDF4
         """
         hdffile = 'OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5'
         hdffile = fullpath(hdffile)
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.run(hdffile)
 
-        # Now run using h5py instead.
+    def test_omi_l2_o2_cloudfraction_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5'
+        hdffile = fullpath(hdffile)
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.USE_NETCDF4 = False
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.run(hdffile)
 
@@ -42,6 +45,12 @@ class TestNSIDC(unittest.TestCase):
     """
     Run NSIDC codes.
     """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
     def test_modis_snowcover(self):
         """
         """
