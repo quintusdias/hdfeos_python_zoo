@@ -24,6 +24,27 @@ class TestGesdisc(unittest.TestCase):
         """
         plt.clf()
 
+    def test_airs_l2_radiances_channel567(self):
+        """
+        """
+        hdffile = 'AIRS.2002.12.31.001.L2.CC_H.v4.0.21.0.G06100185050.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.airs.AIRS_L2_radiances_channel567.run(hdffile)
+
+    def test_airs_l3_relhumid_a_lvls11(self):
+        """
+        """
+        hdffile = 'AIRS.2002.08.01.L3.RetStd_H031.v4.0.21.0.G06104133732.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.airs.AIRS_L3_RelHumid_A_Lvls11.run(hdffile)
+
+    def test_airs_l3_temperature_mw_a_lvls11(self):
+        """
+        """
+        hdffile = 'AIRS.2002.08.01.L3.RetStd_H031.v4.0.21.0.G06104133732.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.airs.AIRS_L3_Temperature_MW_A_Lvls11.run(hdffile)
+
     def test_omi_l2_o2_cloudfraction_netcdf4(self):
         """
         Run using netCDF4
