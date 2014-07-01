@@ -2,9 +2,9 @@
 Instructions
 ============
 The primary method used in the examples for reading HDF-EOS2 files (HDF4 format)
-files is to use the netCDF4 package.  Most of the time, however, this
-package does not come ready- out-of-the-box to read HDF4 files because
-the underlying netcdf library was not compiles with hdf4 support.  The
+is to use the netCDF4 package.  Most of the time, however, this
+package does not come ready-out-of-the-box to read HDF4 files because
+the underlying netcdf library does not compile with hdf4 support.  The
 directions below specify how this can be overcome in certain situations.
 
 In cases where the datafile is HDF-EOS5, HDF4 support is not needed.  The
@@ -68,7 +68,6 @@ Download netcdf 4.3.2 from Unidata, configure and install with::
 Download netcdf4-1.1.0 from Pypi, configure and install with::
 
     $ python setup.py install --user
->>>>>>> 0bede2d009466e537810e3dc9af08e9eace7334b
 
 
 Anaconda
