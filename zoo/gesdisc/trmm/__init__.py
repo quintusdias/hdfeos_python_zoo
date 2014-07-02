@@ -5,3 +5,6 @@ from . import TRMM_2A12_20140308_92894_7_HDF
 from . import TRMM_2A12_cldWater_lvl9
 from . import TRMM_2A25_CSI_nearSurfZ_zoom
 from . import TRMM_2B31_CSI_dHat_zoom
+from . import TRMM_3A46_ssmiData
+from . import TRMM_3B42_precipitation_scan0
+from . import TRMM_3B43_precipitation_scan0

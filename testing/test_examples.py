@@ -162,6 +162,24 @@ class TestGesdiscTRMM(unittest.TestCase):
         hdffile = '2B31_CSI.990911.10296.KORA.6.HDF'
         zoo.gesdisc.trmm.TRMM_2B31_CSI_dHat_zoom.run(fullpath(hdffile))
 
+    def test_TRMM_3B42_precipitation_scan0(self):
+        """
+        """
+        hdffile = '3B42.100331.21.6A.HDF'
+        zoo.gesdisc.trmm.TRMM_3B42_precipitation_scan0.run(fullpath(hdffile))
+
+    def test_TRMM_3B43_precipitation_scan0(self):
+        """
+        """
+        hdffile = '3B43.070901.6A.HDF'
+        zoo.gesdisc.trmm.TRMM_3B43_precipitation_scan0.run(fullpath(hdffile))
+
+    def test_TRMM_3A46_ssmiData(self):
+        """
+        """
+        hdffile = '3A46.080101.2.HDF'
+        zoo.gesdisc.trmm.TRMM_3A46_ssmiData.run(fullpath(hdffile))
+
 
 class TestNSIDC(unittest.TestCase):
     """
