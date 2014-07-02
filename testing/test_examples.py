@@ -45,12 +45,31 @@ class TestGesdisc(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.gesdisc.airs.AIRS_L3_Temperature_MW_A_Lvls11.run(hdffile)
 
+    def test_omi_omcldo2g_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'OMI-Aura_L2G-OMCLDO2G_2007m0129_v002-2007m0130t174603.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_OMCLDO2G.USE_NETCDF4 = False
+        zoo.gesdisc.omi.OMI_OMCLDO2G.run(hdffile)
+
+    def test_omi_omcldo2g_netcdf4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'OMI-Aura_L2G-OMCLDO2G_2007m0129_v002-2007m0130t174603.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_OMCLDO2G.USE_NETCDF4 = True
+        zoo.gesdisc.omi.OMI_OMCLDO2G.run(hdffile)
+
     def test_omi_l2_o2_cloudfraction_netcdf4(self):
         """
         Run using netCDF4
         """
         hdffile = 'OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5'
         hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.USE_NETCDF4 = True
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.run(hdffile)
 
     def test_omi_l2_o2_cloudfraction_h5py(self):
@@ -61,6 +80,24 @@ class TestGesdisc(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.USE_NETCDF4 = False
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.run(hdffile)
+
+    def test_omi_l3_columnamounto3_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'OMI-Aura_L3-OMTO3e_2005m1214_v002-2006m0929t143855.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.USE_NETCDF4 = False
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
+
+    def test_omi_l3_columnamounto3_netcdf4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'OMI-Aura_L3-OMTO3e_2005m1214_v002-2006m0929t143855.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.USE_NETCDF4 = True
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
 
 class TestNSIDC(unittest.TestCase):
     """
