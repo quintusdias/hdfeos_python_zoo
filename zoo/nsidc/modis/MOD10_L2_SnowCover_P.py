@@ -81,11 +81,11 @@ if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    fname = 'MOD10_L2.A2000065.0040.005.2008235221207.hdf'
+    hdffile = 'MOD10_L2.A2000065.0040.005.2008235221207.hdf'
     try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], fname)
+        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:
         pass
 
-    run(fname)
+    run(hdffile)
     

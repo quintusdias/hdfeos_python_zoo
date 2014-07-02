@@ -14,9 +14,9 @@ def fullpath(fname):
     """
     return os.path.join(os.environ['HDFEOS_ZOO_DIR'], fname)
 
-class TestGesdisc(unittest.TestCase):
+class TestGesdiscAirs(unittest.TestCase):
     """
-    Run GESDISC codes.
+    Run GESDISC/AIRS codes.
     """
     def tearDown(self):
         """
@@ -44,6 +44,16 @@ class TestGesdisc(unittest.TestCase):
         hdffile = 'AIRS.2002.08.01.L3.RetStd_H031.v4.0.21.0.G06104133732.hdf'
         hdffile = fullpath(hdffile)
         zoo.gesdisc.airs.AIRS_L3_Temperature_MW_A_Lvls11.run(hdffile)
+
+class TestGesdiscOmi(unittest.TestCase):
+    """
+    Run GESDISC/OMI codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
 
     def test_omi_omcldo2g_h5py(self):
         """
@@ -98,6 +108,60 @@ class TestGesdisc(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.USE_NETCDF4 = True
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
+
+
+class TestGesdiscTRMM(unittest.TestCase):
+    """
+    Run GESDISC/TRMM codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_TRMM_1B21_binDIDHmean(self):
+        """
+        """
+        hdffile = fullpath('1B21.071022.56609.6.HDF')
+        zoo.gesdisc.trmm.TRMM_1B21_binDIDHmean.run(hdffile)
+
+    def test_TRMM_1B21_19971208_00170_7_HDF(self):
+        """
+        """
+        hdffile = fullpath('1B21.19971208.00170.7.HDF')
+        zoo.gesdisc.trmm.TRMM_1B21_19971208_00170_7_HDF.run(hdffile)
+
+    def test_TRMM_1B21_CSI_binDIDHmean_zoom(self):
+        """
+        """
+        hdffile = fullpath('1B21_CSI.990906.10217.KORA.6.HDF')
+        zoo.gesdisc.trmm.TRMM_1B21_CSI_binDIDHmean_zoom.run(hdffile)
+
+    def test_TRMM_2A12_cldWater_lvl9(self):
+        """
+        """
+        hdffile = fullpath('2A12.100402.70512.6.HDF')
+        zoo.gesdisc.trmm.TRMM_2A12_cldWater_lvl9.run(hdffile)
+
+    def test_TRMM_2A12_20140308_92894_7_HDF(self):
+        """
+        """
+        hdffile = '2A12.20140308.92894.7.HDF'
+        zoo.gesdisc.trmm.TRMM_2A12_20140308_92894_7_HDF.run(fullpath(hdffile))
+
+    def test_TRMM_2A25_CSI_nearSurfZ_zoom(self):
+        """
+        """
+        hdffile = '2A25_CSI.990804.9692.KORA.6.HDF'
+        zoo.gesdisc.trmm.TRMM_2A25_CSI_nearSurfZ_zoom.run(fullpath(hdffile))
+
+    def test_TRMM_2B31_CSI_dHat(self):
+        """
+        """
+        hdffile = '2B31_CSI.990911.10296.KORA.6.HDF'
+        zoo.gesdisc.trmm.TRMM_2B31_CSI_dHat_zoom.run(fullpath(hdffile))
+
 
 class TestNSIDC(unittest.TestCase):
     """
