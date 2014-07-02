@@ -57,7 +57,7 @@ def run(FILE_NAME):
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
-    m.pcolor(x, y, data, alpha=0.90, cmap=cmap, norm=norm)
+    m.pcolormesh(x, y, data, cmap=cmap, norm=norm)
     
     # Must reset the alpha level to opaque for the colorbar.
     # See http://stackoverflow.com/questions/4478725/...
@@ -81,11 +81,11 @@ if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    fname = 'MOD10_L2.A2000065.0040.005.2008235221207.hdf'
+    hdffile = 'MOD10_L2.A2000065.0040.005.2008235221207.hdf'
     try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], fname)
+        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:
         pass
 
-    run(fname)
+    run(hdffile)
     
