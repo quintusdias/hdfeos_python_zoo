@@ -39,13 +39,13 @@ def run(FILE_NAME):
         # Retrieve the geolocation data.
         var = grp.variables['Longitude']
         var.set_auto_maskandscale(False)
-        latitude = var[0,:,:]
-        lat_fv = var._FillValue
+        longitude = var[0,:,:]
+        lon_fv = var._FillValue
 
         var = grp.variables['Latitude']
         var.set_auto_maskandscale(False)
-        longitude = var[0,:,:]
-        lon_fv = var._FillValue
+        latitude = var[0,:,:]
+        lat_fv = var._FillValue
         
     else:
 
