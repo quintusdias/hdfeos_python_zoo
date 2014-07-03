@@ -14,9 +14,9 @@ def fullpath(fname):
     """
     return os.path.join(os.environ['HDFEOS_ZOO_DIR'], fname)
 
-class TestGesdisc(unittest.TestCase):
+class TestGesdiscAirs(unittest.TestCase):
     """
-    Run GESDISC codes.
+    Run GESDISC/AIRS codes.
     """
     def tearDown(self):
         """
@@ -45,12 +45,41 @@ class TestGesdisc(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.gesdisc.airs.AIRS_L3_Temperature_MW_A_Lvls11.run(hdffile)
 
+class TestGesdiscOmi(unittest.TestCase):
+    """
+    Run GESDISC/OMI codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_omi_omcldo2g_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'OMI-Aura_L2G-OMCLDO2G_2007m0129_v002-2007m0130t174603.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_OMCLDO2G.USE_NETCDF4 = False
+        zoo.gesdisc.omi.OMI_OMCLDO2G.run(hdffile)
+
+    def test_omi_omcldo2g_netcdf4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'OMI-Aura_L2G-OMCLDO2G_2007m0129_v002-2007m0130t174603.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_OMCLDO2G.USE_NETCDF4 = True
+        zoo.gesdisc.omi.OMI_OMCLDO2G.run(hdffile)
+
     def test_omi_l2_o2_cloudfraction_netcdf4(self):
         """
         Run using netCDF4
         """
         hdffile = 'OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5'
         hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.USE_NETCDF4 = True
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.run(hdffile)
 
     def test_omi_l2_o2_cloudfraction_h5py(self):
@@ -61,6 +90,96 @@ class TestGesdisc(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.USE_NETCDF4 = False
         zoo.gesdisc.omi.OMI_L2_OMNO2_CloudFraction.run(hdffile)
+
+    def test_omi_l3_columnamounto3_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'OMI-Aura_L3-OMTO3e_2005m1214_v002-2006m0929t143855.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.USE_NETCDF4 = False
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
+
+    def test_omi_l3_columnamounto3_netcdf4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'OMI-Aura_L3-OMTO3e_2005m1214_v002-2006m0929t143855.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.USE_NETCDF4 = True
+        zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
+
+
+class TestGesdiscTRMM(unittest.TestCase):
+    """
+    Run GESDISC/TRMM codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_TRMM_1B21_binDIDHmean(self):
+        """
+        """
+        hdffile = fullpath('1B21.071022.56609.6.HDF')
+        zoo.gesdisc.trmm.TRMM_1B21_binDIDHmean.run(hdffile)
+
+    def test_TRMM_1B21_19971208_00170_7_HDF(self):
+        """
+        """
+        hdffile = fullpath('1B21.19971208.00170.7.HDF')
+        zoo.gesdisc.trmm.TRMM_1B21_19971208_00170_7_HDF.run(hdffile)
+
+    def test_TRMM_1B21_CSI_binDIDHmean_zoom(self):
+        """
+        """
+        hdffile = fullpath('1B21_CSI.990906.10217.KORA.6.HDF')
+        zoo.gesdisc.trmm.TRMM_1B21_CSI_binDIDHmean_zoom.run(hdffile)
+
+    def test_TRMM_2A12_cldWater_lvl9(self):
+        """
+        """
+        hdffile = fullpath('2A12.100402.70512.6.HDF')
+        zoo.gesdisc.trmm.TRMM_2A12_cldWater_lvl9.run(hdffile)
+
+    def test_TRMM_2A12_20140308_92894_7_HDF(self):
+        """
+        """
+        hdffile = '2A12.20140308.92894.7.HDF'
+        zoo.gesdisc.trmm.TRMM_2A12_20140308_92894_7_HDF.run(fullpath(hdffile))
+
+    def test_TRMM_2A25_CSI_nearSurfZ_zoom(self):
+        """
+        """
+        hdffile = '2A25_CSI.990804.9692.KORA.6.HDF'
+        zoo.gesdisc.trmm.TRMM_2A25_CSI_nearSurfZ_zoom.run(fullpath(hdffile))
+
+    def test_TRMM_2B31_CSI_dHat(self):
+        """
+        """
+        hdffile = '2B31_CSI.990911.10296.KORA.6.HDF'
+        zoo.gesdisc.trmm.TRMM_2B31_CSI_dHat_zoom.run(fullpath(hdffile))
+
+    def test_TRMM_3B42_precipitation_scan0(self):
+        """
+        """
+        hdffile = '3B42.100331.21.6A.HDF'
+        zoo.gesdisc.trmm.TRMM_3B42_precipitation_scan0.run(fullpath(hdffile))
+
+    def test_TRMM_3B43_precipitation_scan0(self):
+        """
+        """
+        hdffile = '3B43.070901.6A.HDF'
+        zoo.gesdisc.trmm.TRMM_3B43_precipitation_scan0.run(fullpath(hdffile))
+
+    def test_TRMM_3A46_ssmiData(self):
+        """
+        """
+        hdffile = '3A46.080101.2.HDF'
+        zoo.gesdisc.trmm.TRMM_3A46_ssmiData.run(fullpath(hdffile))
+
 
 class TestNSIDC(unittest.TestCase):
     """

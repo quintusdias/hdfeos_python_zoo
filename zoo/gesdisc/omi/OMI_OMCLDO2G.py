@@ -7,7 +7,6 @@ listed in the HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo),
 feel free to contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 (http://hdfeos.org/forums).
 """
-
 import os
 
 import matplotlib as mpl
@@ -18,62 +17,64 @@ import numpy as np
 USE_NETCDF4 = True
 
 def run(FILE_NAME):
-    DATAFIELD_NAME = 'CloudFraction'
-    
-    if USE_NETCDF4:
 
+    DATAFIELD_NAME = 'CloudPressure'
+
+    if USE_NETCDF4:
+    
         from netCDF4 import Dataset
 
         dset = Dataset(FILE_NAME)
-        grp = dset.groups['HDFEOS'].groups['SWATHS'].groups['ColumnAmountNO2']
-        var = grp.groups['Data Fields'].variables[DATAFIELD_NAME]
+        grp = dset.groups['HDFEOS'].groups['GRIDS'].groups['CloudFractionAndPressure'].groups['Data Fields']
+        var = grp.variables[DATAFIELD_NAME]
         
-        # netCDF4 doesn't quite handle the scaling correctly in this case since
-        # the attributes are "ScaleFactor" and "AddOffset" instead of
-        # "scale_factor" and "add_offset".  We'll do the scaling and conversion
-        # to a masked array ourselves.
+        # Turn off autoscaling so we can handle it uniformly for both h5py and
+        # netcdf.
         var.set_auto_maskandscale(False)
-
-        data = var[:].astype(np.float64)
-    
-        # Retrieve any attributes that may be needed later.
-        scale = var.ScaleFactor
-        offset = var.Offset
+        data = var[0,:,:]
+        units = var.Units
         title = var.Title
-        missing_value = var.MissingValue
         fill_value = var._FillValue
-
-        # Retrieve the geolocation data.
-        latitude = grp.groups['Geolocation Fields'].variables['Latitude'][:]
-        longitude = grp.groups['Geolocation Fields'].variables['Longitude'][:]
-
-    else:
         
+        # Retrieve the geolocation data.
+        var = grp.variables['Longitude']
+        var.set_auto_maskandscale(False)
+        longitude = var[0,:,:]
+        lon_fv = var._FillValue
+
+        var = grp.variables['Latitude']
+        var.set_auto_maskandscale(False)
+        latitude = var[0,:,:]
+        lat_fv = var._FillValue
+        
+    else:
+
         import h5py
 
-        path = '/HDFEOS/SWATHS/ColumnAmountNO2/Data Fields/'
-        DATAFIELD_NAME = path + 'CloudFraction'
+        path = '/HDFEOS/GRIDS/CloudFractionAndPressure/Data Fields'
         with h5py.File(FILE_NAME, mode='r') as f:
-            dset = f[DATAFIELD_NAME]
-            data =dset[:].astype(np.float64)
 
-            # Retrieve any attributes that may be needed later.
-            scale = f[DATAFIELD_NAME].attrs['ScaleFactor']
-            offset = f[DATAFIELD_NAME].attrs['Offset']
-            missing_value = f[DATAFIELD_NAME].attrs['MissingValue']
-            fill_value = f[DATAFIELD_NAME].attrs['_FillValue']
-            title = f[DATAFIELD_NAME].attrs['Title']
-
+            varname = path + '/CloudPressure'
+            data = f[varname][0,:,:]
+            units = f[varname].attrs['Units']
+            title = f[varname].attrs['Title']
+            fill_value = f[varname].attrs['_FillValue'][0]
+            
             # Retrieve the geolocation data.
-            path = '/HDFEOS/SWATHS/ColumnAmountNO2/Geolocation Fields/'
-            latitude = f[path + 'Latitude'][:]
-            longitude = f[path + 'Longitude'][:]
-
-    data[data == missing_value] = np.nan
-    data[data == fill_value] = np.nan
-    data = scale * (data - offset)
-    datam = np.ma.masked_where(np.isnan(data), data)
-
+            varname = path + '/Longitude'
+            longitude = f[varname][0,:,:]
+            lon_fv = f[varname].attrs['_FillValue'][0]
+            varname = path + '/Latitude'
+            latitude = f[varname][0,:,:]
+            lat_fv = f[varname].attrs['_FillValue'][0]
+            
+    # The latitude and longitude grid is not complete and has a lot of fill values,
+    # which is not the usual case.  Restrict the data in this case to a 1D array
+    # of valid points.
+    data = data[data != fill_value]
+    longitude = longitude[longitude != lon_fv]
+    latitude = latitude[latitude != lat_fv]
+    
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
@@ -86,11 +87,13 @@ def run(FILE_NAME):
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
-    m.colorbar()
+    cmap = plt.cm.jet
+    sc = m.scatter(x, y, c=data, s=1, cmap=cmap, edgecolors=None,
+            linewidth=0)
+    m.colorbar(sc)
     fig = plt.gcf()
     
-    plt.title('{0})'.format(title))
+    plt.title('{0} ({1})'.format(title, units))
     plt.show()
     
     png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4],
@@ -101,7 +104,7 @@ if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = 'OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5'
+    hdffile = 'OMI-Aura_L2G-OMCLDO2G_2007m0129_v002-2007m0130t174603.he5'
     try:
         hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:
