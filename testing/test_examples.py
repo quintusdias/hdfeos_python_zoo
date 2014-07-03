@@ -87,6 +87,52 @@ class TestGesdiscMerra(unittest.TestCase):
         hdffile = 'MERRA300.prod.assim.tavg3_3d_chm_Nv.20021201.hdf'
         zoo.gesdisc.merra.MERRA_MFYC_TIME4_Height42.run(fullpath(hdffile))
 
+class TestGesdiscMls(unittest.TestCase):
+    """
+    Run GESDISC/MLS codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_MLS_L2GP_v01_L2gpValue_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'MLS-Aura_L2GP-BrO_v01-52-c01_2007d029.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.USE_NETCDF4 = False
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.run(hdffile)
+
+    def test_MLS_L2GP_v01_L2gpValue_netcdf(self):
+        """
+        Run using netcdf
+        """
+        hdffile = 'MLS-Aura_L2GP-BrO_v01-52-c01_2007d029.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.USE_NETCDF4 = True
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.run(hdffile)
+
+    def test_MLS_L2GP_v02_L2gpValue_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'MLS-Aura_L2GP-BrO_v02-23-c01_2010d255.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.USE_NETCDF4 = False
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.run(hdffile)
+
+    def test_MLS_L2GP_v02_L2gpValue_netcdf(self):
+        """
+        Run using netcdf
+        """
+        hdffile = 'MLS-Aura_L2GP-BrO_v02-23-c01_2010d255.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.USE_NETCDF4 = True
+        zoo.gesdisc.mls.MLS_L2GP_v01_L2gpValue.run(hdffile)
+
 class TestGesdiscOmi(unittest.TestCase):
     """
     Run GESDISC/OMI codes.
