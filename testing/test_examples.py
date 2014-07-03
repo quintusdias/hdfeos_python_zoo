@@ -45,6 +45,28 @@ class TestGesdiscAirs(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.gesdisc.airs.AIRS_L3_Temperature_MW_A_Lvls11.run(hdffile)
 
+class TestGesdiscMerra(unittest.TestCase):
+    """
+    Run GESDISC/MERRA codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_MERRA_PLE_TIME1_Height72(self):
+        """
+        """
+        hdffile = 'MERRA300.prod.assim.inst3_3d_chm_Ne.20021201.hdf'
+        zoo.gesdisc.merra.MERRA_PLE_TIME1_Height72.run(fullpath(hdffile))
+
+    def test_MERRA_MFYC_TIME4_Height42(self):
+        """
+        """
+        hdffile = 'MERRA300.prod.assim.tavg3_3d_chm_Nv.20021201.hdf'
+        zoo.gesdisc.merra.MERRA_MFYC_TIME4_Height42.run(fullpath(hdffile))
+
 class TestGesdiscOmi(unittest.TestCase):
     """
     Run GESDISC/OMI codes.
