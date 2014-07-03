@@ -1,11 +1,20 @@
 """
 This example code illustrates how to access and visualize a GESDISC OMI file
-in Python.  If you have any questions, suggestions, comments  on this example,
-please use the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to
-see an  example of any other NASA HDF/HDF-EOS data product that is not 
-listed in the HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo),
-feel free to contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
+in Python.
+
+If you have any questions, suggestions, or comments on this example, please use
+the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
+example of any other NASA HDF/HDF-EOS data product that is not listed in the
+HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo), feel free to
+contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 (http://hdfeos.org/forums).
+
+Usage:  save this script and run
+
+    python OMI_L2_OMNO2_CloudFraction.py
+
+The HDF file must either be in your current working directory or in a directory
+specified by the environment variable HDFEOS_ZOO_DIR.
 """
 
 import os
