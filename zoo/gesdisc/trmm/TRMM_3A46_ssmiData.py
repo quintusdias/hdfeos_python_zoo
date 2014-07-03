@@ -1,11 +1,23 @@
 """
-This example code illustrates how to access and visualize GESDISC_TRMM file in
-Python.  If you have any questions, suggestions, comments  on this example,
-please use the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to
-see an  example of any other NASA HDF/HDF-EOS data product that is not 
-listed in the HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo),
-feel free to contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
+This example code illustrates how to access and visualize a GESDISC TRMM file
+in Python.
+
+If you have any questions, suggestions, or comments on this example, please use
+the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
+example of any other NASA HDF/HDF-EOS data product that is not listed in the
+HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo), feel free to
+contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 (http://hdfeos.org/forums).
+
+Usage:  save this script and run
+
+    python TRMM_3A46_ssmiData.py
+
+The HDF file must either be in your current working directory or in a directory
+specified by the environment variable HDFEOS_ZOO_DIR.
+
+The netcdf library must be compiled with HDF4 support in order for this example
+code to work.  Please see the README for details.
 """
 import os
 

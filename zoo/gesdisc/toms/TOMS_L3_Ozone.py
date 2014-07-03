@@ -1,5 +1,5 @@
 """
-This example code illustrates how to access and visualize a GESDISC MERRA file
+This example code illustrates how to access and visualize a GESDISC TOMS grid
 in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MERRA_MFYC_TIME4_Height42.py
+    python TOMS_L3_Ozone.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -19,6 +19,7 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 The netcdf library must be compiled with HDF4 support in order for this example
 code to work.  Please see the README for details.
 """
+
 import os
 
 import matplotlib as mpl
@@ -29,19 +30,14 @@ import numpy as np
 
 def run(FILE_NAME):
 
-    DATAFIELD_NAME = 'MFYC'
+    DATAFIELD_NAME = 'Ozone'
     
     dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][4, 42, :, :].astype(np.float64)
+    data = dset.variables[DATAFIELD_NAME][:]
+    units = dset.variables[DATAFIELD_NAME].units
     
-    # Replace the missing values with NaN.
-    missing_value = dset.variables[DATAFIELD_NAME].missing_value
-    data[data == missing_value] = np.nan
-    datam = np.ma.masked_array(data, np.isnan(data))
-    
-    # Retrieve the geolocation data.
-    latitude = dset.variables['YDim'][:]
-    longitude = dset.variables['XDim'][:]
+    latitude = dset.variables['YDim:TOMS Level 3'][:]
+    longitude = dset.variables['XDim:TOMS Level 3'][:]
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
@@ -55,28 +51,27 @@ def run(FILE_NAME):
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
+    m.pcolormesh(x, y, data)
     m.colorbar()
     fig = plt.gcf()
     
-    plt.title('{0} ({1})\nat TIME=4 and Height=42m'.format(
-        dset.variables[DATAFIELD_NAME].long_name,
-        dset.variables[DATAFIELD_NAME].units))
+    plt.title('{0} ({1})'.format(DATAFIELD_NAME, units))
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4],
-                               os.path.basename(DATAFIELD_NAME))
-    fig.savefig(png)
+    pngfile = "{0}.{1}.png".format(os.path.basename(FILE_NAME[:-4]),
+                                   DATAFIELD_NAME)
+    fig.savefig(pngfile)
 
 
 if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = 'MERRA300.prod.assim.tavg3_3d_chm_Nv.20021201.hdf'
+    hdffile = 'TOMS-EP_L3-TOMSEPL3_2000m0101_v8.HDF'
     try:
         hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:
         pass
 
     run(hdffile)
+    
