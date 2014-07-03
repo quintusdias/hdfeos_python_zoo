@@ -152,6 +152,22 @@ class TestGesdiscOmi(unittest.TestCase):
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
 
 
+class TestGesdiscTOMS(unittest.TestCase):
+    """
+    Run GESDISC/TOMS codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_TOMS_L3_Ozone(self):
+        """
+        """
+        hdffile = 'TOMS-EP_L3-TOMSEPL3_2000m0101_v8.HDF'
+        zoo.gesdisc.toms.TOMS_L3_Ozone.run(fullpath(hdffile))
+
 class TestGesdiscTRMM(unittest.TestCase):
     """
     Run GESDISC/TRMM codes.
