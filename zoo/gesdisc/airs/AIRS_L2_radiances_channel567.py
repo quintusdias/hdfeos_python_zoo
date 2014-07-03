@@ -49,7 +49,7 @@ def run(FILE_NAME):
                 boundinglat=-65, lon_0 = 180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-80., -50., 5.))
-    m.drawmeridians(np.arange(-180., 181., 20.))
+    m.drawmeridians(np.arange(-180., 181., 20.), labels=[1, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
