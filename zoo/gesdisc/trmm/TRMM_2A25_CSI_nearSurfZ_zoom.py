@@ -50,8 +50,8 @@ def run(FILE_NAME):
     
     m.drawcoastlines(linewidth=0.5)
     
-    m.drawparallels(np.arange(30, 36))
-    m.drawmeridians(np.arange(123, 135))
+    m.drawparallels(np.arange(30, 37), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(123, 135, 2), labels=[0, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
