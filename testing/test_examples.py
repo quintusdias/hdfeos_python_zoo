@@ -1,6 +1,7 @@
 """
 Tests for hdfeos zoo example codes.
 """
+import inspect
 import os
 import unittest
 
@@ -8,11 +9,30 @@ import matplotlib.pyplot as plt
 
 import zoo
 
+from . import fixtures
+
 def fullpath(fname):
     """
     Short cut for creating the full path.
     """
     return os.path.join(os.environ['HDFEOS_ZOO_DIR'], fname)
+
+class TestDocstrings(unittest.TestCase):
+    """
+    Verify information in the docstrings of the examples.
+    """
+    def test_docstring(self):
+        """
+        Verify that the docstring in each example has the EOS contact info.
+        """
+        for center_name, center_module in inspect.getmembers(zoo, inspect.ismodule):
+            for inst_name, inst_module in inspect.getmembers(center_module, inspect.ismodule):
+                for example_name, example_module in inspect.getmembers(inst_module, inspect.ismodule):
+                    msg = "Failed to verify docstring in {0}".format(example_name)
+                    docstring = example_module.__doc__.replace('\n', ' ')
+                    contact_info = fixtures.contact_info.replace('\n', ' ')
+                    self.assertTrue(contact_info in docstring, msg)
+
 
 class TestGesdiscAirs(unittest.TestCase):
     """
