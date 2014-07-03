@@ -1,11 +1,23 @@
 """
-This example code illustrates how to access and visualize GESDISC_TRMM file in
-Python.  If you have any questions, suggestions, comments  on this example,
-please use the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to
-see an  example of any other NASA HDF/HDF-EOS data product that is not 
-listed in the HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo),
-feel free to contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
+This example code illustrates how to access and visualize a GESDISC TRMM file
+in Python.
+
+If you have any questions, suggestions, or comments on this example, please use
+the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
+example of any other NASA HDF/HDF-EOS data product that is not listed in the
+HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo), feel free to
+contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 (http://hdfeos.org/forums).
+
+Usage:  save this script and run
+
+    python TRMM_3B43_precipitation_scan0.py
+
+The HDF file must either be in your current working directory or in a directory
+specified by the environment variable HDFEOS_ZOO_DIR.
+
+The netcdf library must be compiled with HDF4 support in order for this example
+code to work.  Please see the README for details.
 """
 import os
 
@@ -43,8 +55,8 @@ def run(FILE_NAME):
     
     m.drawcoastlines(linewidth=0.5)
     
-    m.drawparallels(np.arange(-90, 90, 30))
-    m.drawmeridians(np.arange(-180, 180, 45))
+    m.drawparallels(np.arange(-90, 120, 30), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 180, 45), labels=[0, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
@@ -52,22 +64,12 @@ def run(FILE_NAME):
     m.colorbar()
     fig = plt.gcf()
     
-    # Turn on tex for the units.
-    tex_not_set = False
-    if not mpl.rcParams['text.usetex']:
-        tex_not_set = True
-        mpl.rc('text', usetex=True)
-
-    plt.title('{0} ({1})'.format(DATAFIELD_NAME, r'$\frac{mm}{hr}$'))
+    plt.title('{0} (mm/hr)'.format(DATAFIELD_NAME))
     plt.show()
     
     pngfile = "{0}.{1}.png".format(os.path.basename(FILE_NAME[:-4]),
                                    DATAFIELD_NAME)
     fig.savefig(pngfile)
-
-    # Restore original tex settings if needed.
-    if tex_not_set:
-        mpl.rc('text', usetex=False)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 """
-This example code illustrates how to access and visualize a GESDISC TRMM file
+This example code illustrates how to access and visualize a GESDISC TOMS grid
 in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python TRMM_2A12_20140308_92894_7_HDF.py
+    python TOMS_L3_Ozone.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -19,6 +19,7 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 The netcdf library must be compiled with HDF4 support in order for this example
 code to work.  Please see the README for details.
 """
+
 import os
 
 import matplotlib as mpl
@@ -29,34 +30,20 @@ import numpy as np
 
 def run(FILE_NAME):
 
-    DATAFIELD_NAME = 'surfaceRain'
+    DATAFIELD_NAME = 'Ozone'
     
-    # Retrieve the data.
     dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:].astype(np.float64)
+    data = dset.variables[DATAFIELD_NAME][:]
     units = dset.variables[DATAFIELD_NAME].units
     
-    # Construct an indexed version of the data.
-    levels = [0.0, 0.1, 1.0, 10.0, 30.0]
-    Z = np.zeros(data.shape, dtype=np.float64)
-    for j in range(len(levels)-1):
-        Z[np.logical_and(data >= levels[j], data < levels[j+1])] = j  
-    Z[data >= levels[-1]] = len(levels)
-    
-    
-    # Retrieve the geolocation data.
-    latitude = dset.variables['Latitude'][:]
-    longitude = dset.variables['Longitude'][:]
-    
-    # There is a wrap-around effect to deal with.  Adjust the longitude by
-    # modulus 360 to avoid the swath being smeared.
-    longitude[longitude < -165] += 360
+    latitude = dset.variables['YDim:TOMS Level 3'][:]
+    longitude = dset.variables['XDim:TOMS Level 3'][:]
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-165, urcrnrlon = 197)
+                llcrnrlon=-180, urcrnrlon = 180)
     
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
@@ -64,17 +51,8 @@ def run(FILE_NAME):
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
-    
-    # Use a discretized colormap since we have only five levels.
-    colors = ['#0000ff', '#0088ff', '#8888ff', '#ff8888', '#ff0000']
-    cmap = mpl.colors.ListedColormap(colors)
-    bounds = np.arange(6)
-    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-    m.pcolormesh(x, y, Z, cmap=cmap, norm=norm)
-    color_bar = plt.colorbar()
-    color_bar.set_ticks([0.5, 1.5, 2.5, 3.5, 4.5])
-    color_bar.set_ticklabels(['0', '0.1', '1.0', '10', '30'])
-    
+    m.pcolormesh(x, y, data)
+    m.colorbar()
     fig = plt.gcf()
     
     plt.title('{0} ({1})'.format(DATAFIELD_NAME, units))
@@ -84,11 +62,12 @@ def run(FILE_NAME):
                                    DATAFIELD_NAME)
     fig.savefig(pngfile)
 
+
 if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = '2A12.20140308.92894.7.HDF'
+    hdffile = 'TOMS-EP_L3-TOMSEPL3_2000m0101_v8.HDF'
     try:
         hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:

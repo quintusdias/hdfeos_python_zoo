@@ -1,11 +1,23 @@
 """
-This example code illustrates how to access and visualize a GESDISC_AIRS
-Grid in Python.  If you have any questions, suggestions, comments  on
-this example, please use the HDF-EOS Forum (http://hdfeos.org/forums).
-If you would like to see an  example of any other NASA HDF/HDF-EOS data
-product that is not listed in the HDF-EOS Comprehensive Examples page
-(http://hdfeos.org/zoo), feel free to contact us at eoshelp@hdfgroup.org
-or post it at the HDF-EOS Forum (http://hdfeos.org/forums).
+This example code illustrates how to access and visualize a GESDISC AIRS grid
+in Python.
+
+If you have any questions, suggestions, or comments on this example, please use
+the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
+example of any other NASA HDF/HDF-EOS data product that is not listed in the
+HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo), feel free to
+contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
+(http://hdfeos.org/forums).
+
+Usage:  save this script and run
+
+    python AIRS_L2_radiances_channel567.py
+
+The HDF file must either be in your current working directory or in a directory
+specified by the environment variable HDFEOS_ZOO_DIR.
+
+The netcdf library must be compiled with HDF4 support in order for this example
+code to work.  Please see the README for details.
 """
 
 import os
@@ -37,8 +49,8 @@ def run(FILE_NAME):
                 llcrnrlon=-180, urcrnrlon = 180)
     
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 90., 30.))
-    m.drawmeridians(np.arange(-180., 181., 45.))
+    m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)

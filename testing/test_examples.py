@@ -1,6 +1,7 @@
 """
 Tests for hdfeos zoo example codes.
 """
+import inspect
 import os
 import unittest
 
@@ -8,11 +9,30 @@ import matplotlib.pyplot as plt
 
 import zoo
 
+from . import fixtures
+
 def fullpath(fname):
     """
     Short cut for creating the full path.
     """
     return os.path.join(os.environ['HDFEOS_ZOO_DIR'], fname)
+
+class TestDocstrings(unittest.TestCase):
+    """
+    Verify information in the docstrings of the examples.
+    """
+    def test_docstring(self):
+        """
+        Verify that the docstring in each example has the EOS contact info.
+        """
+        for center_name, center_module in inspect.getmembers(zoo, inspect.ismodule):
+            for inst_name, inst_module in inspect.getmembers(center_module, inspect.ismodule):
+                for example_name, example_module in inspect.getmembers(inst_module, inspect.ismodule):
+                    msg = "Failed to verify docstring in {0}".format(example_name)
+                    docstring = example_module.__doc__.replace('\n', ' ')
+                    contact_info = fixtures.contact_info.replace('\n', ' ')
+                    self.assertTrue(contact_info in docstring, msg)
+
 
 class TestGesdiscAirs(unittest.TestCase):
     """
@@ -131,6 +151,22 @@ class TestGesdiscOmi(unittest.TestCase):
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.USE_NETCDF4 = True
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
 
+
+class TestGesdiscTOMS(unittest.TestCase):
+    """
+    Run GESDISC/TOMS codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_TOMS_L3_Ozone(self):
+        """
+        """
+        hdffile = 'TOMS-EP_L3-TOMSEPL3_2000m0101_v8.HDF'
+        zoo.gesdisc.toms.TOMS_L3_Ozone.run(fullpath(hdffile))
 
 class TestGesdiscTRMM(unittest.TestCase):
     """

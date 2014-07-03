@@ -2,7 +2,7 @@
 This example code illustrates how to access and visualize a GESDISC AIRS grid
 in Python.
 
-If you have any questions, suggestions, comments  on this example, please use
+If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
 example of any other NASA HDF/HDF-EOS data product that is not listed in the
 HDF-EOS Comprehensive Examples page (http://hdfeos.org/zoo), feel free to
@@ -49,7 +49,7 @@ def run(FILE_NAME):
                 boundinglat=-65, lon_0 = 180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-80., -50., 5.))
-    m.drawmeridians(np.arange(-180., 181., 20.))
+    m.drawmeridians(np.arange(-180., 181., 20.), labels=[1, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
