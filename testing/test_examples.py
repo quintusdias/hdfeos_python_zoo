@@ -107,6 +107,34 @@ class TestGesdiscBuv(unittest.TestCase):
         hdffile = 'SBUV2-NOAA17_L2-SBUV2N17L2_2011m1231_v01-01-2012m0905t152911.h5'
         zoo.gesdisc.buv.SBUV2_NOAA17_L2_SBUV2N17L2_2011m1231_v01_01_2012m0905t152911_h5.run(fullpath(hdffile))
 
+class TestGesdiscGosat(unittest.TestCase):
+    """
+    Run GESDISC/GOSAT codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_h5(self):
+        """
+        Use h5py.
+        """
+        hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
+        module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
+        module.USE_NETCDF = False
+        module.run(fullpath(hdffile))
+
+    def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_nc4(self):
+        """
+        Use netCDF4
+        """
+        hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
+        module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
+        module.USE_NETCDF = True
+        module.run(fullpath(hdffile))
+
 class TestGesdiscMerra(unittest.TestCase):
     """
     Run GESDISC/MERRA codes.
