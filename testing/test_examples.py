@@ -268,6 +268,52 @@ class TestGesdiscOmi(unittest.TestCase):
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
 
 
+class TestGesdiscSWDB(unittest.TestCase):
+    """
+    Run GESDISC/SWDB codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z_h5(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'DeepBlue-SeaWiFS_L2_20101211T000331Z_v002-20110527T105357Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z
+        module.USE_NETCDF4 = False
+        module.run(fullpath(hdffile))
+
+    def test_DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'DeepBlue-SeaWiFS_L2_20101211T000331Z_v002-20110527T105357Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z
+        module.USE_NETCDF4 = True
+        module.run(fullpath(hdffile))
+
+    def test_DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z_h5(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z
+        module.USE_NETCDF4 = False
+        module.run(fullpath(hdffile))
+
+    def test_DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z
+        module.USE_NETCDF4 = True
+        module.run(fullpath(hdffile))
+
 class TestGesdiscTOMS(unittest.TestCase):
     """
     Run GESDISC/TOMS codes.
