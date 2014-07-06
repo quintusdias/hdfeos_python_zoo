@@ -135,6 +135,53 @@ class TestGesdiscGosat(unittest.TestCase):
         module.USE_NETCDF = True
         module.run(fullpath(hdffile))
 
+
+class TestGesdiscHirdls(unittest.TestCase):
+    """
+    Run GESDISC/HIRDLS codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'HIRDLS-Aura_L3ZAD_v06-00-00-c02_2005d022-2008d077.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.USE_NETCDF4 = False
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.run(hdffile)
+
+    def test_HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'HIRDLS-Aura_L3ZAD_v06-00-00-c02_2005d022-2008d077.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.USE_NETCDF4 = True
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.run(hdffile)
+
+    def test_HIRDLS_Aura_L2_v06_00_00_c01_2008d001_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'HIRDLS-Aura_L2_v06-00-00-c01_2008d001.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.USE_NETCDF4 = False
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.run(hdffile)
+
+    def test_HIRDLS_Aura_L2_v06_00_00_c01_2008d001_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'HIRDLS-Aura_L2_v06-00-00-c01_2008d001.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.USE_NETCDF4 = True
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.run(hdffile)
+
 class TestGesdiscMerra(unittest.TestCase):
     """
     Run GESDISC/MERRA codes.
