@@ -42,6 +42,10 @@ rebuild the RPM as follows::
 6. Rebuild the RPMs with ``rpmbuild -bb netcdf.spec``
 7. Install the newly-built RPM(s).
 
+The Fedora repository RPM of netdf4-python3 (version 1.0.2-1) does not seem
+to adequately support Python3 strings.  You should use pip to install the latest
+version (1.1.10 or more recent), as well as installing basemap via pip.
+
 Ubuntu 13.10
 ============
 The versions of the netcdf and hdf packages that come with Ubuntu are a bit 
@@ -81,6 +85,7 @@ TODO:  The netcdf library was not compiled with hdf4 support.
 
 Mac
 ===
-If you use MacPorts, you should install the hdf4 variant of the netcdf port::
+If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
+port::
 
-    $ sudo port install netcdf+hdf
+    $ sudo port install netcdf +hdf4 +dap
