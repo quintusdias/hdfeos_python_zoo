@@ -50,8 +50,10 @@ def run(FILE_NAME):
             dset_var = f['/HDFEOS/GRIDS/SET1/Data Fields/E']
             data = dset_var[:]
 
-            data_units = dset_var.attrs['units']
-            data_longname = dset_var.attrs['long_name']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            data_units = dset_var.attrs['units'].decode()
+            data_longname = dset_var.attrs['long_name'].decode()
             fv = dset_var.attrs['_FillValue'][0]
 
             # We have to apply the fill value ourselves.

@@ -69,15 +69,17 @@ def run(FILE_NAME):
             data = dset[399, :]
 
             # Retrieve any attributes that may be needed later.
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
             missing_value = f[varname].attrs['MissingValue']
             fill_value = f[varname].attrs['_FillValue']
-            title = f[varname].attrs['Title']
-            units = f[varname].attrs['Units']
+            title = f[varname].attrs['Title'].decode()
+            units = f[varname].attrs['Units'].decode()
 
             # Retrieve the geolocation data.
             varname = path + '/Geolocation Fields/Pressure'
             pressure = f[varname][:]
-            pres_units = f[varname].attrs['Units']
+            pres_units = f[varname].attrs['Units'].decode()
 
             varname = path + '/Geolocation Fields/Time'
             time = f[varname][:]

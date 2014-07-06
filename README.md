@@ -16,6 +16,11 @@ Fedora 20
 The Fedora 20 netcdf RPM is built with hdf4 support, so therefore netcdf4-python
 can read HDF4 files out of the box.  This is the ideal situation, yay Fedora!
 
+The Fedora 20 repositories do not include a Python3 RPM for basemap, but you can
+still install basemap via pip::
+
+    $ pip-python3 install basemap --user
+
 Fedora 19
 =========
 The Fedora 19 netcdf RPM was not built with the --with-hdf4 option, so you must

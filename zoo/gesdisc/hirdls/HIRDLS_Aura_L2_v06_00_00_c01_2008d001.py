@@ -67,11 +67,13 @@ def run(FILE_NAME):
             time = dset_time[0]
 
             # Read the needed attributes.
-            data_units = dset_var.attrs['Units']
-            pres_units = dset_pres.attrs['Units']
-            data_title = dset_var.attrs['Title']
-            time_title = dset_time.attrs['Title']
-            pres_title = dset_pres.attrs['Title']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            data_units = dset_var.attrs['Units'].decode()
+            pres_units = dset_pres.attrs['Units'].decode()
+            data_title = dset_var.attrs['Title'].decode()
+            time_title = dset_time.attrs['Title'].decode()
+            pres_title = dset_pres.attrs['Title'].decode()
 
             fillvalue = dset_var.attrs['_FillValue']
             data[data == fillvalue] = np.nan

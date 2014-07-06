@@ -52,7 +52,9 @@ def run(FILE_NAME):
             latitude = f['latitude'][:]
             longitude = f['longitude'][:]
     
-            long_name = f[DATAFIELD_NAME].attrs['long_name']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            long_name = f[DATAFIELD_NAME].attrs['long_name'].decode()
 
     data[data == -999] = np.nan
     data = np.ma.masked_array(data, np.isnan(data))
