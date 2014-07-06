@@ -65,6 +65,123 @@ class TestGesdiscAirs(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.gesdisc.airs.AIRS_L3_Temperature_MW_A_Lvls11.run(hdffile)
 
+class TestGesdiscBuv(unittest.TestCase):
+    """
+    Run GESDISC/BUV codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5_h5py(self):
+        """
+        Use h5py.
+        """
+        zoo.gesdisc.buv.BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5.USE_NETCDF4 = False
+        hdffile = 'BUV-Nimbus04_L3zm_v01-00-2012m0203t144121.h5'
+        zoo.gesdisc.buv.BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5.run(fullpath(hdffile))
+
+    def test_BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5_netcdf(self):
+        """
+        Use netcdf4.
+        """
+        zoo.gesdisc.buv.BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5.USE_NETCDF4 = True
+        hdffile = 'BUV-Nimbus04_L3zm_v01-00-2012m0203t144121.h5'
+        zoo.gesdisc.buv.BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5.run(fullpath(hdffile))
+
+    def test_SBUV2_NOAA17_L2_SBUV2N17L2_2011m1231_v01_01_2012m0905t152911_h5py(self):
+        """
+        Use h5py.
+        """
+        zoo.gesdisc.buv.SBUV2_NOAA17_L2_SBUV2N17L2_2011m1231_v01_01_2012m0905t152911_h5.USE_NETCDF4 = False
+        hdffile = 'SBUV2-NOAA17_L2-SBUV2N17L2_2011m1231_v01-01-2012m0905t152911.h5'
+        zoo.gesdisc.buv.SBUV2_NOAA17_L2_SBUV2N17L2_2011m1231_v01_01_2012m0905t152911_h5.run(fullpath(hdffile))
+
+    def test_SBUV2_NOAA17_L2_SBUV2N17L2_2011m1231_v01_01_2012m0905t152911_netcdf4(self):
+        """
+        Use netcdf4.
+        """
+        zoo.gesdisc.buv.SBUV2_NOAA17_L2_SBUV2N17L2_2011m1231_v01_01_2012m0905t152911_h5.USE_NETCDF4 = True
+        hdffile = 'SBUV2-NOAA17_L2-SBUV2N17L2_2011m1231_v01-01-2012m0905t152911.h5'
+        zoo.gesdisc.buv.SBUV2_NOAA17_L2_SBUV2N17L2_2011m1231_v01_01_2012m0905t152911_h5.run(fullpath(hdffile))
+
+class TestGesdiscGosat(unittest.TestCase):
+    """
+    Run GESDISC/GOSAT codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_h5(self):
+        """
+        Use h5py.
+        """
+        hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
+        module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
+        module.USE_NETCDF = False
+        module.run(fullpath(hdffile))
+
+    def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_nc4(self):
+        """
+        Use netCDF4
+        """
+        hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
+        module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
+        module.USE_NETCDF = True
+        module.run(fullpath(hdffile))
+
+
+class TestGesdiscHirdls(unittest.TestCase):
+    """
+    Run GESDISC/HIRDLS codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'HIRDLS-Aura_L3ZAD_v06-00-00-c02_2005d022-2008d077.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.USE_NETCDF4 = False
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.run(hdffile)
+
+    def test_HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'HIRDLS-Aura_L3ZAD_v06-00-00-c02_2005d022-2008d077.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.USE_NETCDF4 = True
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077.run(hdffile)
+
+    def test_HIRDLS_Aura_L2_v06_00_00_c01_2008d001_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'HIRDLS-Aura_L2_v06-00-00-c01_2008d001.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.USE_NETCDF4 = False
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.run(hdffile)
+
+    def test_HIRDLS_Aura_L2_v06_00_00_c01_2008d001_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'HIRDLS-Aura_L2_v06-00-00-c01_2008d001.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.USE_NETCDF4 = True
+        zoo.gesdisc.hirdls.HIRDLS_Aura_L2_v06_00_00_c01_2008d001.run(hdffile)
+
 class TestGesdiscMerra(unittest.TestCase):
     """
     Run GESDISC/MERRA codes.
@@ -197,6 +314,52 @@ class TestGesdiscOmi(unittest.TestCase):
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.USE_NETCDF4 = True
         zoo.gesdisc.omi.OMI_L3_ColumnAmountO3.run(hdffile)
 
+
+class TestGesdiscSWDB(unittest.TestCase):
+    """
+    Run GESDISC/SWDB codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z_h5(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'DeepBlue-SeaWiFS_L2_20101211T000331Z_v002-20110527T105357Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z
+        module.USE_NETCDF4 = False
+        module.run(fullpath(hdffile))
+
+    def test_DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'DeepBlue-SeaWiFS_L2_20101211T000331Z_v002-20110527T105357Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z
+        module.USE_NETCDF4 = True
+        module.run(fullpath(hdffile))
+
+    def test_DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z_h5(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z
+        module.USE_NETCDF4 = False
+        module.run(fullpath(hdffile))
+
+    def test_DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'DeepBlue-SeaWiFS-1.0_L3_20100101_v002-20110527T191319Z.h5'
+        module = zoo.gesdisc.swdb.DeepBlue_SeaWiFS_1_0_L3_20100101_v002_20110527T191319Z
+        module.USE_NETCDF4 = True
+        module.run(fullpath(hdffile))
 
 class TestGesdiscTOMS(unittest.TestCase):
     """
