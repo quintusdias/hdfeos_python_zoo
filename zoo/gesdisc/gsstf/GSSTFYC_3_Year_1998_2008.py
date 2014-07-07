@@ -85,8 +85,9 @@ def run(FILE_NAME):
     plt.title('{0} ({1})'.format(data_longname, data_units))
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4], data_longname)
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, 'sst')
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 
