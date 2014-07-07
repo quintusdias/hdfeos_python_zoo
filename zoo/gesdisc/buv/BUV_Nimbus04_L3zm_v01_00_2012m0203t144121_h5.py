@@ -104,8 +104,9 @@ def run(FILE_NAME):
                                              datestr.strftime('%Y-%m')))
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4], 'BrO')
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, 'ProfileOzone')
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 

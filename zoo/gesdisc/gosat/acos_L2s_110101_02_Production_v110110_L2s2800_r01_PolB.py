@@ -138,8 +138,9 @@ def run(FILE_NAME):
 
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4], 'trajectory')
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, 'xco2')
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 
