@@ -70,11 +70,13 @@ def run(FILE_NAME):
             time = dset_date[0]
 
             # Read the needed attributes.
-            lat_units = dset_lat.attrs['Units']
-            lev_units = dset_lev.attrs['Units']
-            data_title = dset_var.attrs['Title']
-            lat_title = dset_lat.attrs['Title']
-            lev_title = dset_lev.attrs['Title']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            lat_units = dset_lat.attrs['Units'].decode()
+            lev_units = dset_lev.attrs['Units'].decode()
+            data_title = dset_var.attrs['Title'].decode()
+            lat_title = dset_lat.attrs['Title'].decode()
+            lev_title = dset_lev.attrs['Title'].decode()
 
             # H5PY doesn't automatically turn the data into a masked array.
             fillvalue = dset_var.attrs['_FillValue']
