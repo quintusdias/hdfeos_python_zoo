@@ -63,10 +63,12 @@ def run(FILE_NAME):
         path = '/HDFEOS/GRIDS/CloudFractionAndPressure/Data Fields'
         with h5py.File(FILE_NAME, mode='r') as f:
 
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
             varname = path + '/CloudPressure'
             data = f[varname][0,:,:]
-            units = f[varname].attrs['Units']
-            title = f[varname].attrs['Title']
+            units = f[varname].attrs['Units'].decode()
+            title = f[varname].attrs['Title'].decode()
             fill_value = f[varname].attrs['_FillValue'][0]
             
             # Retrieve the geolocation data.

@@ -74,15 +74,17 @@ def run(FILE_NAME):
             time = dset_time[:]
 
             # Read the needed attributes.
-            data_units = dset_var.attrs['units']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            data_units = dset_var.attrs['units'].decode()
             data_vmin = dset_var.attrs['valid_min']
             data_vmax = dset_var.attrs['valid_max']
             data_fillvalue = dset_var.attrs['_FillValue']
-            lat_units = dset_lat.attrs['units']
-            lev_units = dset_lev.attrs['units']
-            data_longname = dset_var.attrs['long_name']
-            lat_longname = dset_lat.attrs['long_name']
-            lev_longname = dset_lev.attrs['long_name']
+            lat_units = dset_lat.attrs['units'].decode()
+            lev_units = dset_lev.attrs['units'].decode()
+            data_longname = dset_var.attrs['long_name'].decode()
+            lat_longname = dset_lat.attrs['long_name'].decode()
+            lev_longname = dset_lev.attrs['long_name'].decode()
 
     # Apply the valid range.
     data[data < data_vmin] = np.nan

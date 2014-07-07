@@ -61,8 +61,10 @@ def run(FILE_NAME):
             data = np.ma.masked_where(np.isnan(data), data)
     
             # Get attributes needed for the plot.
-            title = dset.attrs['Title']
-            units = dset.attrs['Units']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            title = dset.attrs['Title'].decode()
+            units = dset.attrs['Units'].decode()
     
     # There is no geolocation data, so construct it ourselves.
     longitude = np.arange(0., 1440.0) * 0.25 - 180 + 0.125

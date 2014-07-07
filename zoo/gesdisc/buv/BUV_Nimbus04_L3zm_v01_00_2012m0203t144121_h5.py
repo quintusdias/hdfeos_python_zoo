@@ -59,6 +59,7 @@ def run(FILE_NAME):
         import h5py
 
         with h5py.File(FILE_NAME, mode='r') as f:
+
             dset_var = f['/Data_Fields/ProfileOzone']
             dset_lat = f['/Data_Fields/Latitude']
             dset_lev = f['/Data_Fields/ProfilePressureLevels']
@@ -71,12 +72,14 @@ def run(FILE_NAME):
             date = dset_date[0]
 
             # Read the needed attributes.
-            data_units = dset_var.attrs['units']
-            lat_units = dset_lat.attrs['units']
-            lev_units = dset_lev.attrs['units']
-            data_longname = dset_var.attrs['long_name']
-            lat_longname = dset_lat.attrs['long_name']
-            lev_longname = dset_lev.attrs['long_name']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            data_units = dset_var.attrs['units'].decode()
+            lat_units = dset_lat.attrs['units'].decode()
+            lev_units = dset_lev.attrs['units'].decode()
+            data_longname = dset_var.attrs['long_name'].decode()
+            lat_longname = dset_lat.attrs['long_name'].decode()
+            lev_longname = dset_lev.attrs['long_name'].decode()
 
             # H5PY doesn't automatically turn the data into a masked array.
             fillvalue = dset_var.attrs['_FillValue']

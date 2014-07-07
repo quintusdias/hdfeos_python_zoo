@@ -136,6 +136,70 @@ class TestGesdiscGosat(unittest.TestCase):
         module.run(fullpath(hdffile))
 
 
+class TestGesdiscGsstf(unittest.TestCase):
+    """
+    Run GESDISC/GSSTF codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_GSSTF_3_2008_12_31_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'GSSTF.3.2008.12.31.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.gsstf.GSSTF_3_2008_12_31.USE_NETCDF4 = False
+        zoo.gesdisc.gsstf.GSSTF_3_2008_12_31.run(hdffile)
+
+    def test_GSSTF_3_2008_12_31_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'GSSTF.3.2008.12.31.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.gsstf.GSSTF_3_2008_12_31.USE_NETCDF4 = True
+        zoo.gesdisc.gsstf.GSSTF_3_2008_12_31.run(hdffile)
+
+    def test_GSSTF_NCEP_3_2008_12_31_h5py(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'GSSTF_NCEP.3.2008.12.31.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.gsstf.GSSTF_NCEP_3_2008_12_31.USE_NETCDF4 = False
+        zoo.gesdisc.gsstf.GSSTF_NCEP_3_2008_12_31.run(hdffile)
+
+    def test_GSSTF_NCEP_3_2008_12_31_nc4(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'GSSTF_NCEP.3.2008.12.31.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.gsstf.GSSTF_NCEP_3_2008_12_31.USE_NETCDF4 = True
+        zoo.gesdisc.gsstf.GSSTF_NCEP_3_2008_12_31.run(hdffile)
+
+    def test_GSSTFYC_3_Year_1998_2008_h5py(self):
+        """
+        Run using netCDF4
+        """
+        hdffile = 'GSSTFYC.3.Year.1988_2008.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.gsstf.GSSTFYC_3_Year_1998_2008.USE_NETCDF4 = True
+        zoo.gesdisc.gsstf.GSSTFYC_3_Year_1998_2008.run(hdffile)
+
+    def test_GSSTFYC_3_Year_1998_2008_nc4(self):
+        """
+        Run using h5py
+        """
+        hdffile = 'GSSTFYC.3.Year.1988_2008.he5'
+        hdffile = fullpath(hdffile)
+        zoo.gesdisc.gsstf.GSSTFYC_3_Year_1998_2008.USE_NETCDF4 = False
+        zoo.gesdisc.gsstf.GSSTFYC_3_Year_1998_2008.run(hdffile)
+
 class TestGesdiscHirdls(unittest.TestCase):
     """
     Run GESDISC/HIRDLS codes.
