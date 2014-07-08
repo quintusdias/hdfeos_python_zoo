@@ -123,7 +123,7 @@ class TestGesdiscGosat(unittest.TestCase):
         """
         hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
         module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
-        module.USE_NETCDF = False
+        module.USE_NETCDF4 = False
         module.run(fullpath(hdffile))
 
     def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_nc4(self):
@@ -132,7 +132,7 @@ class TestGesdiscGosat(unittest.TestCase):
         """
         hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
         module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
-        module.USE_NETCDF = True
+        module.USE_NETCDF4 = True
         module.run(fullpath(hdffile))
 
 

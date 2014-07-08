@@ -42,9 +42,10 @@ rebuild the RPM as follows::
 6. Rebuild the RPMs with ``rpmbuild -bb netcdf.spec``
 7. Install the newly-built RPM(s).
 
-The Fedora repository RPM of netdf4-python3 (version 1.0.2-1) does not seem
-to adequately support Python3 strings.  You should use pip to install the latest
-version (1.1.10 or more recent), as well as installing basemap via pip.
+The Fedora repository RPM of netdf4-python (version 1.0.2-1) for both Python 2
+and 3 does not seem to adequately support HDF5 strings.  You should use pip to
+install the latest version (1.1.10 or more recent), as well as installing
+basemap via pip.  
 
 Ubuntu 13.10
 ============
