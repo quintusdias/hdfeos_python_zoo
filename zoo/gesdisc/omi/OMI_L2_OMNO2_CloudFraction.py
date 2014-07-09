@@ -101,7 +101,7 @@ def run(FILE_NAME):
     m.colorbar()
     fig = plt.gcf()
     
-    plt.title('{0})'.format(title))
+    plt.title('{0}'.format(title))
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
