@@ -82,9 +82,11 @@ Download netcdf4-1.1.0 from Pypi, configure and install with::
 
 Anaconda
 ========
-TODO:  The netcdf library was not compiled with hdf4 support.
+Anacodna is ideal for Windows platform although the netcdf4 library was not 
+compiled with hdf4 support. It will work with HDF5 examples only. 
 
     $conda install basemap
+    $conda install netcdf4
 
 
 Mac
