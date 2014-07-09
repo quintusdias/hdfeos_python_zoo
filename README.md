@@ -84,6 +84,9 @@ Anaconda
 ========
 TODO:  The netcdf library was not compiled with hdf4 support.
 
+    $conda install basemap
+
+
 Mac
 ===
 If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
