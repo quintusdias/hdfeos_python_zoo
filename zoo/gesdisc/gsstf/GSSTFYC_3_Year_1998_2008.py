@@ -50,8 +50,10 @@ def run(FILE_NAME):
             dset_var = f['/HDFEOS/GRIDS/NCEP/Data Fields/SST']
             data = dset_var[:]
 
-            data_units = dset_var.attrs['units']
-            data_longname = dset_var.attrs['LongName']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            data_units = dset_var.attrs['units'].decode()
+            data_longname = dset_var.attrs['LongName'].decode()
             fv = dset_var.attrs['_FillValue'][0]
 
             # We have to apply the fill value ourselves.
@@ -83,8 +85,9 @@ def run(FILE_NAME):
     plt.title('{0} ({1})'.format(data_longname, data_units))
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4], data_longname)
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, 'sst')
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 

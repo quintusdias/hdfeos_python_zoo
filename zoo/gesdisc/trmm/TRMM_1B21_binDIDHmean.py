@@ -63,8 +63,8 @@ def run(FILE_NAME):
     plt.title('{0}'.format(DATAFIELD_NAME))
     plt.show()
     
-    pngfile = "{0}.{1}.png".format(os.path.basename(FILE_NAME[:-4]),
-                                   DATAFIELD_NAME)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

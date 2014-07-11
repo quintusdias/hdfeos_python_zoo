@@ -69,15 +69,17 @@ def run(FILE_NAME):
             data = dset[399, :]
 
             # Retrieve any attributes that may be needed later.
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
             missing_value = f[varname].attrs['MissingValue']
             fill_value = f[varname].attrs['_FillValue']
-            title = f[varname].attrs['Title']
-            units = f[varname].attrs['Units']
+            title = f[varname].attrs['Title'].decode()
+            units = f[varname].attrs['Units'].decode()
 
             # Retrieve the geolocation data.
             varname = path + '/Geolocation Fields/Pressure'
             pressure = f[varname][:]
-            pres_units = f[varname].attrs['Units']
+            pres_units = f[varname].attrs['Units'].decode()
 
             varname = path + '/Geolocation Fields/Time'
             time = f[varname][:]
@@ -99,8 +101,9 @@ def run(FILE_NAME):
     plt.title('{0} at Time = {1}'.format(title, time1lvl))
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4], 'BrO')
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, 'BrO')
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 

@@ -67,11 +67,13 @@ def run(FILE_NAME):
             data =dset[:].astype(np.float64)
 
             # Retrieve any attributes that may be needed later.
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
             scale = f[DATAFIELD_NAME].attrs['ScaleFactor']
             offset = f[DATAFIELD_NAME].attrs['Offset']
             missing_value = f[DATAFIELD_NAME].attrs['MissingValue']
             fill_value = f[DATAFIELD_NAME].attrs['_FillValue']
-            title = f[DATAFIELD_NAME].attrs['Title']
+            title = f[DATAFIELD_NAME].attrs['Title'].decode()
 
             # Retrieve the geolocation data.
             path = '/HDFEOS/SWATHS/ColumnAmountNO2/Geolocation Fields/'
@@ -99,12 +101,12 @@ def run(FILE_NAME):
     m.colorbar()
     fig = plt.gcf()
     
-    plt.title('{0})'.format(title))
+    plt.title('{0}'.format(title))
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4],
-                               os.path.basename(DATAFIELD_NAME))
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, 'CloudFraction')
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 
