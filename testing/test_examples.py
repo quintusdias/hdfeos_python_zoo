@@ -534,3 +534,9 @@ class TestNSIDC(unittest.TestCase):
         hdffile = fullpath('MOD29.A2013196.1250.005.2013196195940.hdf')
         zoo.nsidc.modis.MOD29_A2013196_1250_005_2013196195940_hdf.run(hdffile)
 
+    def test_MOD10A1_Snow_Cover_Daily_Tile(self):
+        """
+        """
+        hdffile = 'MOD10A1.A2000065.h00v08.005.2008237034422.hdf'
+        zoo.nsidc.modis.MOD10A1_Snow_Cover_Daily_Tile.run(fullpath(hdffile))
+

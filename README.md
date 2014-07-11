@@ -92,6 +92,9 @@ compiled with hdf4 support. It will work with HDF5 examples only.
 Mac
 ===
 If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
-port::
+port and the hdf4, hdf5, and netcdf variant of the gdal port::
 
     $ sudo port install netcdf +hdf4 +dap
+    $ sudo port install gdal +hdf4 +hdf5 +netcdf
+
+
