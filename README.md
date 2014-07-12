@@ -11,6 +11,8 @@ In cases where the datafile is HDF-EOS5, HDF4 support is not needed.  The
 netCDF4 package can usually read these files, but code is also provided for
 reading the file with h5py.
 
+GDAL is used to read some HDF-EOS2 grid files.
+
 Fedora 20
 =========
 The Fedora 20 netcdf RPM is built with hdf4 support, so therefore netcdf4-python
@@ -20,6 +22,8 @@ The Fedora 20 repositories do not include a Python3 RPM for basemap, but you can
 still install basemap via pip::
 
     $ pip-python3 install basemap --user
+
+The RPM for the GDAL library includes support for HDF-EOS2.
 
 Fedora 19
 =========
@@ -46,6 +50,8 @@ The Fedora repository RPM of netdf4-python (version 1.0.2-1) for both Python 2
 and 3 does not seem to adequately support HDF5 strings.  You should use pip to
 install the latest version (1.1.10 or more recent), as well as installing
 basemap via pip.  
+
+The RPM for the GDAL library includes support for HDF-EOS2.
 
 Ubuntu 13.10
 ============
