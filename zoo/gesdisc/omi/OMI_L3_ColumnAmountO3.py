@@ -61,8 +61,10 @@ def run(FILE_NAME):
             data = np.ma.masked_where(np.isnan(data), data)
     
             # Get attributes needed for the plot.
-            title = dset.attrs['Title']
-            units = dset.attrs['Units']
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
+            title = dset.attrs['Title'].decode()
+            units = dset.attrs['Units'].decode()
     
     # There is no geolocation data, so construct it ourselves.
     longitude = np.arange(0., 1440.0) * 0.25 - 180 + 0.125
@@ -75,8 +77,8 @@ def run(FILE_NAME):
                 llcrnrlon=-180, urcrnrlon = 180)
     
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 90., 30.))
-    m.drawmeridians(np.arange(-180, 180., 45.))
+    m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
@@ -88,9 +90,9 @@ def run(FILE_NAME):
     plt.show()
     plt.draw()
 
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4],
-                               os.path.basename(DATAFIELD_NAME))
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, 'ColumnAmountO3')
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 

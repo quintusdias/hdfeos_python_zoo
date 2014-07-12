@@ -16,6 +16,11 @@ Fedora 20
 The Fedora 20 netcdf RPM is built with hdf4 support, so therefore netcdf4-python
 can read HDF4 files out of the box.  This is the ideal situation, yay Fedora!
 
+The Fedora 20 repositories do not include a Python3 RPM for basemap, but you can
+still install basemap via pip::
+
+    $ pip-python3 install basemap --user
+
 Fedora 19
 =========
 The Fedora 19 netcdf RPM was not built with the --with-hdf4 option, so you must
@@ -36,6 +41,11 @@ rebuild the RPM as follows::
 
 6. Rebuild the RPMs with ``rpmbuild -bb netcdf.spec``
 7. Install the newly-built RPM(s).
+
+The Fedora repository RPM of netdf4-python (version 1.0.2-1) for both Python 2
+and 3 does not seem to adequately support HDF5 strings.  You should use pip to
+install the latest version (1.1.10 or more recent), as well as installing
+basemap via pip.  
 
 Ubuntu 13.10
 ============
@@ -72,10 +82,19 @@ Download netcdf4-1.1.0 from Pypi, configure and install with::
 
 Anaconda
 ========
-TODO:  The netcdf library was not compiled with hdf4 support.
+Anaconda is ideal for the Windows platform although the netcdf4 library was not 
+compiled with hdf4 support. It will work with HDF5 examples only. 
+
+    $ conda install basemap
+    $ conda install netcdf4
+
 
 Mac
 ===
-If you use MacPorts, you should install the hdf4 variant of the netcdf port::
+If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
+port and the hdf4, hdf5, and netcdf variant of the gdal port::
 
-    $ sudo port install netcdf+hdf
+    $ sudo port install netcdf +hdf4 +dap
+    $ sudo port install gdal +hdf4 +hdf5 +netcdf
+
+

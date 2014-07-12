@@ -63,8 +63,8 @@ def run(FILE_NAME):
                 llcrnrlon=-50, urcrnrlon = 310)
     
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 90., 30.))
-    m.drawmeridians(np.arange(-45, 315., 45.))
+    m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-45, 315., 45.), labels=[0, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     # More than 99% of the pixel values are less than 0.1.
@@ -73,24 +73,14 @@ def run(FILE_NAME):
     cb = m.colorbar()
     fig = plt.gcf()
     
-    plt.title(DATAFIELD_NAME)
+    plt.title('{0} (g/m^3)'.format(DATAFIELD_NAME))
 
-    # Turn on tex for the units.
-    tex_not_set = False
-    if not mpl.rcParams['text.usetex']:
-        tex_not_set = True
-        mpl.rc('text', usetex=True)
-
-    cb.set_label(r'($\frac{g}{m^3}$)', rotation=0)
     plt.show()
     
-    pngfile = "{0}.{1}.png".format(os.path.basename(FILE_NAME[:-4]),
-                                   DATAFIELD_NAME)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
 
-    # Restore original tex settings if needed.
-    if tex_not_set:
-        mpl.rc('text', usetex=False)
 
 if __name__ == "__main__":
 

@@ -63,10 +63,12 @@ def run(FILE_NAME):
         path = '/HDFEOS/GRIDS/CloudFractionAndPressure/Data Fields'
         with h5py.File(FILE_NAME, mode='r') as f:
 
+            # String attributes actually come in as the bytes type and should
+            # be decoded to UTF-8 (python3).
             varname = path + '/CloudPressure'
             data = f[varname][0,:,:]
-            units = f[varname].attrs['Units']
-            title = f[varname].attrs['Title']
+            units = f[varname].attrs['Units'].decode()
+            title = f[varname].attrs['Title'].decode()
             fill_value = f[varname].attrs['_FillValue'][0]
             
             # Retrieve the geolocation data.
@@ -91,8 +93,8 @@ def run(FILE_NAME):
                 llcrnrlon=-180, urcrnrlon = 180)
     
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 90., 30.))
-    m.drawmeridians(np.arange(-180, 180., 45.))
+    m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
@@ -105,9 +107,9 @@ def run(FILE_NAME):
     plt.title('{0} ({1})'.format(title, units))
     plt.show()
     
-    png = "{0}.{1}.png".format(os.path.basename(FILE_NAME)[:-4],
-                               os.path.basename(DATAFIELD_NAME))
-    fig.savefig(png)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    fig.savefig(pngfile)
 
 if __name__ == "__main__":
 

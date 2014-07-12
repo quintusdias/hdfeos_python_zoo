@@ -51,8 +51,8 @@ def run(FILE_NAME):
                 llcrnrlon=-90, urcrnrlon = 270)
     
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 90., 30.))
-    m.drawmeridians(np.arange(-180., 181., 45.))
+    m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1])
     
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
@@ -63,8 +63,8 @@ def run(FILE_NAME):
     plt.title('{0}'.format(DATAFIELD_NAME))
     plt.show()
     
-    pngfile = "{0}.{1}.png".format(os.path.basename(FILE_NAME[:-4]),
-                                   DATAFIELD_NAME)
+    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
+    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
