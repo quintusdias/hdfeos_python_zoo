@@ -51,7 +51,24 @@ and 3 does not seem to adequately support HDF5 strings.  You should use pip to
 install the latest version (1.1.10 or more recent), as well as installing
 basemap via pip.  
 
-The RPM for the GDAL library includes support for HDF-EOS2.
+The RPM for the GDAL library includes support for HDF-EOS2.  The gdal-python RPM
+therefore comes ready for use with Python2.  However, there's currently no 
+gdal-python3 RPM.  Follow these instructions for Python3
+
+1.  Install all the build dependencies for gdal, then remove gdal::
+
+    $ sudo yum-builddep gdal
+    $ sudo yum remove gdal gdal-devel gdal-libs
+
+2.  Install the latest version of gdal::
+
+    $ configure --prefix=/usr/local --with-python
+    $ make; sudo make install
+
+3.  Download and install gdal-python from PyPi and install with
+
+    $ python3 setup.py install --user
+    
 
 Ubuntu 13.10
 ============
