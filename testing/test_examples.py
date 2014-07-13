@@ -123,7 +123,7 @@ class TestGesdiscGosat(unittest.TestCase):
         """
         hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
         module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
-        module.USE_NETCDF = False
+        module.USE_NETCDF4 = False
         module.run(fullpath(hdffile))
 
     def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_nc4(self):
@@ -132,7 +132,7 @@ class TestGesdiscGosat(unittest.TestCase):
         """
         hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
         module = zoo.gesdisc.gosat.acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB
-        module.USE_NETCDF = True
+        module.USE_NETCDF4 = True
         module.run(fullpath(hdffile))
 
 
@@ -533,4 +533,10 @@ class TestNSIDC(unittest.TestCase):
         """
         hdffile = fullpath('MOD29.A2013196.1250.005.2013196195940.hdf')
         zoo.nsidc.modis.MOD29_A2013196_1250_005_2013196195940_hdf.run(hdffile)
+
+    def test_MOD10A1_Snow_Cover_Daily_Tile(self):
+        """
+        """
+        hdffile = 'MOD10A1.A2000065.h00v08.005.2008237034422.hdf'
+        zoo.nsidc.modis.MOD10A1_Snow_Cover_Daily_Tile.run(fullpath(hdffile))
 

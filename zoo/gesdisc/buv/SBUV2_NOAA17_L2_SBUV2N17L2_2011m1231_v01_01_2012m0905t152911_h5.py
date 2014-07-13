@@ -92,6 +92,10 @@ def run(FILE_NAME):
     data[data == data_fillvalue] = np.nan
     data = np.ma.masked_array(data, np.isnan(data))
 
+    # The latitude is not monotonic.  It must be sorted before CONTOURF can be
+    # used.
+    idx = np.argsort(lat)
+
     # The time is stored as seconds since 1993-01-01
     # a string.
     start_time = datetime.datetime(1993,1,1) + datetime.timedelta(seconds=time[0])
@@ -99,7 +103,7 @@ def run(FILE_NAME):
 
     # Apply log scale along the y-axis to get a better image.
     lev = np.log10(lev)
-    plt.contourf(lat, lev, data.T, levels=np.arange(0,60,5))
+    plt.contourf(lat[idx], lev, data[idx,:].T, levels=np.arange(0,60,5))
     plt.colorbar()
 
     plt.xlabel('{0} ({1})'.format(lat_longname, lat_units))
