@@ -43,13 +43,12 @@ def run(FILE_NAME):
 
     data = gdset.ReadAsArray()
 
-    meta = gdset.GetMetadata()
+    # Construct the grid.
     x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
     nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
     x = np.linspace(x0, x0 + xinc*nx, nx)
     y = np.linspace(y0, y0 + yinc*ny, ny)
     lon, lat = np.meshgrid(x, y)
-
 
     del gdset
 
@@ -60,20 +59,37 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
 
-    # Use a discretized colormap since we have only four levels.
-    # fill, ocean, no snow, missing
-    #cmap = mpl.colors.ListedColormap(['black','blue', 'green', 'grey'])
-    #bounds = [0, 25, 39, 255, 256]
-    #norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    # Bin the data as follows:
+    # 0% snow
+    # 1-99% snow
+    # 100% snow
+    # lake ice (107)
+    # night (111)
+    # cloud-obscured water (250)
+    # water mask (254)
+    # fill (255)
+    lst = ['#00ff00', 
+           '#888888',
+           '#ffffff',
+           '#ffafff',
+           '#000000',
+           '#63c6ff',
+           '#0000cc',
+           '#8928dd']
+    cmap = mpl.colors.ListedColormap(lst)
+    bounds = [0, 1, 100, 107, 111, 250, 254, 255, 256]
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     
     # Render the image in the projected coordinate system.
-    #m.pcolormesh(lon, lat, data, latlon=True, cmap=cmap, norm=norm)
-    m.pcolormesh(lon, lat, data)
+    m.pcolormesh(lon[::2,::2], lat[::2,::2], data[::2,::2],
+                 latlon=True, cmap=cmap, norm=norm)
     
     color_bar = plt.colorbar()
-    #color_bar.set_ticks([12, 32, 147, 255.5])
-    #color_bar.set_ticklabels(['fill', 'ocean', 'no snow', 'missing'])
-    #color_bar.draw_all()
+    color_bar.set_ticks([0.5, 50, 103, 109, 180, 252, 254.5, 255.5])
+    color_bar.set_ticklabels(['0% snow', '1-99% snow', '100% snow', 'lake ice',
+                              'night', 'cloud-obscured water', 'water mask',
+                              'fill'])
+    color_bar.draw_all()
     fig = plt.gcf()
     
     plt.title('Day CMG Snow Cover')
