@@ -2,3 +2,8 @@ from . import MOD10_L2_SnowCover_P
 from . import MOD29_A2013196_1250_005_2013196195940_hdf
 from . import MOD10A1_Snow_Cover_Daily_Tile
 from . import MOD10C1_Day_CMG_Snow_Cover
+from . import MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_NP
+from . import MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_SP
+from . import MYD29P1D_A2011080_h07v28_005_2011081223614_Sea_Ice_by_Refl
+from . import MYD29P1D_A2010133_h09v07_005_2010135182659_1km_Sea_Ice_by_Refl
+from . import MYD29P1D_A2010133_h11v05_005_2010135032246_1km_Sea_Ice_by_Refl

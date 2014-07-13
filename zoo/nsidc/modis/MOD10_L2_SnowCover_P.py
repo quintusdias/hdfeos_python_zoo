@@ -38,7 +38,7 @@ def run(FILE_NAME):
     # Subset the data to match the size of the swath geolocation fields.
     rows = slice(5, 4060, 10)
     cols = slice(5, 2708, 10)
-    data = dset.variables['Snow_Cover'][rows, cols].astype(np.float64)
+    data = dset.variables['Snow_Cover'][rows, cols]
     latitude = dset.variables['Latitude'][:]
     longitude = dset.variables['Longitude'][:]
     
