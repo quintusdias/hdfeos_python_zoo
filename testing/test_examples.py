@@ -42,7 +42,7 @@ class TestGesdiscAirs(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_airs_l2_radiances_channel567(self):
         """
@@ -73,7 +73,7 @@ class TestGesdiscBuv(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5_h5py(self):
         """
@@ -115,7 +115,7 @@ class TestGesdiscGosat(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_h5(self):
         """
@@ -144,7 +144,7 @@ class TestGesdiscGsstf(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_GSSTF_3_2008_12_31_h5py(self):
         """
@@ -208,7 +208,7 @@ class TestGesdiscHirdls(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077_h5py(self):
         """
@@ -254,7 +254,7 @@ class TestGesdiscMerra(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_MERRA_PLE_TIME1_Height72(self):
         """
@@ -276,7 +276,7 @@ class TestGesdiscMls(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_MLS_L2GP_v01_L2gpValue_h5py(self):
         """
@@ -322,7 +322,7 @@ class TestGesdiscOmi(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_omi_omcldo2g_h5py(self):
         """
@@ -387,7 +387,7 @@ class TestGesdiscSWDB(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z_h5(self):
         """
@@ -433,7 +433,7 @@ class TestGesdiscTOMS(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_TOMS_L3_Ozone(self):
         """
@@ -449,7 +449,7 @@ class TestGesdiscTRMM(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_TRMM_1B21_binDIDHmean(self):
         """
@@ -520,7 +520,7 @@ class TestNsidcModisGrids(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_MOD10A1_Snow_Cover_Daily_Tile(self):
         """
@@ -567,13 +567,7 @@ class TestNsidcModisSwaths(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
-
-    def tearDown(self):
-        """
-        Clear any open figure windows.
-        """
-        plt.clf()
+        plt.close()
 
     def test_MOD10_L2_SnowCover_P(self):
         """
