@@ -512,7 +512,7 @@ class TestGesdiscTRMM(unittest.TestCase):
         zoo.gesdisc.trmm.TRMM_3A46_ssmiData.run(fullpath(hdffile))
 
 
-class TestNSIDC(unittest.TestCase):
+class TestNsidcModisGrids(unittest.TestCase):
     """
     Run NSIDC codes.
     """
@@ -521,18 +521,6 @@ class TestNSIDC(unittest.TestCase):
         Clear any open figure windows.
         """
         plt.clf()
-
-    def test_modis_snowcover(self):
-        """
-        """
-        filename = fullpath('MOD10_L2.A2000065.0040.005.2008235221207.hdf')
-        zoo.nsidc.modis.MOD10_L2_SnowCover_P.run(filename)
-
-    def test_modis_ice_surface_temperature(self):
-        """
-        """
-        hdffile = fullpath('MOD29.A2013196.1250.005.2013196195940.hdf')
-        zoo.nsidc.modis.MOD29_A2013196_1250_005_2013196195940_hdf.run(hdffile)
 
     def test_MOD10A1_Snow_Cover_Daily_Tile(self):
         """
@@ -545,4 +533,57 @@ class TestNSIDC(unittest.TestCase):
         """
         hdffile = 'MOD10C1.A2005018.005.2007349093349.hdf'
         zoo.nsidc.modis.MOD10C1_Day_CMG_Snow_Cover.run(fullpath(hdffile))
+
+    def test_MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_NP(self):
+        """
+        """
+        hdffile = 'MOD29E1D.A2000055.005.2006268025009.hdf'
+        zoo.nsidc.modis.MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_NP.run(fullpath(hdffile))
+
+    def test_MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_SP(self):
+        """
+        """
+        hdffile = 'MOD29E1D.A2009340.005.2009341094922.hdf'
+        zoo.nsidc.modis.MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_SP.run(fullpath(hdffile))
+
+    def test_MYD29P1D_A2010133_h09v07_005_2010135182659_1km_Sea_Ice_by_Refl(self):
+        """
+        """
+        hdffile = 'MYD29P1D.A2010133.h09v07.005.2010135182659.hdf'
+        zoo.nsidc.modis.MYD29P1D_A2010133_h09v07_005_2010135182659_1km_Sea_Ice_by_Refl.run(fullpath(hdffile))
+
+    def test_MYD29P1D_A2010133_h11v05_005_2010135032246_1km_Sea_Ice_by_Refl(self):
+        """
+        """
+        hdffile = 'MYD29P1D.A2010133.h11v05.005.2010135032246.hdf'
+        zoo.nsidc.modis.MYD29P1D_A2010133_h11v05_005_2010135032246_1km_Sea_Ice_by_Refl.run(fullpath(hdffile))
+
+
+class TestNsidcModisSwaths(unittest.TestCase):
+    """
+    Run NSIDC codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.clf()
+
+    def test_MOD10_L2_SnowCover_P(self):
+        """
+        """
+        filename = fullpath('MOD10_L2.A2000065.0040.005.2008235221207.hdf')
+        zoo.nsidc.modis.MOD10_L2_SnowCover_P.run(filename)
+
+    def test_MOD29_A2013196_1250_005_2013196195940_hdf(self):
+        """
+        """
+        hdffile = fullpath('MOD29.A2013196.1250.005.2013196195940.hdf')
+        zoo.nsidc.modis.MOD29_A2013196_1250_005_2013196195940_hdf.run(hdffile)
 

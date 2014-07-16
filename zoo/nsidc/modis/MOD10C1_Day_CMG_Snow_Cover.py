@@ -23,7 +23,7 @@ code to work.  Please see the README for details.
 import os
 import re
 
-import gdal, osr
+import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
@@ -40,17 +40,14 @@ def run(FILE_NAME):
                                                      GRID_NAME,
                                                      DATAFIELD_NAME)
     gdset = gdal.Open(gname)
-
     data = gdset.ReadAsArray()
 
-    # Construct the grid.
+    # Construct the grid.  It's already in lat/lon.
     x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
     nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
     x = np.linspace(x0, x0 + xinc*nx, nx)
     y = np.linspace(y0, y0 + yinc*ny, ny)
     lon, lat = np.meshgrid(x, y)
-
-    del gdset
 
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
@@ -98,6 +95,8 @@ def run(FILE_NAME):
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
+
+    del gdset
 
 
 if __name__ == "__main__":
