@@ -11,7 +11,7 @@ In cases where the datafile is HDF-EOS5, HDF4 support is not needed.  The
 netCDF4 package can usually read these files, but code is also provided for
 reading the file with h5py.
 
-GDAL is used to read some HDF-EOS2 grid files.
+GDAL is used to read some HDF-EOS grid files (both version 2 and 5).
 
 Fedora 20
 =========
@@ -106,11 +106,13 @@ Download netcdf4-1.1.0 from Pypi, configure and install with::
 Anaconda
 ========
 Anaconda is ideal for the Windows platform although the netcdf4 library was not 
-compiled with hdf4 support. It will work with HDF5 examples only. 
+compiled with hdf4 support.  The H5PY package that is installed by default will read
+HDF5 swath files, and the gdal package (not installed by default) will read both
+HDF4 and HDF5 grid files.  The HDF4 swath files cannot currently be read.
 
     $ conda install basemap
     $ conda install netcdf4
-
+    $ conda install gdal
 
 Mac
 ===

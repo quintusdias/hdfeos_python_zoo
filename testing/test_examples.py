@@ -595,3 +595,25 @@ class TestNsidcModisSwaths(unittest.TestCase):
         hdffile = fullpath('MOD29.A2013196.1250.005.2013196195940.hdf')
         zoo.nsidc.modis.MOD29_A2013196_1250_005_2013196195940_hdf.run(hdffile)
 
+class TestNsidcNiseGrids(unittest.TestCase):
+    """
+    Run NSIDC codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_NISE_SSMISF17_20110424_Extent_NH(self):
+        """
+        """
+        filename = fullpath('NISE_SSMISF17_20110424.HDFEOS')
+        zoo.nsidc.nise.NISE_SSMISF17_20110424_Extent_NH.run(filename)
+
+    def test_NISE_SSMISF17_20110424_Extent_SH(self):
+        """
+        """
+        filename = fullpath('NISE_SSMISF17_20110424.HDFEOS')
+        zoo.nsidc.nise.NISE_SSMISF17_20110424_Extent_SH.run(filename)
+
