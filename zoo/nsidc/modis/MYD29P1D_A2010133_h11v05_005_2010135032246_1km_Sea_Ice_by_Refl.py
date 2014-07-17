@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MYD29P1D.A2010133.h11v05.005.2010135032246.py
+    python MYD29P1D_A2010133_h11v05_005_2010135032246_1km_Sea_Ice_by_Refl.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
