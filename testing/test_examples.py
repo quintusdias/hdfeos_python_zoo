@@ -526,6 +526,22 @@ class TestGesdiscTRMM(unittest.TestCase):
         zoo.gesdisc.trmm.TRMM_3A46_ssmiData.run(fullpath(hdffile))
 
 
+class TestLaadsViirsGrids(unittest.TestCase):
+    """
+    Run LAADS VIIRS grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_NPP_D16BRDF3_L3D_A2012241_h20v03_C1_03001_2012258151353(self):
+        """
+        """
+        hdffile = 'NPP_D16BRDF3_L3D.A2012241.h20v03.C1_03001.2012258151353.hdf'
+        zoo.laads.viirs.NPP_D16BRDF3_L3D_A2012241_h20v03_C1_03001_2012258151353.run(fullpath(hdffile))
+
 class TestNsidcModisGrids(unittest.TestCase):
     """
     Run NSIDC codes.
