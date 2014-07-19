@@ -21,7 +21,8 @@ class TestDocstrings(unittest.TestCase):
     """
     Verify information in the docstrings of the examples.
     """
-    def test_docstring(self):
+
+    def test_docstring_contact_info(self):
         """
         Verify that the docstring in each example has the EOS contact info.
         """
@@ -33,6 +34,19 @@ class TestDocstrings(unittest.TestCase):
                     contact_info = fixtures.contact_info.replace('\n', ' ')
                     self.assertTrue(contact_info in docstring, msg)
 
+    def test_docstring_run_instructions(self):
+        """
+        Verify instructions to run each script.
+        """
+        for center_name, center_module in inspect.getmembers(zoo, inspect.ismodule):
+            for inst_name, inst_module in inspect.getmembers(center_module, inspect.ismodule):
+                for example_name, example_module in inspect.getmembers(inst_module, inspect.ismodule):
+                    msg = "Failed to verify docstring in {0}".format(example_name)
+                    docstring = example_module.__doc__.replace('\n', ' ')
+                    run_info = fixtures.run_info.replace('\n', ' ')
+                    run_info = run_info.format(example_name)
+                    self.assertTrue(run_info in docstring, msg)
+
 
 class TestGesdiscAirs(unittest.TestCase):
     """
@@ -42,7 +56,7 @@ class TestGesdiscAirs(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_airs_l2_radiances_channel567(self):
         """
@@ -73,7 +87,7 @@ class TestGesdiscBuv(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_BUV_Nimbus04_L3zm_v01_00_2012m0203t144121_h5_h5py(self):
         """
@@ -115,7 +129,7 @@ class TestGesdiscGosat(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_gosat_acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_h5(self):
         """
@@ -144,7 +158,7 @@ class TestGesdiscGsstf(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_GSSTF_3_2008_12_31_h5py(self):
         """
@@ -208,7 +222,7 @@ class TestGesdiscHirdls(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_HIRDLS_Aura_L3ZAD_v06_00_00_c02_2005d022_2008d077_h5py(self):
         """
@@ -254,7 +268,7 @@ class TestGesdiscMerra(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_MERRA_PLE_TIME1_Height72(self):
         """
@@ -276,7 +290,7 @@ class TestGesdiscMls(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_MLS_L2GP_v01_L2gpValue_h5py(self):
         """
@@ -322,7 +336,7 @@ class TestGesdiscOmi(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_omi_omcldo2g_h5py(self):
         """
@@ -387,7 +401,7 @@ class TestGesdiscSWDB(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_DeepBlue_SeaWiFS_L2_20101211T000331Z_v002_20110527T105357Z_h5(self):
         """
@@ -433,7 +447,7 @@ class TestGesdiscTOMS(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_TOMS_L3_Ozone(self):
         """
@@ -449,7 +463,7 @@ class TestGesdiscTRMM(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
     def test_TRMM_1B21_binDIDHmean(self):
         """
@@ -512,7 +526,23 @@ class TestGesdiscTRMM(unittest.TestCase):
         zoo.gesdisc.trmm.TRMM_3A46_ssmiData.run(fullpath(hdffile))
 
 
-class TestNSIDC(unittest.TestCase):
+class TestLaadsViirsGrids(unittest.TestCase):
+    """
+    Run LAADS VIIRS grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_NPP_D16BRDF3_L3D_A2012241_h20v03_C1_03001_2012258151353(self):
+        """
+        """
+        hdffile = 'NPP_D16BRDF3_L3D.A2012241.h20v03.C1_03001.2012258151353.hdf'
+        zoo.laads.viirs.NPP_D16BRDF3_L3D_A2012241_h20v03_C1_03001_2012258151353.run(fullpath(hdffile))
+
+class TestNsidcModisGrids(unittest.TestCase):
     """
     Run NSIDC codes.
     """
@@ -520,17 +550,86 @@ class TestNSIDC(unittest.TestCase):
         """
         Clear any open figure windows.
         """
-        plt.clf()
+        plt.close()
 
-    def test_modis_snowcover(self):
+    def test_MOD10A1_Snow_Cover_Daily_Tile(self):
+        """
+        """
+        hdffile = 'MOD10A1.A2000065.h00v08.005.2008237034422.hdf'
+        zoo.nsidc.modis.MOD10A1_Snow_Cover_Daily_Tile.run(fullpath(hdffile))
+
+    def test_MOD10C1_Day_CMG_Snow_Cover(self):
+        """
+        """
+        hdffile = 'MOD10C1.A2005018.005.2007349093349.hdf'
+        zoo.nsidc.modis.MOD10C1_Day_CMG_Snow_Cover.run(fullpath(hdffile))
+
+    def test_MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_NP(self):
+        """
+        """
+        hdffile = 'MOD29E1D.A2000055.005.2006268025009.hdf'
+        zoo.nsidc.modis.MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_NP.run(fullpath(hdffile))
+
+    def test_MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_SP(self):
+        """
+        """
+        hdffile = 'MOD29E1D.A2009340.005.2009341094922.hdf'
+        zoo.nsidc.modis.MOD29E1D_A2009340_005_2009341094922_SeaIce_Refl_SP.run(fullpath(hdffile))
+
+    def test_MYD29P1D_A2010133_h09v07_005_2010135182659_1km_Sea_Ice_by_Refl(self):
+        """
+        """
+        hdffile = 'MYD29P1D.A2010133.h09v07.005.2010135182659.hdf'
+        zoo.nsidc.modis.MYD29P1D_A2010133_h09v07_005_2010135182659_1km_Sea_Ice_by_Refl.run(fullpath(hdffile))
+
+    def test_MYD29P1D_A2010133_h11v05_005_2010135032246_1km_Sea_Ice_by_Refl(self):
+        """
+        """
+        hdffile = 'MYD29P1D.A2010133.h11v05.005.2010135032246.hdf'
+        zoo.nsidc.modis.MYD29P1D_A2010133_h11v05_005_2010135032246_1km_Sea_Ice_by_Refl.run(fullpath(hdffile))
+
+
+class TestNsidcModisSwaths(unittest.TestCase):
+    """
+    Run NSIDC codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MOD10_L2_SnowCover_P(self):
         """
         """
         filename = fullpath('MOD10_L2.A2000065.0040.005.2008235221207.hdf')
         zoo.nsidc.modis.MOD10_L2_SnowCover_P.run(filename)
 
-    def test_modis_ice_surface_temperature(self):
+    def test_MOD29_A2013196_1250_005_2013196195940_hdf(self):
         """
         """
         hdffile = fullpath('MOD29.A2013196.1250.005.2013196195940.hdf')
         zoo.nsidc.modis.MOD29_A2013196_1250_005_2013196195940_hdf.run(hdffile)
+
+class TestNsidcNiseGrids(unittest.TestCase):
+    """
+    Run NSIDC codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_NISE_SSMISF17_20110424_Extent_NH(self):
+        """
+        """
+        filename = fullpath('NISE_SSMISF17_20110424.HDFEOS')
+        zoo.nsidc.nise.NISE_SSMISF17_20110424_Extent_NH.run(filename)
+
+    def test_NISE_SSMISF17_20110424_Extent_SH(self):
+        """
+        """
+        filename = fullpath('NISE_SSMISF17_20110424.HDFEOS')
+        zoo.nsidc.nise.NISE_SSMISF17_20110424_Extent_SH.run(filename)
 
