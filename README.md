@@ -105,14 +105,35 @@ Download netcdf4-1.1.0 from Pypi, configure and install with::
 
 Anaconda
 ========
+
+Linux
+-----
+The following steps worked with Anaconda 2.0.1 on Mageia release 4.1.
+
+1.  Install gcc, gcc-g++, byacc, flex, make via Mageia control center.
+2.  Download and install the free version of anaconda
+3.  Install the following packages::
+
+    conda install patchelf conda-build
+    conda install ipython basemap gdal
+    conda build hdf4
+    conda install hdf4 --use-local
+    conda build libnetcdf
+    conda install libnetcdf --use-local
+    conda build netcdf4 
+    conda install netcdf4 --use-local
+    conda create --use-local -n my-libnetcdf-env libnetcdf netcdf4 matplotlib basemap h5py gdal
+    source activate my-libnetcdf-env
+
+4.  Had to deal with issue#32 as described at
+    https://github.com/ContinuumIO/anaconda-issues/issues/32.  
+
+Windows
+-------
 Anaconda is ideal for the Windows platform although the netcdf4 library was not 
 compiled with hdf4 support.  The H5PY package that is installed by default will read
 HDF5 swath files, and the gdal package (not installed by default) will read both
 HDF4 and HDF5 grid files.  The HDF4 swath files cannot currently be read.
-
-    $ conda install basemap
-    $ conda install netcdf4
-    $ conda install gdal
 
 Mac
 ===
