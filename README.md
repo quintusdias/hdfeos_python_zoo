@@ -110,11 +110,8 @@ Linux
 -----
 The following steps worked with Anaconda 2.0.1 on Mageia release 4.1.
 
-1.  Install gcc, gcc-g++, byacc, flex, make via Mageia control center.
-2.  Download and install the free version of anaconda
-3.  Install the following packages
-
-::
+Download and install the free version of anaconda, then install the
+following packages ::
 
     $ conda install patchelf conda-build
     $ conda install basemap 
@@ -127,10 +124,10 @@ The following steps worked with Anaconda 2.0.1 on Mageia release 4.1.
     $ conda create --use-local -n my-libnetcdf-env libnetcdf netcdf4 matplotlib basemap h5py
     $ source activate my-libnetcdf-env
 
-4.  Had to deal with issue#32 as described at
-    https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or may
-    not occur on other platforms.  For instance, it did not occur on a CenOS 6.5
-    platform.
+You may have to deal with issue#32 as described at
+https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or
+may not occur on other platforms.  For instance, it did not occur on a
+CenOS 6.5 platform.
 
 Windows
 -------
