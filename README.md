@@ -112,7 +112,9 @@ The following steps worked with Anaconda 2.0.1 on Mageia release 4.1.
 
 1.  Install gcc, gcc-g++, byacc, flex, make via Mageia control center.
 2.  Download and install the free version of anaconda
-3.  Install the following packages::
+3.  Install the following packages
+
+::
 
     $ conda install patchelf conda-build
     $ conda install basemap 
