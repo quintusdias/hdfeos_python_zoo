@@ -116,10 +116,27 @@ HDF4 and HDF5 grid files.  The HDF4 swath files cannot currently be read.
 
 Mac
 ===
+
 If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
-port and the hdf4, hdf5, and netcdf variant of the gdal port::
+port.
 
     $ sudo port install netcdf +hdf4 +dap
+
+Python2
+-------
+Also with MacPorts, you should install the hdf4, hdf5, and netcdf
+variant of the gdal port along with basemap::
+
     $ sudo port install gdal +hdf4 +hdf5 +netcdf
+    $ sudo port install py27-matplotlib-basemap
 
+Python3
+-------
+Again with MacPorts, there is as of 2014-07-22 no basemap port for Python 3.4.
+The following steps will work, though.
 
+1.  If already installed, uninstall the py34-matplotlib port.
+2.  Create a virtual environment using pyvenv-3.4 (with system site 
+    packages) and activate it.
+3.  Build and install matplotlib 1.3.1 from source.
+4.  Download and install basemap 1.0.7.
