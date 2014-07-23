@@ -3,20 +3,23 @@ Instructions
 ============
 The primary method used in the examples for reading HDF-EOS2 files (HDF4 format)
 is to use the netCDF4 package.  Most of the time, however, this
-package does not come ready-out-of-the-box to read HDF4 files because
-the underlying netcdf library does not compile with hdf4 support.  The
+package does not come ready-out-of-the-box to read HDFEOS files either because
+the underlying netcdf library was not compiled with hdf4 support or because
+the underlying gdal library was not compiled with HDFEOS 2-or-5 support.  The
 directions below specify how this can be overcome in certain situations.
 
-In cases where the datafile is HDF-EOS5, HDF4 support is not needed.  The
-netCDF4 package can usually read these files, but code is also provided for
-reading the file with h5py.
+In cases where the datafile is and HDF-EOS5 swath file, HDF4 support is
+not needed.  The netCDF4 package can usually read these files, but code
+is also provided for reading the file with h5py.
 
 GDAL is used to read some HDF-EOS grid files (both version 2 and 5).
 
 Fedora 20
 =========
-The Fedora 20 netcdf RPM is built with hdf4 support, so therefore netcdf4-python
-can read HDF4 files out of the box.  This is the ideal situation, yay Fedora!
+The Fedora 20 netcdf RPM is built with hdf4 support, so therefore
+netcdf4-python can read HDF4 files out of the box, and the gdal RPM
+includes support for HDFEOS, so for python2, everything just works.
+This is the ideal situation, yay Fedora!
 
 The Fedora 20 repositories do not include a Python3 RPM for basemap, but you can
 still install basemap via pip::
