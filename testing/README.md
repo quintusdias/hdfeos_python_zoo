@@ -7,7 +7,8 @@ certain options appropriately set in your ipython configuration file
     c.InteractiveShellApp.gui = 'qt'
     c.InteractiveShellApp.pylab = 'auto'
 
-From within ipython then, type
+From the top-level directory of the repository (not the package), fire
+up ipython and type
 
     import os, unittest
     suite = unittest.defaultTestLoader.discover(os.getcwd())
