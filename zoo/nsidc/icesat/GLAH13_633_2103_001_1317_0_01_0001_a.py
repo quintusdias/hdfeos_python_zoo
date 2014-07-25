@@ -98,14 +98,10 @@ def run(FILE_NAME):
     # Use a north polar azimuthal equal area projection.
     ax2 = plt.subplot(1, 2, 2)
     m = Basemap(projection='nplaea', resolution='l',
-                boundinglat=50, lon_0=0)
+                boundinglat=52, lon_0=0)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90, 0, 15), labels=[1, 0, 0, 0])
-    m.drawmeridians(np.arange(-180, 180, 45), labels=[0, 0, 0, 1])
-
-    m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(30., 91., 10.), labels=[1, 0, 0, 0])
-    m.drawmeridians(np.arange(0, 90., 15.), labels=[0, 0, 0, 1])
+    m.drawparallels(np.arange(0., 91., 10.), labels=[0, 0, 0, 1])
+    m.drawmeridians(np.arange(-180, 180., 30.), labels=[0, 1, 0, 0])
     
     m.plot(longitude[idx], latitude[idx], linestyle='None', marker='.',
            color='blue', latlon=True)
