@@ -526,6 +526,52 @@ class TestGesdiscTRMM(unittest.TestCase):
         zoo.gesdisc.trmm.TRMM_3A46_ssmiData.run(fullpath(hdffile))
 
 
+class TestLaadsModSwaths(unittest.TestCase):
+    """
+    Run LAADS Modis swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MODARNSS_EV_1KM_Emissive_level0(self):
+        """
+        """
+        hdffile = 'MODARNSS.Abracos_Hill.A2000080.1515.005.2007164153544.hdf'
+        zoo.laads.mod.MODARNSS_EV_1KM_Emissive_level0.run(fullpath(hdffile))
+
+    def test_MODATML2_Cloud_Fraction(self):
+        """
+        """
+        hdffile = 'MODATML2.A2000055.0000.005.2006253045900.hdf'
+        zoo.laads.mod.MODATML2_Cloud_Fraction.run(fullpath(hdffile))
+
+    def test_MOD07_L2_Retrieved_Moisture_Profile_Pressure_Lvl5(self):
+        """
+        """
+        hdffile = 'MOD07_L2.A2010001.0000.005.2010004001518.hdf'
+        zoo.laads.mod.MOD07_L2_Retrieved_Moisture_Profile_Pressure_Lvl5.run(fullpath(hdffile))
+
+    def test_MOD21KM_EV_Band26(self):
+        """
+        """
+        hdffile = 'MOD021KM.A2000055.0000.005.2010041143816.hdf'
+        zoo.laads.mod.MOD21KM_EV_Band26.run(fullpath(hdffile))
+
+    def test_MOD05_L2_Water_Vapor_Near_Infrared(self):
+        """
+        """
+        hdffile = 'MOD05_L2.A2010001.0000.005.2010005211557.hdf'
+        zoo.laads.mod.MOD05_L2_Water_Vapor_Near_Infrared.run(fullpath(hdffile))
+
+    def test_MOD06_L2_Cloud_Optical_Thickness(self):
+        """
+        """
+        hdffile = 'MOD06_L2.A2010001.0000.005.2010005213214.hdf'
+        zoo.laads.mod.MOD06_L2_Cloud_Optical_Thickness.run(fullpath(hdffile))
+
 class TestLaadsViirsGrids(unittest.TestCase):
     """
     Run LAADS VIIRS grid codes.
