@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python zoo/laads/mod/MODARNSS_EV_1KM_Emissive_level0.py
+    python MODARNSS_EV_1KM_Emissive_level0.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.

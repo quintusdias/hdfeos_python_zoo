@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python zoo/laads/mod/MOD05_L2_Water_Vapor_Near_Infrared.py
+    python MOD05_L2_Water_Vapor_Near_Infrared.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
