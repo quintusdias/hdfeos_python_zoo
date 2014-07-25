@@ -554,12 +554,6 @@ class TestLaadsModSwaths(unittest.TestCase):
         hdffile = 'MOD07_L2.A2010001.0000.005.2010004001518.hdf'
         zoo.laads.mod.MOD07_L2_Retrieved_Moisture_Profile_Pressure_Lvl5.run(fullpath(hdffile))
 
-    def test_MOD21KM_EV_Band26(self):
-        """
-        """
-        hdffile = 'MOD021KM.A2000055.0000.005.2010041143816.hdf'
-        zoo.laads.mod.MOD21KM_EV_Band26.run(fullpath(hdffile))
-
     def test_MOD05_L2_Water_Vapor_Near_Infrared(self):
         """
         """
@@ -571,6 +565,28 @@ class TestLaadsModSwaths(unittest.TestCase):
         """
         hdffile = 'MOD06_L2.A2010001.0000.005.2010005213214.hdf'
         zoo.laads.mod.MOD06_L2_Cloud_Optical_Thickness.run(fullpath(hdffile))
+
+    def test_MOD21KM_EV_Band26(self):
+        """
+        """
+        hdffile = 'MOD021KM.A2000055.0000.005.2010041143816.hdf'
+        zoo.laads.mod.MOD21KM_EV_Band26.run(fullpath(hdffile))
+
+class TestLaadsModGrids(unittest.TestCase):
+    """
+    Run LAADS Modis grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MOD08_D3_Cloud_Fraction_Liquid(self):
+        """
+        """
+        hdffile = 'MOD08_D3.A2010001.005.2010006233008.hdf'
+        zoo.laads.mod.MOD08_D3_Cloud_Fraction_Liquid.run(fullpath(hdffile))
 
 class TestLaadsViirsGrids(unittest.TestCase):
     """
