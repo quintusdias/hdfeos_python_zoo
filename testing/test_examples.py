@@ -604,6 +604,7 @@ class TestLaadsViirsGrids(unittest.TestCase):
         hdffile = 'NPP_D16BRDF3_L3D.A2012241.h20v03.C1_03001.2012258151353.hdf'
         zoo.laads.viirs.NPP_D16BRDF3_L3D_A2012241_h20v03_C1_03001_2012258151353.run(fullpath(hdffile))
 
+
 class TestNsidcIcesatSwaths(unittest.TestCase):
     """
     Run NSIDC codes.
@@ -631,6 +632,23 @@ class TestNsidcIcesatSwaths(unittest.TestCase):
         module = zoo.nsidc.icesat.GLAH13_633_2103_001_1317_0_01_0001_a
         module.USE_NETCDF4 = False
         module.run(fullpath(hdffile))
+
+
+class TestLaadsViirsSwaths(unittest.TestCase):
+    """
+    Run LAADS VIIRS swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_NPP_VSTIP_L2_A2012002_2340_P1_03001_2012022162425(self):
+        """
+        """
+        hdffile = 'NPP_VSTIP_L2.A2012002.2340.P1_03001.2012022162425.hdf'
+        zoo.laads.viirs.NPP_VSTIP_L2_A2012002_2340_P1_03001_2012022162425.run(fullpath(hdffile))
 
 class TestNsidcModisGrids(unittest.TestCase):
     """
