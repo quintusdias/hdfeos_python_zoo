@@ -31,35 +31,30 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'nearSurfZ'
     
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:].astype(np.float64)
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
 
     # There's no fill value set, but 0.0 is considered the fill value.
     data[data == 0.0] = np.nan
     datam = np.ma.masked_array(data, np.isnan(data))
     
     # Retrieve the geolocation data.
-    latitude = dset.variables['geolocation'][:,:,0]
-    longitude = dset.variables['geolocation'][:,:,1]
+    latitude = nc.variables['geolocation'][:,:,0]
+    longitude = nc.variables['geolocation'][:,:,1]
     
     # Draw an equidistant cylindrical projection using the high resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='h',
                 llcrnrlat=30, urcrnrlat = 36,
                 llcrnrlon=123, urcrnrlon = 135)
-    
     m.drawcoastlines(linewidth=0.5)
-    
     m.drawparallels(np.arange(30, 37), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(123, 135, 2), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
+    m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0}'.format(DATAFIELD_NAME))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

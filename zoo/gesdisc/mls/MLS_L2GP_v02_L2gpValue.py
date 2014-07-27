@@ -35,8 +35,8 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        data_grp = dset.groups['HDFEOS'].groups['SWATHS'].groups['BrO'].groups['Data Fields']
+        nc = Dataset(FILE_NAME)
+        data_grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['BrO'].groups['Data Fields']
         data_var = data_grp.variables['L2gpValue']
 
         data = data_var[399,:]
@@ -49,7 +49,7 @@ def run(FILE_NAME):
         data[data == missing_value] = np.nan
         data = np.ma.masked_array(data, np.isnan(data))
 
-        geo_grp = dset.groups['HDFEOS'].groups['SWATHS'].groups['BrO'].groups['Geolocation Fields']
+        geo_grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['BrO'].groups['Geolocation Fields']
         pres_var = geo_grp.variables['Pressure']
         pressure = pres_var[:]
         pres_units = pres_var.Units
@@ -93,12 +93,11 @@ def run(FILE_NAME):
     # Read MLS Data Quality Document [1] for useful range in BrO data, which is
     # 3.2hPa - 10hPa
     plt.plot(pressure[12:16], data[12:16])
-
     plt.xlabel('Pressure ({0})'.format(pres_units))
     plt.ylabel('{0} ({1})'.format(title, units))
-    fig = plt.gcf()
-    
     plt.title('{0} at Time = {1}'.format(title, time1lvl))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

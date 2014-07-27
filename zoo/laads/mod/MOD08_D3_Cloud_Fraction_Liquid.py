@@ -64,14 +64,11 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-
-    # Render the image in the projected coordinate system.
     m.pcolormesh(lon[::2,::2], lat[::2,::2], data[::2,::2])
     m.colorbar()
+    plt.title(DATAFIELD_NAME.replace('_', ' '))
     
     fig = plt.gcf()
-    
-    plt.title(DATAFIELD_NAME.replace('_', ' '))
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

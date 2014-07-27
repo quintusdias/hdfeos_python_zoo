@@ -41,12 +41,12 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        data_var = dset.groups['RetrievalResults'].variables['xco2']
-        lat_var = dset.groups['SoundingGeometry'].variables['sounding_latitude_geoid']
-        lon_var = dset.groups['SoundingGeometry'].variables['sounding_longitude_geoid']
-        lev_var = dset.groups['SoundingGeometry'].variables['sounding_altitude']
-        time_var = dset.groups['SoundingHeader'].variables['sounding_time_tai93']
+        nc = Dataset(FILE_NAME)
+        data_var = nc.groups['RetrievalResults'].variables['xco2']
+        lat_var = nc.groups['SoundingGeometry'].variables['sounding_latitude_geoid']
+        lon_var = nc.groups['SoundingGeometry'].variables['sounding_longitude_geoid']
+        lev_var = nc.groups['SoundingGeometry'].variables['sounding_altitude']
+        time_var = nc.groups['SoundingHeader'].variables['sounding_time_tai93']
 
         # Read the data.
         data = data_var[:]

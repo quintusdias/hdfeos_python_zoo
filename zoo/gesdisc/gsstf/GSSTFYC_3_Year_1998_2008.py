@@ -33,9 +33,9 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        grp = dset.groups['HDFEOS'].groups['GRIDS'].groups['NCEP']
-        data_var = grp.groups['Data Fields'].variables['SST']
+        nc = Dataset(FILE_NAME)
+        grp = nc.groups['HDFEOS'].groups['GRIDS'].groups['NCEP']
+        data_var = nc.groups['Data Fields'].variables['SST']
         data = data_var[:]
 
         data_longname = data_var.LongName
@@ -80,9 +80,9 @@ def run(FILE_NAME):
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, data)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0} ({1})'.format(data_longname, data_units))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

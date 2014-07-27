@@ -88,9 +88,7 @@ def run(FILE_NAME):
     cmap = mpl.colors.ListedColormap(lst)
     bounds = [0, 1, 11, 25, 37, 39, 50, 200, 253, 254, 255, 256]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-    
     m.pcolormesh(lon, lat, data, latlon=True, cmap=cmap, norm=norm)
-    
     color_bar = plt.colorbar()
     color_bar.set_ticks([0.5, 5.5, 18, 31, 38, 44.5, 125, 226.5, 253.5, 254.5, 255.5])
     color_bar.set_ticklabels(['missing', 'no decision', 'night', 'land',
@@ -98,9 +96,9 @@ def run(FILE_NAME):
                               'no input tile expected', 'non-production mask',
                               'fill'])
     color_bar.draw_all()
-    fig = plt.gcf()
-    
     plt.title(DATAFIELD_NAME.replace('_', ' '))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

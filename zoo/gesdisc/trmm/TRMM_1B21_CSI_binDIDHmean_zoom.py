@@ -32,30 +32,26 @@ def run(FILE_NAME):
     # Identify the HDF-EOS2 swath data file.
     DATAFIELD_NAME = 'binDIDHmean'
     
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:].astype(np.float64)
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
     
     # Retrieve the geolocation data.
-    latitude = dset.variables['geolocation'][:,:,0]
-    longitude = dset.variables['geolocation'][:,:,1]
+    latitude = nc.variables['geolocation'][:,:,0]
+    longitude = nc.variables['geolocation'][:,:,1]
     
     # Draw an equidistant cylindrical projection using the high resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='h',
                 llcrnrlat=31, urcrnrlat = 36,
                 llcrnrlon=122, urcrnrlon = 133)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(31, 37), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(122, 133, 2), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0}'.format(DATAFIELD_NAME))
+    
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

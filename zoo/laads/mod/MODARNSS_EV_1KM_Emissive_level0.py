@@ -31,8 +31,8 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'EV_1KM_Emissive'
     
-    dset = Dataset(FILE_NAME)
-    var = dset.variables[DATAFIELD_NAME]
+    nc = Dataset(FILE_NAME)
+    var = nc.variables[DATAFIELD_NAME]
 
     # Have to be very careful of the scaling equation here.
     # We'll turn autoscaling off in order to correctly scale the data.
@@ -44,19 +44,18 @@ def run(FILE_NAME):
     datam = np.ma.masked_array(data, np.isnan(data))
     
     # Retrieve the geolocation data.
-    longitude = dset.variables['Longitude'][:]
-    latitude = dset.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
+    latitude = nc.variables['Latitude'][:]
     
     # Render the plot in a cylindrical projection.
     m = Basemap(projection='cyl', resolution='l', 
                 llcrnrlat=-12, urcrnrlat = -9,
                 llcrnrlon=-64, urcrnrlon = -61)
-
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-12., -8., 1.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-64, -60., 1), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
-    cb = m.colorbar()
+    m.colorbar()
     titlestr = '{0}'.format(var.long_name)
     plt.title(titlestr)
 

@@ -33,11 +33,11 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        data_var = dset.groups['SCIENCE_DATA'].variables['ProfileO3Retrieved']
-        lat_var = dset.groups['GEOLOCATION_DATA'].variables['Latitude']
-        lev_var = dset.groups['ANCILLARY_DATA'].variables['PressureLevels']
-        time_var = dset.variables['nTimes']
+        nc = Dataset(FILE_NAME)
+        data_var = nc.groups['SCIENCE_DATA'].variables['ProfileO3Retrieved']
+        lat_var = nc.groups['GEOLOCATION_DATA'].variables['Latitude']
+        lev_var = nc.groups['ANCILLARY_DATA'].variables['PressureLevels']
+        time_var = nc.variables['nTimes']
 
         # Read the data.
         data = data_var[:]
@@ -86,7 +86,7 @@ def run(FILE_NAME):
             lat_longname = dset_lat.attrs['long_name'].decode()
             lev_longname = dset_lev.attrs['long_name'].decode()
 
-    # Apply the valid range.
+    # Apply the attribute information and transform into a masked array.
     data[data < data_vmin] = np.nan
     data[data > data_vmax] = np.nan
     data[data == data_fillvalue] = np.nan
@@ -108,12 +108,13 @@ def run(FILE_NAME):
 
     plt.xlabel('{0} ({1})'.format(lat_longname, lat_units))
     plt.ylabel('{0} ({1})\nin log10 scale'.format(lev_longname, lev_units))
-    fig = plt.gcf()
     
     plt.title('{0} ({1})\n{2} - {3}'.format(data_longname,
                                            data_units,
                                            start_time,
                                            end_time))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
