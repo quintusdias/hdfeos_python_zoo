@@ -33,8 +33,8 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        grp = dset.groups['HDFEOS'].groups['SWATHS'].groups['HIRDLS']
+        nc = Dataset(FILE_NAME)
+        grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['HIRDLS']
         data_var = grp.groups['Data Fields'].variables['O3']
         pres_var = grp.groups['Geolocation Fields'].variables['Pressure']
         time_var = grp.groups['Geolocation Fields'].variables['Time']
@@ -94,10 +94,10 @@ def run(FILE_NAME):
 
     plt.xlabel('{0} ({1})'.format(data_title, data_units))
     plt.ylabel('{0} ({1})\nin log10 scale'.format(pres_title, pres_units))
-    fig = plt.gcf()
-    
     plt.title('{0}\nDate:  {1}'.format(data_title,
         datestr.strftime('%Y-%m-%d %H:%M:%S')))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

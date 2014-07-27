@@ -77,13 +77,11 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(45, 61, 5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(25, 56, 10), labels=[0, 0, 0, 1])
-
     m.pcolormesh(lon, lat, data, latlon=True)
     m.colorbar()
+    plt.title(DATAFIELD_NAME.replace('_', ' '))
     
     fig = plt.gcf()
-    
-    plt.title(DATAFIELD_NAME.replace('_', ' '))
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

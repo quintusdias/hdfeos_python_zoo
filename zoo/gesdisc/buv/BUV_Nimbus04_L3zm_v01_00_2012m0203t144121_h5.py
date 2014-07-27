@@ -33,8 +33,8 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        grp = dset.groups['Data_Fields']
+        nc = Dataset(FILE_NAME)
+        grp = nc.groups['Data_Fields']
         data_var = grp.variables['ProfileOzone']
         lat_var = grp.variables['Latitude']
         lev_var = grp.variables['ProfilePressureLevels']
@@ -97,11 +97,12 @@ def run(FILE_NAME):
 
     plt.xlabel('{0} ({1})'.format(lat_longname, lat_units))
     plt.ylabel('{0} ({1})\nin log10 scale'.format(lev_longname, lev_units))
-    fig = plt.gcf()
     
     plt.title('{0} ({1})\nDate:  {2}'.format(data_longname,
                                              data_units,
                                              datestr.strftime('%Y-%m')))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

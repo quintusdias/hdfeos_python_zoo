@@ -31,8 +31,8 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'Water_Vapor_Near_Infrared'
     
-    dset = Dataset(FILE_NAME)
-    var = dset.variables[DATAFIELD_NAME]
+    nc = Dataset(FILE_NAME)
+    var = nc.variables[DATAFIELD_NAME]
 
     # The scaling equation to be used here is not 
     #
@@ -48,8 +48,8 @@ def run(FILE_NAME):
     datam = np.ma.masked_array(data, np.isnan(data))
     
     # Retrieve the geolocation data.
-    longitude = dset.variables['Longitude'][:]
-    latitude = dset.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
+    latitude = nc.variables['Latitude'][:]
     
     # Render the plot in a south plar stereographic projection.
     m = Basemap(projection='spstere', resolution='l',
@@ -57,9 +57,8 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 50., 10.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
-    cb = m.colorbar()
+    m.pcolormesh(latitude, longitude, datam, latlon=True)
+    m.colorbar()
     plt.title(var.long_name)
 
     fig = plt.gcf()

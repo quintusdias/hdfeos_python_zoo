@@ -93,7 +93,6 @@ def run(FILE_NAME):
     ax1.set_ylabel(units)
     ax1.set_title(longname)
 
-
     # The 2nd plot is the trajectory.
     # Use a north polar azimuthal equal area projection.
     ax2 = plt.subplot(1, 2, 2)
@@ -102,14 +101,12 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(0., 91., 10.), labels=[0, 0, 0, 1])
     m.drawmeridians(np.arange(-180, 180., 30.), labels=[0, 1, 0, 0])
-    
     m.plot(longitude[idx], latitude[idx], linestyle='None', marker='.',
            color='blue', latlon=True)
-    fig = plt.gcf()
-    
     plt.title('Trajectory of Flight Path')
+
+    fig = plt.gcf()
     plt.show()
-    plt.draw()
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, 'ColumnAmountO3')

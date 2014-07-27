@@ -31,12 +31,12 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'binDIDHmean'
     
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:].astype(np.float64)
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
     
     # Retrieve the geolocation data.
-    latitude = dset.variables['Latitude'][:]
-    longitude = dset.variables['Longitude'][:]
+    latitude = nc.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
     
     # The swath crosses the international dateline between row 6000 and 7000.
     # This causes the mesh to smear, so we'll adjust the longitude (modulus
@@ -49,18 +49,14 @@ def run(FILE_NAME):
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-60, urcrnrlon = 300)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0}'.format(DATAFIELD_NAME))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

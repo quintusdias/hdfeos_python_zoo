@@ -34,15 +34,15 @@ def run(FILE_NAME):
         from netCDF4 import Dataset
     
         DATAFIELD_NAME = 'ColumnAmountO3'
-        dset = Dataset(FILE_NAME)
-        grp = dset.groups['HDFEOS'].groups['GRIDS'].groups['OMI Column Amount O3']
+        nc = Dataset(FILE_NAME)
+        grp = nc.groups['HDFEOS'].groups['GRIDS'].groups['OMI Column Amount O3']
         var = grp.groups['Data Fields'].variables[DATAFIELD_NAME]
         data = var[:]
     
         # Get attributes needed for the plot.
         title = var.Title
         units = var.Units
-        dset.close()
+        nc.close()
     
     else:
     
@@ -75,20 +75,15 @@ def run(FILE_NAME):
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0} ({1})'.format(title, units))
+
+    fig = plt.gcf()
     plt.show()
-    plt.draw()
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, 'ColumnAmountO3')

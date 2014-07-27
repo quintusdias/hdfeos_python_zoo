@@ -38,8 +38,8 @@ def run(FILE_NAME):
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance_NP'
     
     # Use netcdf to read the data itself.
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:]
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][:]
 
     # Only use gdal to get the projection information.
     gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
@@ -95,7 +95,6 @@ def run(FILE_NAME):
     cols = slice(500, 4000, 5)
     m.pcolormesh(lon[rows,cols], lat[rows,cols], data[rows,cols],
                  latlon=True, cmap=cmap, norm=norm)
-    
     color_bar = plt.colorbar()
     color_bar.set_ticks([0.5, 5.5, 18, 31, 38, 44.5, 125, 226.5, 253.5, 254.5])
     color_bar.set_ticklabels(['missing', 'no decision', 'night', 'land',
@@ -103,9 +102,9 @@ def run(FILE_NAME):
                               'no input tile\nexpected',
                               'non-production\nmask'])
     color_bar.draw_all()
-    fig = plt.gcf()
-    
     plt.title(DATAFIELD_NAME.replace('_',' '))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

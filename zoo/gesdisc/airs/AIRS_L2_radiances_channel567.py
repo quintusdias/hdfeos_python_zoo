@@ -33,15 +33,15 @@ def run(FILE_NAME):
     # Identify the HDF-EOS2 swath data file.
     DATAFIELD_NAME = 'radiances'
     
-    dset = Dataset(FILE_NAME)
-    data = dset.variables['radiances'][:,:,567].astype(np.float64)
+    nc = Dataset(FILE_NAME)
+    data = nc.variables['radiances'][:,:,567]
     
     # Replace the filled value with NaN, replace with a masked array.
     data[data == -9999] = np.nan
     datam = np.ma.masked_array(data, np.isnan(data))
     
-    latitude = dset.variables['Latitude'][:]
-    longitude = dset.variables['Longitude'][:]
+    latitude = nc.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
     
     # Draw a polar stereographic projection using the low resolution coastline
     # database.
@@ -50,18 +50,16 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-80., -50., 5.))
     m.drawmeridians(np.arange(-180., 181., 20.), labels=[1, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, datam)
     m.colorbar()
-    fig = plt.gcf()
     
     # See page 101 of "AIRS Version 5.0 Released Files Description" document [1]
     # for unit specification.
     units = 'mW/m**2/cm**-1/sr'
-
     plt.title('{0} ({1}) at channel 567'.format(DATAFIELD_NAME, units))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

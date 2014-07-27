@@ -33,14 +33,14 @@ def run(FILE_NAME):
     # Identify the HDF-EOS2 grid data file.
     DATAFIELD_NAME = 'RelHumid_A'
     
-    dset = Dataset(FILE_NAME)
+    nc = Dataset(FILE_NAME)
 
     # The variable has a fill value, so netCDF4 converts it to a float64 masked
     # array for us.
-    data = dset.variables[DATAFIELD_NAME][11,:,:]
+    data = nc.variables[DATAFIELD_NAME][11,:,:]
     
-    latitude = dset.variables['Latitude'][:]
-    longitude = dset.variables['Longitude'][:]
+    latitude = nc.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
@@ -51,14 +51,12 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, data)
     m.colorbar()
+    plt.title('{0} at H20PrsLvls=11'.format(DATAFIELD_NAME))
+
     fig = plt.gcf()
-    
-    plt.title('{0} at H20PrsLvls=11'.format(DATAFIELD_NAME, ""))
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

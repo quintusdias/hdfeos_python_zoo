@@ -31,8 +31,8 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'cldWater'
     
-    dset = Dataset(FILE_NAME)
-    var = dset.variables[DATAFIELD_NAME]
+    nc = Dataset(FILE_NAME)
+    var = nc.variables[DATAFIELD_NAME]
 
     # cldWater has "scale_factor" and "add_offset" attributes, but the scaling
     # equation to be used here is not 
@@ -48,8 +48,8 @@ def run(FILE_NAME):
     datam = np.ma.masked_array(data, np.isnan(data))
     
     # Retrieve the geolocation data.
-    latitude = dset.variables['geolocation'][:,:,0]
-    longitude = dset.variables['geolocation'][:,:,1]
+    latitude = nc.variables['geolocation'][:,:,0]
+    longitude = nc.variables['geolocation'][:,:,1]
     
     # There is a wrap-around effect to deal with.  Adjust the longitude by
     # modulus 360 to avoid the swath being smeared.
@@ -61,20 +61,14 @@ def run(FILE_NAME):
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-50, urcrnrlon = 310)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-45, 315., 45.), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    # More than 99% of the pixel values are less than 0.1.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam, vmin=0, vmax=0.192)
-    cb = m.colorbar()
-    fig = plt.gcf()
-    
+    m.pcolormesh(longitude, latitude, datam, latlon=True, vmin=0, vmax=0.192)
+    m.colorbar()
     plt.title('{0} (g/m^3)'.format(DATAFIELD_NAME))
 
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

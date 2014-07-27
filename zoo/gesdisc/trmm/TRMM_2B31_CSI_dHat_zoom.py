@@ -31,39 +31,34 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'dHat'
     
-    dset = Dataset(FILE_NAME)
-    var = dset.variables[DATAFIELD_NAME]
+    nc = Dataset(FILE_NAME)
+    var = nc.variables[DATAFIELD_NAME]
 
     # This datafield has scale factor and add offset attributes, but no
     # fill value.  We'll turn off automatic scaling and do it ourselves.
     var.set_auto_maskandscale(False)
-    data = dset.variables[DATAFIELD_NAME][:].astype(np.float64)
+    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
     scale = var.scale_factor
     offset = var.add_offset
     data = data / scale + offset
     
     # Retrieve the geolocation data.
-    latitude = dset.variables['geolocation'][:,:,0]
-    longitude = dset.variables['geolocation'][:,:,1]
+    latitude = nc.variables['geolocation'][:,:,0]
+    longitude = nc.variables['geolocation'][:,:,1]
     
     # Draw an equidistant cylindrical projection using the high resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='h',
                 llcrnrlat=30, urcrnrlat = 36,
                 llcrnrlon=121, urcrnrlon = 133)
-    
     m.drawcoastlines(linewidth=0.5)
-    
     m.drawparallels(np.arange(30, 37), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(121, 133, 2), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0} (mm)'.format(DATAFIELD_NAME))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

@@ -32,8 +32,8 @@ def run(FILE_NAME):
     DATAFIELD_NAME = 'precipitation'
     
     # Ignore the leading singleton dimension.
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][0,:,:].astype(np.float64)
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][0,:,:].astype(np.float64)
     
     # Consider 0.0 to be the fill value.
     # Must create a masked array where nan is involved.
@@ -52,19 +52,14 @@ def run(FILE_NAME):
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
-    
     m.drawcoastlines(linewidth=0.5)
-    
     m.drawparallels(np.arange(-90, 120, 30), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180, 45), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam.T)
+    m.pcolormesh(longitude, latitude, datam.T, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0} (mm/hr)'.format(DATAFIELD_NAME))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

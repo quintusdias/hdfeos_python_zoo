@@ -37,8 +37,8 @@ def run(FILE_NAME):
     GRID_NAME = 'MOD_Grid_Seaice_4km_South'
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance_SP'
     
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:]
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][:]
 
     # Only use gdal to get the projection information.
     gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
@@ -107,9 +107,9 @@ def run(FILE_NAME):
                               'no input tile\nexpected',
                               'non-production\nmask'])
     color_bar.draw_all()
-    fig = plt.gcf()
-    
     plt.title(DATAFIELD_NAME.replace('_',' '))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

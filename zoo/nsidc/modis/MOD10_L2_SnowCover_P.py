@@ -30,7 +30,7 @@ import numpy as np
 
 def run(FILE_NAME):
     
-    dset = Dataset(FILE_NAME)
+    nc = Dataset(FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Snow_Cover'
@@ -38,9 +38,9 @@ def run(FILE_NAME):
     # Subset the data to match the size of the swath geolocation fields.
     rows = slice(5, 4060, 10)
     cols = slice(5, 2708, 10)
-    data = dset.variables['Snow_Cover'][rows, cols]
-    latitude = dset.variables['Latitude'][:]
-    longitude = dset.variables['Longitude'][:]
+    data = nc.variables['Snow_Cover'][rows, cols]
+    latitude = nc.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
     
     # Draw a polar stereographic projection using the low resolution coastline
     # database.
@@ -54,10 +54,7 @@ def run(FILE_NAME):
     cmap = mpl.colors.ListedColormap(['grey','mediumblue'])
     bounds = [0, 19.5, 39]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data, cmap=cmap, norm=norm)
+    m.pcolormesh(longitude, latitude, data, latlon=True, cmap=cmap, norm=norm)
     
     # Must reset the alpha level to opaque for the colorbar.
     # See http://stackoverflow.com/questions/4478725/...
@@ -67,9 +64,9 @@ def run(FILE_NAME):
     color_bar.set_ticks([9.75, 29.25])
     color_bar.set_ticklabels(['missing data', 'ocean'])
     color_bar.draw_all()
-    fig = plt.gcf()
-    
     plt.title('Snow Cover')
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
