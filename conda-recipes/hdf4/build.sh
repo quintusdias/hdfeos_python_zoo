@@ -3,6 +3,9 @@
 export CFLAGS="-I$PREFIX/include $CFLAGS"
 export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
 
+# Only need this on mac.
+export DYLD_LIBRARY_PATH=$PREFIX/lib
+
 ./configure \
     --enable-shared \
     --disable-static \

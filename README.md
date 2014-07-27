@@ -106,6 +106,11 @@ Download netcdf4-1.1.0 from Pypi, configure and install with::
 Anaconda
 ========
 
+Mac
+---
+
+Mac instructions should be similar to linux.  Not yet working, though.
+
 Linux
 -----
 The following steps worked with Anaconda 2.0.1 on Mageia release 4.1.
