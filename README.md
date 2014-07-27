@@ -143,3 +143,4 @@ The following steps will work, though.
     packages) and activate it.
 3.  Build and install matplotlib 1.3.1 from source.
 4.  Download and install basemap 1.0.7.
+5.  Download and install the python module for gdal from PyPi.
