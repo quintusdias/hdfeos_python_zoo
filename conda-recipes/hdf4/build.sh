@@ -39,4 +39,3 @@ case ${ARCH} in
         exit 1;
         ;;
 esac
-
