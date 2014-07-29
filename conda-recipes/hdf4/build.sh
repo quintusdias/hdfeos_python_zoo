@@ -6,11 +6,11 @@ ARCH="$(uname 2>/dev/null)"
 
 #export CFLAGS="-I$PREFIX/include $CFLAGS"
 export CPPFLAGS="-I${PREFIX}/include"
-export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
 
 DarwinInstallation() {
 
     export DYLD_FALLBACK_LIBRARY_PATH=$PREFIX/lib
+	export DYLDFLAGS="-L$PREFIX/lib $LDFLAGS"
 
     chmod +x configure;
 
@@ -34,6 +34,7 @@ DarwinInstallation() {
 LinuxInstallation() {
 
     export CFLAGS="-m64 -pipe -O2 -march=x86-64 -fPIC"
+	export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
     chmod +x configure;
 
     ./configure \
