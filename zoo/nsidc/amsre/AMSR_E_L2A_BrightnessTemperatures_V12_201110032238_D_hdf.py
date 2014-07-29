@@ -53,8 +53,8 @@ def run(FILE_NAME):
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 120., 30.))
-    m.drawmeridians(np.arange(-180, 180., 45.))
+    m.drawparallels(np.arange(-90., 120., 30.), [1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 180., 45.), [0, 0, 0, 1])
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, datam)
     m.colorbar()

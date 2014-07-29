@@ -48,6 +48,25 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestNsidcAmsreSwaths(unittest.TestCase):
+    """
+    Run NSIDC/AMSR_E swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf(self):
+        """
+        """
+        hdffile = 'AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.nsidc.amsre
+        module = pkg.AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf
+        module.run(hdffile)
+
 class TestGesdiscAirs(unittest.TestCase):
     """
     Run GESDISC/AIRS codes.
