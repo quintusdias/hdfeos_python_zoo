@@ -45,16 +45,20 @@ def run(FILE_NAME):
     data = data * scale_factor + add_offset
     datam = np.ma.masked_array(data, np.isnan(data))
     
+    # There is a wrap-around effect to deal with, as some of the swath extends
+    # eastward over the international dateline.  Adjust the longitude to avoid
+    # the swath being smeared.
     latitude = nc.variables['Latitude'][:]
     longitude = nc.variables['Longitude'][:]
-    
+    longitude[longitude < -150] += 360
+
     # Render the plot in a global projection.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-180, urcrnrlon = 180)
+                llcrnrlon=-150, urcrnrlon = 210)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 120., 30.), [1, 0, 0, 0])
-    m.drawmeridians(np.arange(-180, 180., 45.), [0, 0, 0, 1])
+    m.drawparallels(np.arange(-90, 91, 30), [1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 181., 45), [0, 0, 0, 1])
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, datam)
     m.colorbar()

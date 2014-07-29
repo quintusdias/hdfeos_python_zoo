@@ -67,6 +67,15 @@ class TestNsidcAmsreSwaths(unittest.TestCase):
         module = pkg.AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf
         module.run(hdffile)
 
+    def test_AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud(self):
+        """
+        """
+        hdffile = 'AMSR_E_L2_Ocean_V06_200206190029_D.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.nsidc.amsre
+        module = pkg.AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud
+        module.run(hdffile)
+
 class TestGesdiscAirs(unittest.TestCase):
     """
     Run GESDISC/AIRS codes.
