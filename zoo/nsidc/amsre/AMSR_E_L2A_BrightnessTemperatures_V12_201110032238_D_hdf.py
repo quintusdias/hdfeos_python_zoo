@@ -70,7 +70,7 @@ def run(FILE_NAME):
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    pngfile = "{0}.png".format(basename)
     fig.savefig(pngfile)
 
 
