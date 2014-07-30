@@ -1,8 +1,21 @@
 #!/bin/bash
 
+ARCH="$(uname 2>/dev/null)"
+
 export CPPFLAGS="-I$PREFIX/include $CPPFLAGS"
 export LDFLAGS="-L$PREFIX/lib $LDFLAGS -lmfhdf -ldf -ljpeg"
-export DYLD_LIBRARY_PATH=$PREFIX/lib
+
+case ${ARCH} in
+    'Darwin')
+        export DYLD_FALLBACK_LIBRARY_PATH=$PREFIX/lib
+        ;;
+    'Linux')
+        ;;
+    *)
+        echo -e "Unsupported machine type: ${ARCH}";
+        exit 1;
+        ;;
+esac
 
 ./configure \
     --enable-shared \
