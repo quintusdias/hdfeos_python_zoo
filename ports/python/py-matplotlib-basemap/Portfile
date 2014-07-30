@@ -1,0 +1,47 @@
+# $Id: Portfile 114324 2013-12-05 08:44:51Z ryandesign@macports.org $
+
+PortSystem        1.0
+PortGroup         python 1.0
+
+name              py-matplotlib-basemap
+version           1.0.6
+categories-append graphics math
+license           LGPL-2.1
+platforms         darwin
+maintainers       nomaintainer
+
+description       matplotlib toolkit for plotting data on map projections
+long_description  Matplotlib basemap is a matplotlib toolkit python library \
+                  for plotting data on map projections
+
+homepage          http://matplotlib.org/basemap/
+master_sites      sourceforge:project/matplotlib/matplotlib-toolkits/basemap-${version}/
+distname          basemap-${version}
+dist_subdir       ${name}/${version}_${revision}
+
+checksums         rmd160 c9e6e17b59856349d7de1b16a652ed5e9e6c3d29 \
+                  sha256 203cac08434b9bbe63b0d2821e599fda534a8ba1f8f291728718efbb414145c9
+
+python.versions   26 27 33 34
+
+build.env-append    GEOS_DIR="${prefix}"
+destroot.env-append GEOS_DIR="${prefix}"
+
+universal_variant no
+
+if {${name} ne ${subport}} {
+  depends_lib-append port:geos \
+                     port:py${python.version}-matplotlib 
+  post-destroot {
+    delete ${destroot}${python.pkgd}/mpl_toolkits/__init__.py
+    delete ${destroot}${python.pkgd}/mpl_toolkits/__init__.pyc
+  }
+}
+
+if {${name} eq ${subport}} {
+  livecheck.type     regex
+  livecheck.url      http://sourceforge.net/projects/matplotlib/files/matplotlib-toolkits
+  livecheck.regex    {basemap-(\d+(\.\d+)*)}
+} else {
+  livecheck.type     none
+}
