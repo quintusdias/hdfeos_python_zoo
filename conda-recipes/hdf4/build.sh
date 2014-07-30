@@ -7,17 +7,17 @@ ARCH="$(uname 2>/dev/null)"
 case ${ARCH} in
     'Darwin')
         export DYLD_FALLBACK_LIBRARY_PATH=$PREFIX/lib
+        export CPPFLAGS="-I${PREFIX}/include"
         ;;
     'Linux')
         export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
+        export CPPFLAGS="-I${PREFIX}/include -fPIC"
         ;;
     *)
         echo -e "Unsupported machine type: ${ARCH}";
         exit 1;
         ;;
 esac
-
-export CPPFLAGS="-I${PREFIX}/include"
 
 chmod +x configure;
 
