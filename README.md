@@ -114,13 +114,14 @@ and MacOS 10.6.8 (Python2 and Python3)
 Download and install the free version of anaconda, then install the
 following packages ::
 
-    $ conda install patchelf conda-build
+    $ conda install patchelf  # linux only
+    $ conda install conda-build
     $ conda build hdf4
     $ conda install hdf4 --use-local
     $ conda build libnetcdf
     $ conda install libnetcdf --use-local
-    $ conda install basemap netcdf4 gdal
-    $ conda install netcdf4 --use-local
+    $ conda install basemap
+    $ conda install gdal
 
 You may have to deal with issue#32 as described at
 https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or
