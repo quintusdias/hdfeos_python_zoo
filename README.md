@@ -106,28 +106,21 @@ Download netcdf4-1.1.0 from Pypi, configure and install with::
 Anaconda
 ========
 
-Mac
----
-
-Mac instructions should be similar to linux.  Not yet working, though.
-
-Linux
------
-The following steps worked with Anaconda 2.0.1 on Mageia release 4.1.
+Mac, Linux
+----------
+The following steps worked with Anaconda 2.0.1 on Mageia release 4.1 (Python2)
+and MacOS 10.6.8 (Python2 and Python3) 
 
 Download and install the free version of anaconda, then install the
 following packages ::
 
     $ conda install patchelf conda-build
-    $ conda install basemap 
     $ conda build hdf4
     $ conda install hdf4 --use-local
     $ conda build libnetcdf
     $ conda install libnetcdf --use-local
-    $ conda build netcdf4 
+    $ conda install basemap netcdf4 gdal
     $ conda install netcdf4 --use-local
-    $ conda create --use-local -n my-libnetcdf-env libnetcdf netcdf4 matplotlib basemap h5py
-    $ source activate my-libnetcdf-env
 
 You may have to deal with issue#32 as described at
 https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or

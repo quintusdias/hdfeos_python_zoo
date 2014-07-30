@@ -7,10 +7,9 @@ ARCH="$(uname 2>/dev/null)"
 case ${ARCH} in
     'Darwin')
         export DYLD_FALLBACK_LIBRARY_PATH=$PREFIX/lib
-    	export DYLDFLAGS="-L$PREFIX/lib $LDFLAGS"
         ;;
     'Linux')
-	    export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
+        export LDFLAGS="-L$PREFIX/lib $LDFLAGS"
         ;;
     *)
         echo -e "Unsupported machine type: ${ARCH}";
