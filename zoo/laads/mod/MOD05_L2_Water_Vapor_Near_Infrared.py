@@ -39,15 +39,17 @@ def run(FILE_NAME):
     #     data = data * scale + offset
     #
     # We'll turn autoscaling off in order to correctly scale the data.
+    # Also need to subset the data to match the lat/lon dimensions.
     var.set_auto_maskandscale(False)
-    data = var[:].astype(np.double)
+    data = var[4::5, 4::5].astype(np.double)
     data[data < var.valid_range[0]] = np.nan
     data[data > var.valid_range[1]] = np.nan
     data[data == var._FillValue] = np.nan
     data = (data - var.add_offset) * var.scale_factor 
-    datam = np.ma.masked_array(data, np.isnan(data))
+    data = np.ma.masked_array(data, np.isnan(data))
     
-    # Retrieve the geolocation data.
+    # Retrieve the geolocation data.  The longitude and latitude are only at
+    # 1/5 the resolution of the data, so subset the data appropriately.
     longitude = nc.variables['Longitude'][:]
     latitude = nc.variables['Latitude'][:]
     
@@ -57,7 +59,7 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 50., 10.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
-    m.pcolormesh(latitude, longitude, datam, latlon=True)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
     plt.title(var.long_name)
 
