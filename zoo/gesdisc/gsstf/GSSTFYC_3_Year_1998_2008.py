@@ -35,7 +35,7 @@ def run(FILE_NAME):
 
         nc = Dataset(FILE_NAME)
         grp = nc.groups['HDFEOS'].groups['GRIDS'].groups['NCEP']
-        data_var = nc.groups['Data Fields'].variables['SST']
+        data_var = grp.groups['Data Fields'].variables['SST']
         data = data_var[:]
 
         data_longname = data_var.LongName
