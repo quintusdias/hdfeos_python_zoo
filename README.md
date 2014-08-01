@@ -28,51 +28,6 @@ still install basemap via pip::
 
 The RPM for the GDAL library includes support for HDF-EOS2.
 
-Fedora 19
-=========
-The Fedora 19 netcdf RPM was not built with the --with-hdf4 option, so you must
-rebuild the RPM as follows::
-
-1. Download the netcdf SRPM with ``yumdownloader --source netcdf``
-2. Install the SRPM with ``rpm -i netcdf-4.2.1.1-5.fc19.src.rpm``
-3. Change directories into your rpmbuild directory, i.e. ``cd ~/rpmbuild/SPECS``
-4. Edit the spec file.  Add these two lines just underneath the ``%build`` line::
-
-    export CPPFLAGS="-I/usr/include/hdf"
-    export LDFLAGS="-L/usr/lib64/hdf -lmfhdf -ldf -ljpeg"
-
-5.  Under the ``%global configure_opts`` section, add the following two lines::
-
-    --enable-hdf4 \\\ 
-    --enable-hdf4-file-tests \\\ 
-
-6. Rebuild the RPMs with ``rpmbuild -bb netcdf.spec``
-7. Install the newly-built RPM(s).
-
-The Fedora repository RPM of netdf4-python (version 1.0.2-1) for both Python 2
-and 3 does not seem to adequately support HDF5 strings.  You should use pip to
-install the latest version (1.1.10 or more recent), as well as installing
-basemap via pip.  
-
-The RPM for the GDAL library includes support for HDF-EOS2.  The gdal-python RPM
-therefore comes ready for use with Python2.  However, there's currently no 
-gdal-python3 RPM.  Follow these instructions for Python3
-
-1.  Install all the build dependencies for gdal, then remove gdal::
-
-    $ sudo yum-builddep gdal
-    $ sudo yum remove gdal gdal-devel gdal-libs
-
-2.  Install the latest version of gdal::
-
-    $ configure --prefix=/usr/local --with-python
-    $ make; sudo make install
-
-3.  Download and install gdal-python from PyPi and install with
-
-    $ python3 setup.py install --user
-    
-
 Ubuntu 13.10
 ============
 The versions of the netcdf and hdf packages that come with Ubuntu are a bit 
