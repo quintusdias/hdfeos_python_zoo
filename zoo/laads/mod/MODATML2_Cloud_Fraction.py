@@ -38,8 +38,10 @@ def run(FILE_NAME):
     # We'll turn autoscaling off in order to correctly scale the data.
     var.set_auto_maskandscale(False)
     data = var[:].astype(np.double)
-    data[data == var._FillValue] = np.nan
-    data[data > var.valid_range[1]] = np.nan
+    invalid = np.logical_or(data < var.valid_range[0],
+                            data > var.valid_range[1])
+    invalid = np.logical_or(invalid, data == var._FillValue)
+    data[invalid] = np.nan
     data = (data - var.add_offset) * var.scale_factor 
     datam = np.ma.masked_array(data, np.isnan(data))
     

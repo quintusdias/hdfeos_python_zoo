@@ -42,9 +42,10 @@ def run(FILE_NAME):
     # Also need to subset the data to match the lat/lon dimensions.
     var.set_auto_maskandscale(False)
     data = var[4::5, 4::5].astype(np.double)
-    data[data < var.valid_range[0]] = np.nan
-    data[data > var.valid_range[1]] = np.nan
-    data[data == var._FillValue] = np.nan
+    invalid = np.logical_or(data < var.valid_range[0],
+                            data > var.valid_range[1])
+    invalid = np.logical_or(invalid, data == var._FillValue)
+    data[invalid] = np.nan
     data = (data - var.add_offset) * var.scale_factor 
     data = np.ma.masked_array(data, np.isnan(data))
     
