@@ -45,9 +45,10 @@ def run(FILE_NAME):
     # Apply fill value, valid range, scale factor, add_offset attributes.
     metadata = gdset.GetMetadata()
     valid_range = [float(x) for x in metadata['valid_range'].split(', ')]
-    data[data < valid_range[0]] = np.nan
-    data[data > valid_range[1]] = np.nan
-    data[data == float(metadata['_FillValue'])] = np.nan
+    invalid = data < valid_range[0]
+    invalid = np.logical_or(invalid, data > valid_range[1])
+    invalid = np.logical_or(invalid, data == float(metadata['_FillValue']))
+    data[invalid] = np.nan
     data = float(metadata['scale_factor']) * (data - float(metadata['add_offset']))
     data = np.ma.masked_array(data, np.isnan(data))
 
