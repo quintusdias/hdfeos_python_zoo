@@ -34,13 +34,13 @@ def run(FILE_NAME):
     
         from netCDF4 import Dataset
     
-        dset = Dataset(FILE_NAME)
-        data = dset.variables[DATAFIELD_NAME][:]
-        latitude = dset.variables['latitude'][:]
-        longitude = dset.variables['longitude'][:]
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][:]
+        latitude = nc.variables['latitude'][:]
+        longitude = nc.variables['longitude'][:]
     
         # Get attributes needed for the plot.
-        long_name = dset.variables[DATAFIELD_NAME].long_name
+        long_name = nc.variables[DATAFIELD_NAME].long_name
     
     else:
     
@@ -67,16 +67,12 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.))
     m.drawmeridians(np.arange(-180, 180., 45.))
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data, vmin=0, vmax=1)
+    m.pcolormesh(longitude, latitude, data, vmin=0, vmax=1, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0}'.format(long_name))
+
+    fig = plt.gcf()
     plt.show()
-    plt.draw()
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)

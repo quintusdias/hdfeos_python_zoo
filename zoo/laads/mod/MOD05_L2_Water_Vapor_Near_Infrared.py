@@ -31,25 +31,28 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'Water_Vapor_Near_Infrared'
     
-    dset = Dataset(FILE_NAME)
-    var = dset.variables[DATAFIELD_NAME]
+    nc = Dataset(FILE_NAME)
+    var = nc.variables[DATAFIELD_NAME]
 
     # The scaling equation to be used here is not 
     #
     #     data = data * scale + offset
     #
     # We'll turn autoscaling off in order to correctly scale the data.
+    # Also need to subset the data to match the lat/lon dimensions.
     var.set_auto_maskandscale(False)
-    data = var[:].astype(np.double)
-    data[data < var.valid_range[0]] = np.nan
-    data[data > var.valid_range[1]] = np.nan
-    data[data == var._FillValue] = np.nan
+    data = var[4::5, 4::5].astype(np.double)
+    invalid = np.logical_or(data < var.valid_range[0],
+                            data > var.valid_range[1])
+    invalid = np.logical_or(invalid, data == var._FillValue)
+    data[invalid] = np.nan
     data = (data - var.add_offset) * var.scale_factor 
-    datam = np.ma.masked_array(data, np.isnan(data))
+    data = np.ma.masked_array(data, np.isnan(data))
     
-    # Retrieve the geolocation data.
-    longitude = dset.variables['Longitude'][:]
-    latitude = dset.variables['Latitude'][:]
+    # Retrieve the geolocation data.  The longitude and latitude are only at
+    # 1/5 the resolution of the data, so subset the data appropriately.
+    longitude = nc.variables['Longitude'][:]
+    latitude = nc.variables['Latitude'][:]
     
     # Render the plot in a south plar stereographic projection.
     m = Basemap(projection='spstere', resolution='l',
@@ -57,9 +60,8 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 50., 10.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
-    cb = m.colorbar()
+    m.pcolormesh(longitude, latitude, data, latlon=True)
+    m.colorbar()
     plt.title(var.long_name)
 
     fig = plt.gcf()

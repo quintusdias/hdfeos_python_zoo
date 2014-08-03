@@ -30,30 +30,28 @@ import numpy as np
 
 def run(FILE_NAME):
 
-    dset = Dataset(FILE_NAME)
+    nc = Dataset(FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Ice_Surface_Temperature'
     
     # Subset the data to match the size of the swath geolocation fields.
+    # Turn off autoscaling, we'll handle that ourselves due to presence of
+    # a valid range.
+    var = nc.variables[DATAFIELD_NAME]
+    var.set_auto_maskandscale(False)
     rows = slice(2, 2030, 5)
     cols = slice(2, 1354, 5)
-    data = dset.variables[DATAFIELD_NAME][rows, cols]
-    latitude = dset.variables['Latitude'][:]
-    longitude = dset.variables['Longitude'][:]
+    data = var[rows, cols].astype(np.float64)
+    latitude = nc.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
     
-    # Retrieve any attributes we might need.
-    units = dset.variables[DATAFIELD_NAME].units
-    scale = dset.variables[DATAFIELD_NAME].scale_factor
-    fillvalue = dset.variables[DATAFIELD_NAME]._FillValue
-    valid_range = dset.variables[DATAFIELD_NAME].valid_range
-    
-    # The scale factor and add_offset are already applied by netCDF4 when the
-    # data was read.  We still have to restrict the data to the valid range,
-    # though.  Since the array will have NaNs, we then need to turn it into
-    # a masked array in order to render it.
-    data[data < float(valid_range[0])*scale] = np.nan
-    data[data > float(valid_range[1])*scale] = np.nan
+    # Apply the attributes.
+    invalid = np.logical_or(data < var.valid_range[0],
+                            data > var.valid_range[1])
+    invalid = np.logical_or(invalid, data == var._FillValue)
+    data[invalid] = np.nan
+    data = data * var.scale_factor + var.add_offset
     datam = np.ma.masked_array(data, mask=np.isnan(data))
     
     # Draw a southern polar stereographic projection using the low resolution
@@ -63,14 +61,11 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-80.,-59,10.))
     m.drawmeridians(np.arange(-180.,179.,30.), labels=[True,False,False,True])
-    
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
+    m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
+    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, var.units))
     
     fig = plt.gcf()
-    
-    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, units))
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

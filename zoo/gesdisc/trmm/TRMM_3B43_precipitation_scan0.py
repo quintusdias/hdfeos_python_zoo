@@ -32,39 +32,34 @@ def run(FILE_NAME):
     DATAFIELD_NAME = 'precipitation'
     
     # Ignore the leading singleton dimension.
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][0,:,:].astype(np.float64)
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][0,:,:].astype(np.float64)
     
     # Consider 0 to be the fill value.
     # Must create a masked array where nan is involved.
     data[data == 0] = np.nan
     datam = np.ma.masked_where(np.isnan(data), data)
     
-    
     # The lat and lon should be calculated manually.
     # More information can be found at:
     # http://disc.sci.gsfc.nasa.gov/additional/faq/precipitation_faq.shtml#lat_lon
-    latitude = np.arange(-49.875, 49.875, 0.249375)
-    longitude = np.arange(-179.875, 179.876, 0.25)
+    lat1d = np.arange(-49.875, 49.875, 0.249375)
+    lon1d = np.arange(-179.875, 179.876, 0.25)
+    longitude, latitude = np.meshgrid(lon1d, lat1d)
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
-    
     m.drawcoastlines(linewidth=0.5)
-    
     m.drawparallels(np.arange(-90, 120, 30), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180, 45), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam.T)
+    m.pcolormesh(longitude, latitude, datam.T, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0} (mm/hr)'.format(DATAFIELD_NAME))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

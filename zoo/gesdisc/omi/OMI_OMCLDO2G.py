@@ -33,8 +33,8 @@ def run(FILE_NAME):
     
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        grp = dset.groups['HDFEOS'].groups['GRIDS'].groups['CloudFractionAndPressure'].groups['Data Fields']
+        nc = Dataset(FILE_NAME)
+        grp = nc.groups['HDFEOS'].groups['GRIDS'].groups['CloudFractionAndPressure'].groups['Data Fields']
         var = grp.variables[DATAFIELD_NAME]
         
         # Turn off autoscaling so we can handle it uniformly for both h5py and
@@ -91,20 +91,18 @@ def run(FILE_NAME):
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
     
-    # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
     cmap = plt.cm.jet
     sc = m.scatter(x, y, c=data, s=1, cmap=cmap, edgecolors=None,
-            linewidth=0)
+                   linewidth=0)
     m.colorbar(sc)
-    fig = plt.gcf()
-    
     plt.title('{0} ({1})'.format(title, units))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

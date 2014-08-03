@@ -87,9 +87,9 @@ def run(FILE_NAME):
                               'night', 'cloud-obscured water', 'water mask',
                               'fill'])
     color_bar.draw_all()
-    fig = plt.gcf()
-    
     plt.title('Day CMG Snow Cover')
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

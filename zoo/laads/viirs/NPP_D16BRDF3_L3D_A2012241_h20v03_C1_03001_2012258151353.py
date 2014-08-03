@@ -48,10 +48,10 @@ def run(FILE_NAME):
     # do this.  Also, GDAL reads the attributes as character values, so we have
     # to properly convert them.
     fill_value = float(meta['_FillValue'])
-    data[data == fill_value] = np.nan
     valid_range = [float(x) for x in meta['valid_range'].split(', ')]
-    data[data < valid_range[0]] = np.nan
-    data[data > valid_range[1]] = np.nan
+    invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
+    invalid = np.logical_or(invalid, data == fill_value)
+    data[invalid] = np.nan
     scale_factor = float(meta['scale_factor'])
     data = data * scale_factor
 
@@ -77,13 +77,11 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(45, 61, 5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(25, 56, 10), labels=[0, 0, 0, 1])
-
     m.pcolormesh(lon, lat, data, latlon=True)
     m.colorbar()
+    plt.title(DATAFIELD_NAME.replace('_', ' '))
     
     fig = plt.gcf()
-    
-    plt.title(DATAFIELD_NAME.replace('_', ' '))
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

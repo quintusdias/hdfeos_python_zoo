@@ -32,30 +32,26 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'Ozone'
     
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:]
-    units = dset.variables[DATAFIELD_NAME].units
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][:]
+    units = nc.variables[DATAFIELD_NAME].units
     
-    latitude = dset.variables['YDim:TOMS Level 3'][:]
-    longitude = dset.variables['XDim:TOMS Level 3'][:]
+    latitude = nc.variables['YDim:TOMS Level 3'][:]
+    longitude = nc.variables['XDim:TOMS Level 3'][:]
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0} ({1})'.format(DATAFIELD_NAME, units))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

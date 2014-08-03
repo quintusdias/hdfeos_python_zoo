@@ -33,8 +33,8 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
-        dset = Dataset(FILE_NAME)
-        grp = dset.groups['HDFEOS'].groups['SWATHS'].groups['ColumnAmountNO2']
+        nc = Dataset(FILE_NAME)
+        grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['ColumnAmountNO2']
         var = grp.groups['Data Fields'].variables[DATAFIELD_NAME]
         
         # netCDF4 doesn't quite handle the scaling correctly in this case since
@@ -90,18 +90,14 @@ def run(FILE_NAME):
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
+    m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0}'.format(title))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

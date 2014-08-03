@@ -1,6 +1,6 @@
 """
-This example code illustrates how to access and visualize a LAADS MODIS swath
-file in Python.
+This example code illustrates how to access and visualize an NSIDC AMSR swath
+Swath data file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MOD06_L2_Cloud_Optical_Thickness.py
+    python AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -19,6 +19,7 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 The netcdf library must be compiled with HDF4 support in order for this example
 code to work.  Please see the README for details.
 """
+
 import os
 
 import matplotlib as mpl
@@ -28,41 +29,37 @@ from netCDF4 import Dataset
 import numpy as np
 
 def run(FILE_NAME):
-
-    DATAFIELD_NAME = 'Cloud_Optical_Thickness'
     
     nc = Dataset(FILE_NAME)
-    var = nc.variables[DATAFIELD_NAME]
 
-    # The scaling equation to be used here is not 
-    #
-    #     data = data * scale + offset
-    #
-    # We'll turn autoscaling off in order to correctly scale the data.
-    # Also need to subset the data to match the lat/lon dimensions.
-    var.set_auto_maskandscale(False)
-    data = var[4::5, 4::5].astype(np.double)
-    invalid = np.logical_or(data < var.valid_range[0],
-                            data > var.valid_range[1])
-    invalid = np.logical_or(invalid, data == var._FillValue)
-    data[invalid] = np.nan
-    data = (data - var.add_offset) * var.scale_factor 
+    # Identify the data field.
+    DATAFIELD_NAME = 'High_res_cloud'
+    
+    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
+    latitude = nc.variables['Latitude'][:]
+    longitude = nc.variables['Longitude'][:]
+
+    # There is a wrap-around effect to deal with, as some of the swath extends
+    # eastward over the international dateline.  Adjust the longitude to avoid
+    # the swath being smeared.
+    longitude[longitude < -170] += 360
+
+    # Apply the fill value and scaling equation.
+    data[data == -9990] = np.nan
+    data = data * nc.variables[DATAFIELD_NAME].Scale
     data = np.ma.masked_array(data, np.isnan(data))
     
-    # Retrieve the geolocation data.
-    longitude = nc.variables['Longitude'][:]
-    latitude = nc.variables['Latitude'][:]
-    
-    # Render the plot in a south plar stereographic projection.
-    m = Basemap(projection='spstere', resolution='l',
-                boundinglat=-60, lon_0=180)
+    # Draw a polar stereographic projection using the low resolution coastline
+    # database.
+    m = Basemap(projection='cyl', resolution='l',
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-170, urcrnrlon=190)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90., 50., 10.), labels=[1, 0, 0, 0])
-    m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
+    m.drawparallels(np.arange(-90, 91, 45), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180,181,45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
-    titlestr = DATAFIELD_NAME.replace('_', ' ')
-    plt.title(titlestr)
+    plt.title("{0} (mm)".format(DATAFIELD_NAME))
 
     fig = plt.gcf()
     plt.show()
@@ -76,7 +73,7 @@ if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = 'MOD06_L2.A2010001.0000.005.2010005213214.hdf'
+    hdffile = 'AMSR_E_L2_Ocean_V06_200206190029_D.hdf'
     try:
         hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:

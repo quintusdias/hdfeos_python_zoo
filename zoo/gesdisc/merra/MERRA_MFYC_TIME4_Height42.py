@@ -31,37 +31,33 @@ def run(FILE_NAME):
 
     DATAFIELD_NAME = 'MFYC'
     
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][4, 42, :, :].astype(np.float64)
+    nc = Dataset(FILE_NAME)
+    data = nc.variables[DATAFIELD_NAME][4, 42, :, :].astype(np.float64)
     
     # Replace the missing values with NaN.
-    missing_value = dset.variables[DATAFIELD_NAME].missing_value
+    missing_value = nc.variables[DATAFIELD_NAME].missing_value
     data[data == missing_value] = np.nan
     datam = np.ma.masked_array(data, np.isnan(data))
     
     # Retrieve the geolocation data.
-    latitude = dset.variables['YDim'][:]
-    longitude = dset.variables['XDim'][:]
+    latitude = nc.variables['YDim'][:]
+    longitude = nc.variables['XDim'][:]
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
-    
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
+    m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0} ({1})\nat TIME=4 and Height=42m'.format(
-        dset.variables[DATAFIELD_NAME].long_name,
-        dset.variables[DATAFIELD_NAME].units))
+        nc.variables[DATAFIELD_NAME].long_name,
+        nc.variables[DATAFIELD_NAME].units))
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

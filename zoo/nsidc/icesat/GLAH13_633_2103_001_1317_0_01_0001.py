@@ -40,7 +40,6 @@ def run(FILE_NAME):
     
         nc = Dataset(FILE_NAME)
 
-
         latvar = nc.groups['Data_1HZ'].groups['Geolocation'].variables['d_lat']
         latitude = latvar[:]
         lat_vr = [latvar.valid_min, latvar.valid_max]
@@ -87,7 +86,7 @@ def run(FILE_NAME):
 
     # Plot the trajectory
     plt.subplot(1, 2, 2)
-    import pdb; pdb.set_trace()
+
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
@@ -96,16 +95,12 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.))
     m.drawmeridians(np.arange(-180, 180., 45.))
-    
-    # Render the image in the projected coordinate system.
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, data, vmin=0, vmax=1)
+    m.pcolormesh(longitude, latitude, data, latlon=True, vmin=0, vmax=1)
     m.colorbar()
-    fig = plt.gcf()
-    
     plt.title('{0}'.format(long_name))
+
+    fig = plt.gcf()
     plt.show()
-    plt.draw()
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.png".format(basename)

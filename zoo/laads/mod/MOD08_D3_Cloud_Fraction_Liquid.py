@@ -45,9 +45,10 @@ def run(FILE_NAME):
     # Apply fill value, valid range, scale factor, add_offset attributes.
     metadata = gdset.GetMetadata()
     valid_range = [float(x) for x in metadata['valid_range'].split(', ')]
-    data[data < valid_range[0]] = np.nan
-    data[data > valid_range[1]] = np.nan
-    data[data == float(metadata['_FillValue'])] = np.nan
+    invalid = data < valid_range[0]
+    invalid = np.logical_or(invalid, data > valid_range[1])
+    invalid = np.logical_or(invalid, data == float(metadata['_FillValue']))
+    data[invalid] = np.nan
     data = float(metadata['scale_factor']) * (data - float(metadata['add_offset']))
     data = np.ma.masked_array(data, np.isnan(data))
 
@@ -64,14 +65,11 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-
-    # Render the image in the projected coordinate system.
     m.pcolormesh(lon[::2,::2], lat[::2,::2], data[::2,::2])
     m.colorbar()
+    plt.title(DATAFIELD_NAME.replace('_', ' '))
     
     fig = plt.gcf()
-    
-    plt.title(DATAFIELD_NAME.replace('_', ' '))
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

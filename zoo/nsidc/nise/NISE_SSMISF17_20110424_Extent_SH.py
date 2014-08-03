@@ -91,7 +91,9 @@ def run(grid_file):
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     
     # The corners cause trouble, so chop them out.
-    m.pcolormesh(lon[5:-5,5:-5], lat[5:-5,5:-5], data[5:-5,5:-5], latlon=True, cmap=cmap, norm=norm)
+    idx = slice(5, 721)
+    m.pcolormesh(lon[idx, idx], lat[idx, idx], data[idx, idx],
+                 latlon=True, cmap=cmap, norm=norm)
     color_bar = plt.colorbar()
     color_bar.set_ticks(tickpts)
     color_bar.set_ticklabels(['snow-free\nland',
@@ -105,11 +107,11 @@ def run(grid_file):
                               'mixed pixels\nat coastlines',
                               'ocean'])
     color_bar.draw_all()
-
+    plt.title(DATAFIELD_NAME.replace('_',' '))
 
     fig = plt.gcf()
-    plt.title(DATAFIELD_NAME.replace('_',' '))
     plt.show()
+
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.SH.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)

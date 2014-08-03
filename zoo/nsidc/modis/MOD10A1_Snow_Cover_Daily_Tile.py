@@ -77,17 +77,17 @@ def run(FILE_NAME):
     bounds = [0, 25, 39, 255, 256]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     
-    # Render the image in the projected coordinate system.
     # 2400x2400 seems to be too much, so we'll subset it.
-    m.pcolormesh(lon[::2,::2], lat[::2,::2], data[::2,::2], latlon=True, cmap=cmap, norm=norm)
+    m.pcolormesh(lon[::2,::2], lat[::2,::2], data[::2,::2], latlon=True,
+                 cmap=cmap, norm=norm)
     
     color_bar = plt.colorbar()
     color_bar.set_ticks([12, 32, 147, 255.5])
     color_bar.set_ticklabels(['fill', 'ocean', 'no snow', 'missing'])
     color_bar.draw_all()
-    fig = plt.gcf()
-    
     plt.title('Snow Cover Tile')
+
+    fig = plt.gcf()
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]

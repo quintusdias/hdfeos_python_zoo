@@ -48,6 +48,34 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestNsidcAmsreSwaths(unittest.TestCase):
+    """
+    Run NSIDC/AMSR_E swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf(self):
+        """
+        """
+        hdffile = 'AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.nsidc.amsre
+        module = pkg.AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf
+        module.run(hdffile)
+
+    def test_AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud(self):
+        """
+        """
+        hdffile = 'AMSR_E_L2_Ocean_V06_200206190029_D.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.nsidc.amsre
+        module = pkg.AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud
+        module.run(hdffile)
+
 class TestGesdiscAirs(unittest.TestCase):
     """
     Run GESDISC/AIRS codes.
@@ -604,6 +632,24 @@ class TestLaadsViirsGrids(unittest.TestCase):
         hdffile = 'NPP_D16BRDF3_L3D.A2012241.h20v03.C1_03001.2012258151353.hdf'
         zoo.laads.viirs.NPP_D16BRDF3_L3D_A2012241_h20v03_C1_03001_2012258151353.run(fullpath(hdffile))
 
+
+class TestLaadsViirsSwaths(unittest.TestCase):
+    """
+    Run LAADS VIIRS swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_NPP_VSTIP_L2_A2012002_2340_P1_03001_2012022162425(self):
+        """
+        """
+        hdffile = 'NPP_VSTIP_L2.A2012002.2340.P1_03001.2012022162425.hdf'
+        zoo.laads.viirs.NPP_VSTIP_L2_A2012002_2340_P1_03001_2012022162425.run(fullpath(hdffile))
+
+
 class TestNsidcIcesatSwaths(unittest.TestCase):
     """
     Run NSIDC codes.
@@ -631,6 +677,23 @@ class TestNsidcIcesatSwaths(unittest.TestCase):
         module = zoo.nsidc.icesat.GLAH13_633_2103_001_1317_0_01_0001_a
         module.USE_NETCDF4 = False
         module.run(fullpath(hdffile))
+
+
+class TestLaadsViirsSwaths(unittest.TestCase):
+    """
+    Run LAADS VIIRS swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_NPP_VSTIP_L2_A2012002_2340_P1_03001_2012022162425(self):
+        """
+        """
+        hdffile = 'NPP_VSTIP_L2.A2012002.2340.P1_03001.2012022162425.hdf'
+        zoo.laads.viirs.NPP_VSTIP_L2_A2012002_2340_P1_03001_2012022162425.run(fullpath(hdffile))
 
 class TestNsidcModisGrids(unittest.TestCase):
     """
