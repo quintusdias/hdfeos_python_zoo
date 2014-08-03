@@ -55,7 +55,7 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 50., 10.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
-    m.pcolormesh(latitude, longitude, datam, latlon=True)
+    m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
     titlestr = "Retrieved Moisture Profile at pressure level 5 (degrees K)"
     plt.title(titlestr)
