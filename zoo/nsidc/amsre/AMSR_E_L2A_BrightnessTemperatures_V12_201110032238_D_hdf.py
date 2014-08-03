@@ -40,31 +40,38 @@ def run(FILE_NAME):
     # non-standard manner.
     scale_factor = getattr(nc.variables[DATAFIELD_NAME], 'SCALE FACTOR')
     add_offset = nc.variables[DATAFIELD_NAME].OFFSET
-
     data[data == -32768] = np.nan
     data = data * scale_factor + add_offset
     datam = np.ma.masked_array(data, np.isnan(data))
-    
-    # There is a wrap-around effect to deal with, as some of the swath extends
-    # eastward over the international dateline.  Adjust the longitude to avoid
-    # the swath being smeared.
+
     latitude = nc.variables['Latitude'][:]
     longitude = nc.variables['Longitude'][:]
-    longitude[longitude < -150] += 360
-
-    # Render the plot in a global projection.
-    m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-150, urcrnrlon = 210)
-    m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90, 91, 30), [1, 0, 0, 0])
-    m.drawmeridians(np.arange(-180, 181., 45), [0, 0, 0, 1])
-    x, y = m(longitude, latitude)
-    m.pcolormesh(x, y, datam)
-    m.colorbar()
     
-    units = 'Kelvin'
-    plt.title('{0} ({1})'.format(DATAFIELD_NAME, units))
+    # Since the swath starts near the south pole, but also extends over the
+    # north pole, the equidistant cylindrical becomes a possibly poor choice
+    # for a projection.  We show the full global map plus a limited polar map.
+    fig = plt.figure(figsize=(15, 6))
+    ax1 = plt.subplot(1, 2, 1)
+    m = Basemap(projection='cyl', resolution='l',
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
+    m.drawcoastlines(linewidth=0.5)
+    m.drawparallels(np.arange(-90, 91, 30), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 181., 45), labels=[0, 0, 0, 1])
+    m.pcolormesh(longitude, latitude, datam, latlon=True)
+
+    ax2 = plt.subplot(1, 2, 2)
+    m = Basemap(projection='npstere', resolution='l',
+                boundinglat=65, lon_0=0)
+    m.drawcoastlines(linewidth=0.5)
+    m.drawparallels(np.arange(60, 81, 10), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180., 181., 30.), labels=[1, 0, 0, 1])
+    m.pcolormesh(longitude, latitude, datam, latlon=True)
+
+    cax = plt.axes([0.92, 0.1, 0.03, 0.8])
+    plt.colorbar(cax=cax)
+    
+    fig.suptitle('{0} (degrees K)'.format(DATAFIELD_NAME))
 
     fig = plt.gcf()
     plt.show()
