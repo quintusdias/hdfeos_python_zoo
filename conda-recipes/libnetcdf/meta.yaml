@@ -1,14 +1,14 @@
 package:
   name: libnetcdf
-  version: 4.3.2
+  version: 4.2.1.1
 
 source:
-  fn: netcdf-4.3.2.tar.gz
-  url: http://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.3.2.tar.gz
-  md5: 2fd2365e1fe9685368cd6ab0ada532a0
+  fn: netcdf-4.2.1.1.tar.gz
+  url: http://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.2.1.1.tar.gz
+  md5: 5eebcf19e6ac78a61c73464713cbfafc
 
 build:
-    number:  0
+    number:  1
 
 requirements:
   build:
