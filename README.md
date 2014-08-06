@@ -30,14 +30,12 @@ Anaconda
 
 Mac, Linux
 ----------
-The following steps worked with Anaconda 2.0.1 on Mageia release 4.1 (Python2)
-and MacOS 10.6.8 (Python2 and Python3) 
+The following steps worked with Anaconda 2.0.1 (Python2 and 3) on Fedora 19,
+CentOS 6.5, and Mac.
 
 Download and install the free version of anaconda, then install the
 following packages ::
 
-    $ conda install patchelf  # linux only
-    $ conda install conda-build
     $ conda install basemap
     $ conda install gdal
     $ conda create -n hdfeos ipython matplotlib h5py basemap gdal
