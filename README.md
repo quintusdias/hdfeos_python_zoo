@@ -33,13 +33,13 @@ Mac, Linux
 The following steps worked with Anaconda 2.0.1 (Python2 and 3) on Fedora 19,
 CentOS 6.5, and Mac.
 
-Download and install the free version of anaconda, then install the
-following packages ::
+Download and install the free version of anaconda, then follow these
+directions ::
 
-    $ conda install basemap
-    $ conda install gdal
-    $ conda create -n hdfeos ipython matplotlib h5py basemap gdal
+    $ conda install basemap gdal netcdf4
+    $ conda create -n hdfeos ipython matplotlib h5py basemap netcdf4 gdal
     $ conda install -c https://conda.binstar.org/jevans hdf4=4.2.10
+    $ conda remove libnetcdf
     $ conda install -c https://conda.binstar.org/jevans libnetcdf=4.2.1.1
 
 You may have to deal with issue#32 as described at
