@@ -48,6 +48,114 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestNsidcAmsreSwaths(unittest.TestCase):
+    """
+    Run NSIDC/AMSR_E swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf(self):
+        """
+        """
+        hdffile = 'AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.nsidc.amsre
+        module = pkg.AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf
+        module.run(hdffile)
+
+    def test_AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud(self):
+        """
+        """
+        hdffile = 'AMSR_E_L2_Ocean_V06_200206190029_D.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.nsidc.amsre
+        module = pkg.AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud
+        module.run(hdffile)
+
+class TestNsidcAmsreGrids(unittest.TestCase):
+    """
+    Run NSIDC/AMSRE grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_AMSR_E_L3_DO_High_res_cloud(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_DailyOcean_V03_20020619.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_DO_High_res_cloud.run(hdffile)
+
+    def test_AMSR_E_L3_WO_High_res_cloud(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_WeeklyOcean_V03_20020616.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_WO_High_res_cloud.run(hdffile)
+
+    def test_AMSR_E_L3_MO_Med_res_vapor(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_MonthlyOcean_V03_200206.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_MO_Med_res_vapor.run(hdffile)
+
+    def test_AMSR_E_L3_RG_TbOceanRain(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_RainGrid_V06_200206.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_RG_TbOceanRain.run(hdffile)
+
+    def test_AMSR_E_L3_5DaySnow_NH_SWE(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_5DaySnow_V09_20050126.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_5DaySnow_NH_SWE.run(hdffile)
+
+    def test_AMSR_E_L3_SI_06km_NH_89V_DAY(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_SeaIce6km_V11_20050118.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_SI_06km_NH_89V_DAY.run(hdffile)
+
+    def test_AMSR_E_L3_SI_12km_NH_18H_DSC(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_SeaIce12km_V11_20050118.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_SI_12km_NH_18H_DSC.run(hdffile)
+
+    def test_AMSR_E_L3_SI_12km_SH_36H_DAY(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_SeaIce12km_V11_20050118.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_SI_12km_SH_36H_DAY.run(hdffile)
+
+    def test_AMSR_E_L3_DL_A_TB36_5H_Res_1(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_DailyLand_V06_20050118.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_DL_A_TB36_5H_Res_1.run(hdffile)
+
+    def test_AMSR_E_L3_SI_25km_NH_06V_ASC(self):
+        """
+        """
+        hdffile = 'AMSR_E_L3_SeaIce25km_V11_20050118.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.nsidc.amsre.AMSR_E_L3_SI_25km_NH_06V_ASC.run(hdffile)
+
 class TestGesdiscAirs(unittest.TestCase):
     """
     Run GESDISC/AIRS codes.
