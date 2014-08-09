@@ -696,6 +696,22 @@ class TestLaadsModGrids(unittest.TestCase):
         hdffile = 'MOD08_D3.A2010001.005.2010006233008.hdf'
         zoo.laads.mod.MOD08_D3_Cloud_Fraction_Liquid.run(fullpath(hdffile))
 
+class TestLaadsMydSwaths(unittest.TestCase):
+    """
+    Run LAADS MYD swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD07_L2_Water_Vapor(self):
+        """
+        """
+        hdffile = 'MYD07_L2.A2002184.2200.005.2006133121629.hdf'
+        zoo.laads.myd.MYD07_L2_Water_Vapor.run(fullpath(hdffile))
+
 class TestLaadsViirsGrids(unittest.TestCase):
     """
     Run LAADS VIIRS grid codes.
