@@ -710,7 +710,15 @@ class TestLaadsMydSwaths(unittest.TestCase):
         """
         """
         hdffile = 'MYD07_L2.A2002184.2200.005.2006133121629.hdf'
-        zoo.laads.myd.MYD07_L2_Water_Vapor.run(fullpath(hdffile))
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD07_L2_Water_Vapor.run(hdffile)
+
+    def test_MYD021KM_EV_1KM_Emissive_level0(self):
+        """
+        """
+        hdffile = 'MYD021KM.A2002226.0000.005.2009193222735.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD021KM_EV_1KM_Emissive_level0.run(hdffile)
 
 class TestLaadsViirsGrids(unittest.TestCase):
     """
