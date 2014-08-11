@@ -30,20 +30,19 @@ import numpy as np
 
 def run(FILE_NAME):
 
-    DATAFIELD_NAME = 'EV_1KM_Emissive'
+    DATAFIELD_NAME = 'EV_Band26'
     
     nc = Dataset(FILE_NAME)
 
-    # Just read the first level, Band 20.  And subset the data to match the
-    # lat/lon resolution.
-    data = nc.variables[DATAFIELD_NAME][0,::5,::5].astype(np.float64)
+    # Subset the data to match the lat/lon resolution.
+    data = nc.variables[DATAFIELD_NAME][::5,::5].astype(np.float64)
     units = nc.variables[DATAFIELD_NAME].radiance_units
     long_name = nc.variables[DATAFIELD_NAME].long_name
 
     # The scale and offset attributes do not have standard names in this case,
     # so we have to apply the scaling equation ourselves.
-    scale = nc.variables[DATAFIELD_NAME].radiance_scales[0]
-    offset = nc.variables[DATAFIELD_NAME].radiance_offsets[0]
+    scale = nc.variables[DATAFIELD_NAME].radiance_scales
+    offset = nc.variables[DATAFIELD_NAME].radiance_offsets
     valid_range = nc.variables[DATAFIELD_NAME].valid_range
     fill_value = nc.variables[DATAFIELD_NAME]._FillValue
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])

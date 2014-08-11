@@ -713,6 +713,13 @@ class TestLaadsMydSwaths(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.laads.myd.MYD07_L2_Water_Vapor.run(hdffile)
 
+    def test_MYD021KM_EV_Band26(self):
+        """
+        """
+        hdffile = 'MYD021KM.A2002226.0000.005.2009193222735.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD021KM_EV_Band26.run(hdffile)
+
     def test_MYD021KM_EV_1KM_Emissive_level0(self):
         """
         """
