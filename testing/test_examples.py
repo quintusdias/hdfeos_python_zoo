@@ -720,6 +720,15 @@ class TestLaadsMydSwaths(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.laads.myd.MYD021KM_EV_1KM_Emissive_level0.run(hdffile)
 
+    def test_MYD02HKM_A2010031_0035_005_2010031183706_EV_500_RefSB_lvl0(self):
+        """
+        """
+        hdffile = 'MYD02HKM.A2010031.0035.005.2010031183706.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.laads.myd
+        module = pkg.MYD02HKM_A2010031_0035_005_2010031183706_EV_500_RefSB_lvl0
+        module.run(hdffile)
+
 class TestLaadsViirsGrids(unittest.TestCase):
     """
     Run LAADS VIIRS grid codes.

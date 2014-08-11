@@ -1,6 +1,6 @@
 """
-This example code illustrates how to access and visualize a LAADS MYD (MODIS-
-AQUA) swath file in Python.
+This example code illustrates how to access and visualize a LAADS
+MYD swath file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MYD021KM_EV_1KM_Emmisive_level0.py
+    python MYD02HKM_A2010031_0035_005_2010031183706_EV_500_RefSB_lvl0.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -30,24 +30,23 @@ import numpy as np
 
 def run(FILE_NAME):
 
-    DATAFIELD_NAME = 'EV_1KM_Emissive'
+    DATAFIELD_NAME = 'EV_500_RefSB'
     
     nc = Dataset(FILE_NAME)
 
-    # Just read the first level, Band 20.  And subset the data to match the
-    # lat/lon resolution.
-    data = nc.variables[DATAFIELD_NAME][0,::5,::5].astype(np.float64)
+    # Just read the first level, and subset the data to match the lat/lon
+    # resolution.
+    data = nc.variables[DATAFIELD_NAME][0,::2,::2].astype(np.float64)
     units = nc.variables[DATAFIELD_NAME].radiance_units
     long_name = nc.variables[DATAFIELD_NAME].long_name
 
     # The scale and offset attributes do not have standard names in this case,
-    # so we have to apply the scaling equation ourselves.
+    # so we have to apply the scaling equation ourselves.  Fill value is 
+    # already applied, though.
     scale = nc.variables[DATAFIELD_NAME].radiance_scales[0]
     offset = nc.variables[DATAFIELD_NAME].radiance_offsets[1]
     valid_range = nc.variables[DATAFIELD_NAME].valid_range
-    fill_value = nc.variables[DATAFIELD_NAME]._FillValue
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
-    invalid = np.logical_or(invalid, data == fill_value)
     data[invalid] = np.nan
     data = scale * (data - offset)
     data = np.ma.masked_array(data, np.isnan(data))
@@ -55,13 +54,13 @@ def run(FILE_NAME):
     latitude = nc.variables['Latitude'][:]
     longitude = nc.variables['Longitude'][:]
     
-    # The data is close to the equator in Africa, so a global projection is
-    # not needed.
-    m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-5, urcrnrlat=30, llcrnrlon=5, urcrnrlon=45)
+    # Use a hemispherical projection for the southern hemisphere since the
+    # swath is over Antarctica.
+    m = Basemap(projection='splaea', resolution='l', 
+                boundinglat=-65, lon_0=0)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(0, 50, 10), labels=[1, 0, 0, 0])
-    m.drawmeridians(np.arange(0, 50., 10), labels=[0, 0, 0, 1])
+    m.drawparallels(np.arange(-90, -50, 10), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 180., 45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
     m.colorbar()
     plt.title('{0}\n({1})'.format(long_name, units))
@@ -78,7 +77,7 @@ if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = 'MYD021KM.A2002226.0000.005.2009193222735.hdf'
+    hdffile = 'MYD02HKM.A2010031.0035.005.2010031183706.hdf'
     try:
         hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:
