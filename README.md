@@ -22,7 +22,7 @@ includes support for HDFEOS, so for python2, everything just works.
 This is the ideal situation, yay Fedora!
 
 The Fedora 20 repositories do not include a Python3 RPM for basemap, but you can
-still install basemap via pip::
+still install basemap via pip.
 
     $ pip-python3 install basemap --user
 
@@ -83,10 +83,11 @@ port.
 Python2
 -------
 Also with MacPorts, you should install the hdf4, hdf5, and netcdf
-variant of the gdal port along with basemap::
+variant of the gdal port along with basemap.
 
     $ sudo port install gdal +hdf4 +hdf5 +netcdf
     $ sudo port install py27-matplotlib-basemap
+    $ sudo port install py27-netcdf4
 
 Python3
 -------
