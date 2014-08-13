@@ -48,6 +48,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestLpdaacMcdGrids(unittest.TestCase):
+    """
+    Run LPDAAC/MCD grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MCD43B4_Nadir_Reflectance_Band1(self):
+        """
+        """
+        hdffile = 'MCD43B4.A2007193.h25v05.005.2007211152315.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43B4_Nadir_Reflectance_Band1.run(hdffile)
+
 class TestNsidcAmsreSwaths(unittest.TestCase):
     """
     Run NSIDC/AMSR_E swath codes.
