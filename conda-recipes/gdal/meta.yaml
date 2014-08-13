@@ -17,6 +17,9 @@ requirements:
     - hdf4
     - hdf5
 
+build:
+  number: 0
+
 test:
   files:
     - os1_hw.py
