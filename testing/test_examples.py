@@ -48,6 +48,37 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestLpdaacMcdGrids(unittest.TestCase):
+    """
+    Run LPDAAC/MCD grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MCD43A3_A2013305_h12v11_005_2013322102420(self):
+        """
+        """
+        hdffile = 'MCD43A3.A2013305.h12v11.005.2013322102420.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43A3_A2013305_h12v11_005_2013322102420.run(hdffile)
+
+    def test_MCD43B4_Nadir_Reflectance_Band1(self):
+        """
+        """
+        hdffile = 'MCD43B4.A2007193.h25v05.005.2007211152315.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43B4_Nadir_Reflectance_Band1.run(hdffile)
+
+    def test_MCD43C1_Black_Sky_Albedo_Num_Albedo_Bands1(self):
+        """
+        """
+        hdffile = 'MCD43C1.A2006353.004.2007012185705.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43C1_Black_Sky_Albedo_Num_Albedo_Bands1.run(hdffile)
+
 class TestNsidcAmsreSwaths(unittest.TestCase):
     """
     Run NSIDC/AMSR_E swath codes.
