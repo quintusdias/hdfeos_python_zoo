@@ -58,6 +58,13 @@ class TestLpdaacMcdGrids(unittest.TestCase):
         """
         plt.close()
 
+    def test_MCD43A3_A2013305_h12v11_005_2013322102420(self):
+        """
+        """
+        hdffile = 'MCD43A3.A2013305.h12v11.005.2013322102420.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43A3_A2013305_h12v11_005_2013322102420.run(hdffile)
+
     def test_MCD43B4_Nadir_Reflectance_Band1(self):
         """
         """
