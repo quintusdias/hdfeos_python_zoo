@@ -2,7 +2,7 @@
 from . import AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D_hdf
 from . import AMSR_E_L2_Ocean_V06_200206190029_D_High_res_cloud
 
-# grid codes
+# grid codes.
 from . import AMSR_E_L3_5DaySnow_NH_SWE
 from . import AMSR_E_L3_DL_A_TB36_5H_Res_1
 from . import AMSR_E_L3_DO_High_res_cloud

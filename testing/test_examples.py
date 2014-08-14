@@ -696,6 +696,70 @@ class TestLaadsModGrids(unittest.TestCase):
         hdffile = 'MOD08_D3.A2010001.005.2010006233008.hdf'
         zoo.laads.mod.MOD08_D3_Cloud_Fraction_Liquid.run(fullpath(hdffile))
 
+class TestLaadsMydGrids(unittest.TestCase):
+    """
+    Run LAADS MYD grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD08_D3_Cloud_Fraction_Liquid(self):
+        """
+        """
+        hdffile = 'MYD08_D3.A2009001.005.2009048010832.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD08_D3_Cloud_Fraction_Liquid.run(hdffile)
+
+class TestLaadsMydSwaths(unittest.TestCase):
+    """
+    Run LAADS MYD swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD07_L2_Water_Vapor(self):
+        """
+        """
+        hdffile = 'MYD07_L2.A2002184.2200.005.2006133121629.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD07_L2_Water_Vapor.run(hdffile)
+
+    def test_MYDARNSS_EV_1KM_Emissive_lvl9(self):
+        """
+        """
+        hdffile = 'MYDARNSS.Barrow.A2002184.2200.005.2007051063709.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYDARNSS_EV_1KM_Emissive_lvl9.run(hdffile)
+
+    def test_MYD021KM_EV_Band26(self):
+        """
+        """
+        hdffile = 'MYD021KM.A2002226.0000.005.2009193222735.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD021KM_EV_Band26.run(hdffile)
+
+    def test_MYD021KM_EV_1KM_Emissive_level0(self):
+        """
+        """
+        hdffile = 'MYD021KM.A2002226.0000.005.2009193222735.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD021KM_EV_1KM_Emissive_level0.run(hdffile)
+
+    def test_MYD02HKM_A2010031_0035_005_2010031183706_EV_500_RefSB_lvl0(self):
+        """
+        """
+        hdffile = 'MYD02HKM.A2010031.0035.005.2010031183706.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.laads.myd
+        module = pkg.MYD02HKM_A2010031_0035_005_2010031183706_EV_500_RefSB_lvl0
+        module.run(hdffile)
+
 class TestLaadsViirsGrids(unittest.TestCase):
     """
     Run LAADS VIIRS grid codes.
