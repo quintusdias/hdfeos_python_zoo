@@ -72,6 +72,13 @@ class TestLpdaacMcdGrids(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.lpdaac.mcd.MCD43B4_Nadir_Reflectance_Band1.run(hdffile)
 
+    def test_MCD43C1_Black_Sky_Albedo_Num_Albedo_Bands1(self):
+        """
+        """
+        hdffile = 'MCD43C1.A2006353.004.2007012185705.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43C1_Black_Sky_Albedo_Num_Albedo_Bands1.run(hdffile)
+
 class TestNsidcAmsreSwaths(unittest.TestCase):
     """
     Run NSIDC/AMSR_E swath codes.
