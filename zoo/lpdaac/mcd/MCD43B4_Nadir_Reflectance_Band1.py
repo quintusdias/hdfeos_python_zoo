@@ -44,6 +44,7 @@ def run(FILE_NAME):
 
     # Apply the attributes.
     meta = gdset.GetMetadata()
+    units = meta['units']
     fillvalue = np.float(meta['_FillValue'])
     scale = np.float(meta['scale_factor'])
     offset = np.float(meta['add_offset'])
@@ -75,7 +76,8 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(75, 115, 10), labels=[0, 0, 0, 1])
     m.pcolormesh(lon, lat, data)
     m.colorbar()
-    plt.title(DATAFIELD_NAME.replace('_', ' '))
+    title = "{0} ({1})".format(DATAFIELD_NAME.replace('_', ' '), units)
+    plt.title(title)
 
     fig = plt.gcf()
     plt.show()
