@@ -11,7 +11,7 @@ Group:		System Environment/Libraries
 License:	BSD
 URL:		http://www.hdfgroup.org
 
-Source0:	http://www.hdfgroup.org/ftp/HDF5/prev-releases/src/hdf5-%{version}.tar.bz2
+Source0:	http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-%{version}.tar.bz2
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 #BuildRequires:	
