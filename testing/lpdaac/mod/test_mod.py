@@ -64,5 +64,12 @@ class TestGrids(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.lpdaac.mod.MOD09GA_Range.run(hdffile)
 
+    def test_MOD09GHK_sur_refl_01_1(self):
+        """
+        """
+        hdffile = 'MOD09GHK.A2007001.h31v08.004.2007003192844.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mod.MOD09GHK_sur_refl_01_1.run(hdffile)
+
 if __name__ == "__main__":
     unittest.main()
