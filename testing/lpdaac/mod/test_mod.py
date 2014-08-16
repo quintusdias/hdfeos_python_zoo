@@ -50,5 +50,19 @@ class TestGrids(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.lpdaac.mod.MOD13C2_CMG_0_05_Deg_Monthly_NDVI.run(hdffile)
 
+    def test_MOD11C2_LST_Night_CMG(self):
+        """
+        """
+        hdffile = 'MOD11C2.A2007073.005.2007098050130.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mod.MOD11C2_LST_Night_CMG.run(hdffile)
+
+    def test_MOD09GA_Range(self):
+        """
+        """
+        hdffile = 'MOD09GA.A2007268.h10v08.005.2007272184810.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mod.MOD09GA_Range.run(hdffile)
+
 if __name__ == "__main__":
     unittest.main()
