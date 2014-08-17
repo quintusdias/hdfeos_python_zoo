@@ -36,11 +36,11 @@ CentOS 6.5, and Mac.
 Download and install the free version of anaconda, then follow these
 directions ::
 
-    $ conda install basemap gdal netcdf4
-    $ conda create -n hdfeos ipython matplotlib h5py basemap netcdf4 gdal
-    $ conda install -c https://conda.binstar.org/jevans hdf4=4.2.10
+    $ conda create -n hdfeos python
+    $ source activate hdfeos
+    $ conda install basemap netcdf4 h5py
     $ conda remove libnetcdf
-    $ conda install -c https://conda.binstar.org/jevans libnetcdf=4.2.1.1
+    $ conda install --channel https://conda.binstar.org/jevans hdf4 libnetcdf gdal
 
 You may have to deal with issue#32 as described at
 https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or

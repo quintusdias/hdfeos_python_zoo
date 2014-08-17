@@ -1,13 +1,14 @@
 package:
   name: geos
-  version: 3.4.2
+  version: 3.3.3
 
 source:
-  fn: geos-3.4.2.tar.bz2
-  url: http://download.osgeo.org/geos/geos-3.4.2.tar.bz2
+  fn: geos-3.3.3.tar.bz2
+  url: http://download.osgeo.org/geos/geos-3.3.3.tar.bz2
+  md5: 8454e653d7ecca475153cc88fd1daa26
 
 build:
-  number: 0
+  number: 1
 
 about:
   home: http://trac.osgeo.org/geos/

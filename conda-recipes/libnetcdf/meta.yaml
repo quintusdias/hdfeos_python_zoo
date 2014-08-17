@@ -10,17 +10,17 @@ source:
 requirements:
   build:
     - curl
+    - hdf4
     - hdf5
     - zlib
   run:
     - curl
+    - hdf4
     - hdf5
     - zlib
 
-test:
-  commands:
-    - ncdump
-    - nc-config --help
+build:
+  number: 2
 
 about:
   home: http://www.unidata.ucar.edu/software/netcdf/
