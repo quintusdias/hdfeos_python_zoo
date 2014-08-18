@@ -37,10 +37,11 @@ def run(FILE_NAME):
 
         from netCDF4 import Dataset
 
+        # The scaling equation isn't what netcdf4 expects, so turn it off.
         nc = Dataset(FILE_NAME)
         ncvar = nc.variables[DATAFIELD_NAME]
-
-        data = ncvar[:]
+        ncvar.set_auto_maskandscale(False)
+        data = ncvar[:].astype(np.float64)
 
         # Get any needed attributes.
         scale = ncvar.scale_factor
@@ -50,26 +51,32 @@ def run(FILE_NAME):
         units = ncvar.units
         long_name = ncvar.long_name
 
-        # Construct the grid.
-        # transform is (-16679257.795, 463.3127165279165, 0.0, 2223901.039333,
-        # 0.0, -463.3127165274999)
-        import pdb; pdb.set_trace()
+        # Construct the grid.  The needed information is in a global attribute
+        # called 'StructMetadata.0'.  Use regular expressions to tease out the
+        # extents of the grid.
         gridmeta = getattr(nc, 'StructMetadata.0')
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
-                                  (?<upper_left_x>[-]?\d+.\d+)
+                                  (?P<upper_left_x>[+-]?\d+\.\d+)
                                   ,
-                                  (?<upper_left_y>[-]?\d+.\d+)
-                                  \))''', re.VERBOSE)
+                                  (?P<upper_left_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
         match = ul_regex.search(gridmeta)
-        x0 = match('upper_left_x')
-        y0 = match('upper_left_y')
+        x0 = np.float(match.group('upper_left_x'))
+        y0 = np.float(match.group('upper_left_y'))
 
         lr_regex = re.compile(r'''LowerRightMtrs=\(
-                                  (?<lower_right_x>[-]?\d+.\d+),
-                                  (?<lower_right_y>[-]?\d+.\d+))''', re.VERBOSE)
+                                  (?P<lower_right_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<lower_right_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
         match = lr_regex.search(gridmeta)
-        x1 = match('upper_left_x')
-        y1 = match('upper_left_y')
+        x1 = np.float(match.group('lower_right_x'))
+        y1 = np.float(match.group('lower_right_y'))
+        
+        nx, ny = data.shape
+        x = np.linspace(x0, x1, nx)
+        y = np.linspace(y0, y1, ny)
+        xv, yv = np.meshgrid(x, y)
     
     else:
         # Gdal
@@ -92,14 +99,16 @@ def run(FILE_NAME):
         long_name = meta['long_name']
     
         # Construct the grid.
-        import pdb; pdb.set_trace()
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
         x = np.linspace(x0, x0 + xinc*nx, nx)
         y = np.linspace(y0, y0 + yinc*ny, ny)
         xv, yv = np.meshgrid(x, y)
 
+        del gdset
+
     # Apply the attributes to the data.
+    import pdb; pdb.set_trace()
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
     invalid = np.logical_or(invalid, data == fillvalue)
     data[invalid] = np.nan
@@ -129,8 +138,6 @@ def run(FILE_NAME):
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
-
-    del gdset
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ Tests for hdfeos zoo example codes.
 """
 import inspect
 import os
+import sys
 import unittest
 
 import matplotlib.pyplot as plt
@@ -75,12 +76,21 @@ class TestLpdaacMydGrids(unittest.TestCase):
         """
         plt.close()
 
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
     def test_MYD09A1_sur_refl_b02_gdal(self):
         """
         """
         hdffile = 'MYD09A1.A2007273.h03v07.005.2007285103507.hdf'
         hdffile = fullpath(hdffile)
         zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.run(hdffile)
+
+    def test_MYD09A1_sur_refl_b02_netcdf(self):
+        """
+        """
+        hdffile = 'MYD09A1.A2007273.h03v07.005.2007285103507.hdf'
+        hdffile = fullpath(hdffile)
         zoo.lpdaac.myd.MYD09A1_sur_refl_b02.run(hdffile)
 
 
