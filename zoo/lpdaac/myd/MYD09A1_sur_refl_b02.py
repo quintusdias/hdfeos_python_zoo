@@ -108,7 +108,6 @@ def run(FILE_NAME):
         del gdset
 
     # Apply the attributes to the data.
-    import pdb; pdb.set_trace()
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
     invalid = np.logical_or(invalid, data == fillvalue)
     data[invalid] = np.nan
