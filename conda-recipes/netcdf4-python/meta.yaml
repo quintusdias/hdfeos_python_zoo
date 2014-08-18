@@ -1,15 +1,16 @@
 package:
   name: netcdf4-python
-  version: 1.0.8
+  version: 1.0.9
 source:
   git_url: https://github.com/Unidata/netcdf4-python.git
-  git_tag: v1.0.8rel
+  git_tag: v1.0.9rel
 
 build:
   number: 1
 
 requirements:
   build:
+    - libnetcdf
     - python
     - setuptools
     - numpy

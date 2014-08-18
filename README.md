@@ -38,9 +38,8 @@ directions ::
 
     $ conda create -n hdfeos python
     $ source activate hdfeos
-    $ conda install basemap netcdf4 h5py
-    $ conda remove libnetcdf
-    $ conda install --channel https://conda.binstar.org/jevans hdf4 libnetcdf gdal
+    $ conda install basemap 
+    $ conda install --channel https://conda.binstar.org/jevans hdf4 hdf5 h5py libnetcdf netcdf4-python gdal
 
 You may have to deal with issue#32 as described at
 https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or

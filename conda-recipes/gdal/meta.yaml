@@ -1,11 +1,11 @@
 package:
   name: gdal
-  version: 1.10.1
+  version: 1.11.0
 
 source:
-  fn: gdal-1.10.1.tar.gz
-  url: http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
-  md5: 86b2c71a910d826a7fe6ebb43a532fb7
+  fn: gdal-1.11.0.tar.gz
+  url: http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz
+  md5: 9fdf0f2371a3e9863d83e69951c71ec4
 
 requirements:
   build:
@@ -18,18 +18,7 @@ requirements:
     - hdf5
 
 build:
-  number: 2
-
-test:
-  files:
-    - os1_hw.py
-    - sites.dbf
-    - sites.sbn
-    - sites.sbx
-    - sites.shp
-    - sites.shx
-  imports:
-    - osgeo
+  number: 0
 
 about:
   home: http://www.gdal.org/
