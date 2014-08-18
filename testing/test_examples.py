@@ -48,6 +48,42 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestLpdaacMydSwaths(unittest.TestCase):
+    """
+    Run LPDAAC/MYD swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD11_L2_LST(self):
+        """
+        """
+        hdffile = 'MYD11_L2.A2007093.0735.005.2007101061952.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD11_L2_LST.run(hdffile)
+
+class TestLpdaacMydGrids(unittest.TestCase):
+    """
+    Run LPDAAC/MYD grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD09A1_sur_refl_b02_gdal(self):
+        """
+        """
+        hdffile = 'MYD09A1.A2007273.h03v07.005.2007285103507.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.run(hdffile)
+
+
 class TestLpdaacMcdGrids(unittest.TestCase):
     """
     Run LPDAAC/MCD grid codes.
