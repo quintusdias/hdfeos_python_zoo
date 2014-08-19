@@ -93,6 +93,40 @@ class TestLpdaacMydGrids(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.lpdaac.myd.MYD09A1_sur_refl_b02.run(hdffile)
 
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_MYD09GQ_A2012246_h35v10_005_2012248075505_gdal(self):
+        """
+        """
+        hdffile = 'MYD09GQ.A2012246.h35v10.005.2012248075505.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD09GQ_A2012246_h35v10_005_2012248075505.run(hdffile)
+
+    def test_MYD09GQ_A2012246_h35v10_005_2012248075505_netcdf(self):
+        """
+        """
+        hdffile = 'MYD09GQ.A2012246.h35v10.005.2012248075505.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD09GQ_A2012246_h35v10_005_2012248075505.run(hdffile)
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_MYD11C2_LST_Night_CMG_gdal(self):
+        """
+        """
+        hdffile = 'MYD11C2.A2006337.004.2006348062459.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.run(hdffile)
+
+    def test_MYD11C2_LST_Night_CMG_netcdf(self):
+        """
+        """
+        hdffile = 'MYD11C2.A2006337.004.2006348062459.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.run(hdffile)
+
 
 class TestLpdaacMcdGrids(unittest.TestCase):
     """
