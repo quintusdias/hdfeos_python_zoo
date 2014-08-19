@@ -12,10 +12,20 @@ requirements:
     - python
     - hdf4
     - hdf5
+    - libnetcdf
+    - numpy
+    - geos
+    - proj4
+    - curl
   run:
     - python
     - hdf4
     - hdf5
+    - libnetcdf
+    - numpy
+    - geos
+    - proj4
+    - curl
 
 build:
   number: 0
