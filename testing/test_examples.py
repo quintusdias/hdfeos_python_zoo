@@ -76,8 +76,8 @@ class TestLpdaacMydGrids(unittest.TestCase):
         """
         plt.close()
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
     def test_MYD09A1_sur_refl_b02_gdal(self):
         """
         """
@@ -94,8 +94,8 @@ class TestLpdaacMydGrids(unittest.TestCase):
         zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = True
         zoo.lpdaac.myd.MYD09A1_sur_refl_b02.run(hdffile)
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
     def test_MYD09GQ_A2012246_h35v10_005_2012248075505_gdal(self):
         """
         """
@@ -112,8 +112,8 @@ class TestLpdaacMydGrids(unittest.TestCase):
         zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = True
         zoo.lpdaac.myd.MYD09GQ_A2012246_h35v10_005_2012248075505.run(hdffile)
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
     def test_MYD11C2_LST_Night_CMG_gdal(self):
         """
         """
@@ -130,8 +130,8 @@ class TestLpdaacMydGrids(unittest.TestCase):
         zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.USE_NETCDF = True
         zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.run(hdffile)
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
     def test_MYD13A1_MODIS_Grid_16DAY_500m_NDVI_gdal(self):
         """
         """
@@ -148,8 +148,8 @@ class TestLpdaacMydGrids(unittest.TestCase):
         zoo.lpdaac.myd.MYD13A1_MODIS_Grid_16DAY_500m_NDVI.USE_NETCDF = True
         zoo.lpdaac.myd.MYD13A1_MODIS_Grid_16DAY_500m_NDVI.run(hdffile)
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
     def test_MYD17A2_Gpp_1km_gdal(self):
         """
         """
