@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MYD13A1_MODIS_Grid_16DAY_500m_NDVI
+    python MYD13A1_MODIS_Grid_16DAY_500m_NDVI.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -84,7 +84,7 @@ def run(FILE_NAME):
         # Gdal
         import gdal
 
-        GRID_NAME = 'MOD_Grid_MYD17A2'
+        GRID_NAME = 'MODIS_Grid_16Day_500m_VI'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
