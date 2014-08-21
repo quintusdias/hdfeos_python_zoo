@@ -1,6 +1,6 @@
 """
-This example code illustrates how to access and visualize a MEaSURES VIP
-grid file in Python.
+This example code illustrates how to access and visualize an LP_DAAC MEaSURES
+WELD CONUS Albers grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python VIP01P4_A2010001_002.py
+    python CONUS_annual_2012_h01v06_doy007to356_v1_5.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -31,32 +31,28 @@ USE_NETCDF = True
 
 def run(FILE_NAME):
     
-    DATAFIELD_NAME = 'CMG 0.05 Deg NDVI'
+    DATAFIELD_NAME = 'NDVI_TOA'
 
     if USE_NETCDF:
 
         from netCDF4 import Dataset
 
-        # The scaling equation isn't what netcdf4 expects, so turn it off.
-        # Scale down the data by a factor of 6 so that low-memory machines
+        # Scale down the data by a factor of 5 so that low-memory machines
         # can handle it.
         nc = Dataset(FILE_NAME)
         ncvar = nc.variables[DATAFIELD_NAME]
         ncvar.set_auto_maskandscale(False)
-        data = ncvar[::6, ::6].astype(np.float64)
+        data = ncvar[::5, ::5].astype(np.float64)
 
-        # Get any needed attributes.  The valid_range attribute is a string,
-        # which is not usually the case.
+        # Get any needed attributes.
         scale = ncvar.scale_factor
         fillvalue = ncvar._FillValue
-        valid_range = [np.float64(x) for x in ncvar.valid_range.split(', ')]
+        valid_range = ncvar.valid_range
         units = ncvar.units
-        long_name = ncvar.long_name
 
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
-        # extents of the grid.  In addition, the grid is in packed decimal
-        # degrees, so we need to normalize to degrees.
+        # extents of the grid.  
         gridmeta = getattr(nc, 'StructMetadata.0')
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                                   (?P<upper_left_x>[+-]?\d+\.\d+)
@@ -64,8 +60,8 @@ def run(FILE_NAME):
                                   (?P<upper_left_y>[+-]?\d+\.\d+)
                                   \)''', re.VERBOSE)
         match = ul_regex.search(gridmeta)
-        x0 = np.float(match.group('upper_left_x')) / 1e6
-        y0 = np.float(match.group('upper_left_y')) / 1e6
+        x0 = np.float(match.group('upper_left_x'))
+        y0 = np.float(match.group('upper_left_y'))
 
         lr_regex = re.compile(r'''LowerRightMtrs=\(
                                   (?P<lower_right_x>[+-]?\d+\.\d+)
@@ -73,19 +69,19 @@ def run(FILE_NAME):
                                   (?P<lower_right_y>[+-]?\d+\.\d+)
                                   \)''', re.VERBOSE)
         match = lr_regex.search(gridmeta)
-        x1 = np.float(match.group('lower_right_x')) / 1e6
-        y1 = np.float(match.group('lower_right_y')) / 1e6
+        x1 = np.float(match.group('lower_right_x'))
+        y1 = np.float(match.group('lower_right_y'))
         
         ny, nx = data.shape
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
-        lon, lat = np.meshgrid(x, y)
+        xv, yv = np.meshgrid(x, y)
     
     else:
         # Gdal
         import gdal
 
-        GRID_NAME = 'VIP_CMG_GRID'
+        GRID_NAME = 'WELD_GRID'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
@@ -101,14 +97,13 @@ def run(FILE_NAME):
         fillvalue = np.float(meta['_FillValue'])
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
         units = meta['units']
-        long_name = meta['long_name']
     
         # Construct the grid.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         ny, nx = (gdset.RasterYSize / 6, gdset.RasterXSize / 6)
         x = np.linspace(x0, x0 + xinc*6*nx, nx)
         y = np.linspace(y0, y0 + yinc*6*ny, ny)
-        lon, lat = np.meshgrid(x, y)
+        xv, yv = np.meshgrid(x, y)
 
         del gdset
 
@@ -116,19 +111,27 @@ def run(FILE_NAME):
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
     invalid = np.logical_or(invalid, data == fillvalue)
     data[invalid] = np.nan
-    data = data / scale
+    data = data * scale
     data = np.ma.masked_array(data, np.isnan(data))
     
-    m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-90, urcrnrlat=90,
-                llcrnrlon=-180, urcrnrlon = 180)
+    # Convert the grid back to lat/lon
+    aea = pyproj.Proj("+proj=aea +lat_1=29.5 +lat2=45.5 +lat_0=-96 +lon_0=23")
+    wgs84 = pyproj.Proj("+init=EPSG:4326") 
+    lon, lat= pyproj.transform(aea, wgs84, xv, yv)
+
+    #m = Basemap(projection='aea', resolution='i',
+    #            llcrnrlat=37.5, urcrnrlat=42.5,
+    #            llcrnrlon=-127.5, urcrnrlon = -122.5)
+    m = Basemap(projection='aea', resolution='i',
+                lat_1=29.5, lat_2=45.5, lon_0=-96, lat_0=23,
+                width=800000,height=700000)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90, 91, 30), labels=[1, 0, 0, 0])
-    m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
+    m.drawparallels(np.arange(35, 45, 1), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-125, 135, 1), labels=[0, 0, 0, 1])
 
     m.pcolormesh(lon, lat, data, latlon=True)
     m.colorbar()
-    title = "{0}".format(long_name.replace('_', ' '))
+    title = "{0}".format(DATAFIELD_NAME.replace('_', ' '))
     plt.title(title)
 
     fig = plt.gcf()
@@ -143,7 +146,7 @@ if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = 'VIP01P4.A2010001.002.hdf'
+    hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
     try:
         hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:
