@@ -66,6 +66,34 @@ class TestLpdaacMydSwaths(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.lpdaac.myd.MYD11_L2_LST.run(hdffile)
 
+class TestLpdaacVipGrids(unittest.TestCase):
+    """
+    Run LPDAAC/VIP grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_VIP01P4_A2010001_002_gdal(self):
+        """
+        """
+        hdffile = 'VIP01P4.A2010001.002.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.USE_NETCDF = False
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.run(hdffile)
+
+    def test_VIP01P4_A2010001_002_netcdf(self):
+        """
+        """
+        hdffile = 'VIP01P4.A2010001.002.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.USE_NETCDF = True
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.run(hdffile)
+
 class TestLpdaacMydGrids(unittest.TestCase):
     """
     Run LPDAAC/MYD grid codes.
