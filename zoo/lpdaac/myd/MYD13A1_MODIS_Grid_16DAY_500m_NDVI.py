@@ -84,10 +84,13 @@ def run(FILE_NAME):
         # Gdal
         import gdal
 
-        GRID_NAME = 'MODIS_Grid_16Day_500m_VI'
+        GRID_NAME = 'MODIS_Grid_16DAY_500m_VI'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
+
+        # Subset the data by a factor of 4 so that low-memory machines can 
+        # render it more easily.
         gdset = gdal.Open(gname)
         data = gdset.ReadAsArray().astype(np.float64)[::4, ::4]
     
@@ -100,12 +103,12 @@ def run(FILE_NAME):
         units = meta['units']
         long_name = meta['long_name']
     
-        # Construct the grid.
+        # Construct the grid, remembering to subset by a factor of 4.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
         x = np.linspace(x0, x0 + xinc*nx, nx)
         y = np.linspace(y0, y0 + yinc*ny, ny)
-        xv, yv = np.meshgrid(x, y)
+        xv, yv = np.meshgrid(x[::4], y[::4])
 
         del gdset
 
