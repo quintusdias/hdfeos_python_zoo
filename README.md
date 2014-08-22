@@ -30,8 +30,8 @@ Anaconda
 
 Mac, Linux
 ----------
-The following steps worked with Anaconda 2.0.1 (Python2 and 3) on Fedora 19,
-CentOS 6.5, and Mac.
+The following steps give you a netcdf library that allows you to read HDF4
+files on Python3/Anaconda 2.0.1 on Fedora 19, CentOS 6.5, and Mac.
 
 Download and install the free version of anaconda, then follow these
 directions ::
