@@ -66,6 +66,90 @@ class TestLpdaacMydSwaths(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.lpdaac.myd.MYD11_L2_LST.run(hdffile)
 
+class TestLpdaacGedGrids(unittest.TestCase):
+    """
+    Run LPDAAC/GED grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_AGNS100_v003_64__089_0001_gdal(self):
+        """
+        """
+        hdffile = 'AGNS100.v003.64.-089.0001.h5'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = False
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
+
+    def test_AGNS100_v003_64__089_0001_netcdf(self):
+        """
+        """
+        hdffile = 'AGNS100.v003.64.-089.0001.h5'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = True
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
+
+class TestLpdaacWeldGrids(unittest.TestCase):
+    """
+    Run LPDAAC/Weld grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_gdal(self):
+        """
+        """
+        hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = False
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
+
+    def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_netcdf(self):
+        """
+        """
+        hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = True
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
+
+class TestLpdaacVipGrids(unittest.TestCase):
+    """
+    Run LPDAAC/VIP grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_VIP01P4_A2010001_002_gdal(self):
+        """
+        """
+        hdffile = 'VIP01P4.A2010001.002.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.USE_NETCDF = False
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.run(hdffile)
+
+    def test_VIP01P4_A2010001_002_netcdf(self):
+        """
+        """
+        hdffile = 'VIP01P4.A2010001.002.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.USE_NETCDF = True
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.run(hdffile)
+
 class TestLpdaacMydGrids(unittest.TestCase):
     """
     Run LPDAAC/MYD grid codes.
