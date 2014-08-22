@@ -1,0 +1,23 @@
+package:
+  name: h5py
+  version: 2.3.1
+
+source:
+  fn: h5py-2.3.1.tar.gz
+  url: https://github.com/h5py/h5py/archive/2.3.1.tar.gz
+  md5: 1a562e038eb242f939ff803937379117
+
+requirements:
+  build:
+    - python
+    - numpy
+    - hdf5
+    - cython
+  run:
+    - python
+    - numpy
+    - hdf5         [unix]
+
+about:
+  home: http://www.h5py.org/
+  license: New BSD (http://opensource.org/licenses/bsd-license.php)

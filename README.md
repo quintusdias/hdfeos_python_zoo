@@ -28,49 +28,34 @@ still install basemap via pip::
 
 The RPM for the GDAL library includes support for HDF-EOS2.
 
-Ubuntu 13.10
-============
-The versions of the netcdf and hdf packages that come with Ubuntu are a bit 
-dated, so we'll detail how to do a source install here.
-
-From a base install, use apt-get to additionally install 
-
-    * python-dev
-    * ipython
-    * python-matplotlib
-    * python-mpltoolkits.basemap-data
-    * python-mpltoolkits.basemap
-
-Download HDF 4.2.10 from http://www.hdfgroup.org.  Configure and install with::
-
-    $ ./configure --prefix=/usr/local --disable-netcdf --enable-fortran=no --enable-shared --disable-static
-    $ make install
-
-Download HDF5 1.8.13, configure and install with::
-
-    $ ./configure --prefix=/usr/local --disable-static --enable-shared
-    $ make install
-
-Download netcdf 4.3.2 from Unidata, configure and install with::
-
-    $ ./configure --prefix=/usr/local --disable-static --enable-shared --enable-hdf4 --enable-dap
-    $ make install
-
-Download netcdf4-1.1.0 from Pypi, configure and install with::
-
-    $ python setup.py install --user
-
-
 Anaconda
 ========
-Anaconda is ideal for the Windows platform although the netcdf4 library was not 
-compiled with hdf4 support.  The H5PY package that is installed by default will read
-HDF5 swath files, and the gdal package (not installed by default) will read both
-HDF4 and HDF5 grid files.  The HDF4 swath files cannot currently be read.
 
-    $ conda install basemap
-    $ conda install netcdf4
-    $ conda install gdal
+Mac, Linux
+----------
+The following steps give you a netcdf library that allows you to read HDF4
+files on Python3/Anaconda 2.0.1 on Fedora 19, CentOS 6.5, and Mac.
+
+Download and install the free version of anaconda, then follow these
+directions ::
+
+    $ conda create -n hdfeos python
+    $ source activate hdfeos
+    $ conda install basemap 
+    $ conda install --channel https://conda.binstar.org/jevans hdf4 hdf5 h5py libnetcdf netcdf4-python gdal
+
+You may have to deal with issue#32 as described at
+https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or
+may not occur on other platforms.  For instance, it did not occur on a
+CenOS 6.5 platform.
+
+Windows
+-------
+Anaconda is ideal for the Windows platform although the netcdf4 library
+was not compiled with hdf4 support.  The H5PY package that is installed by
+default will read HDF5 swath files, and the gdal package (not installed
+by default) will read both HDF4 and HDF5 grid files.  The HDF4 swath
+files cannot currently be read.
 
 Mac
 ===
