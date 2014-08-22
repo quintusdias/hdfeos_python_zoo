@@ -3,6 +3,7 @@ Tests for hdfeos zoo example codes.
 """
 import inspect
 import os
+import sys
 import unittest
 
 import matplotlib.pyplot as plt
@@ -47,6 +48,239 @@ class TestDocstrings(unittest.TestCase):
                     run_info = run_info.format(example_name)
                     self.assertTrue(run_info in docstring, msg)
 
+
+class TestLpdaacMydSwaths(unittest.TestCase):
+    """
+    Run LPDAAC/MYD swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD11_L2_LST(self):
+        """
+        """
+        hdffile = 'MYD11_L2.A2007093.0735.005.2007101061952.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD11_L2_LST.run(hdffile)
+
+class TestLpdaacGedGrids(unittest.TestCase):
+    """
+    Run LPDAAC/GED grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_AGNS100_v003_64__089_0001_gdal(self):
+        """
+        """
+        hdffile = 'AGNS100.v003.64.-089.0001.h5'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = False
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
+
+    def test_AGNS100_v003_64__089_0001_netcdf(self):
+        """
+        """
+        hdffile = 'AGNS100.v003.64.-089.0001.h5'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = True
+        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
+
+class TestLpdaacWeldGrids(unittest.TestCase):
+    """
+    Run LPDAAC/Weld grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_gdal(self):
+        """
+        """
+        hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = False
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
+
+    def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_netcdf(self):
+        """
+        """
+        hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = True
+        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
+
+class TestLpdaacVipGrids(unittest.TestCase):
+    """
+    Run LPDAAC/VIP grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                    'GDAL is wacky on Anaconda')
+    def test_VIP01P4_A2010001_002_gdal(self):
+        """
+        """
+        hdffile = 'VIP01P4.A2010001.002.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.USE_NETCDF = False
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.run(hdffile)
+
+    def test_VIP01P4_A2010001_002_netcdf(self):
+        """
+        """
+        hdffile = 'VIP01P4.A2010001.002.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.USE_NETCDF = True
+        zoo.lpdaac.vip.VIP01P4_A2010001_002.run(hdffile)
+
+class TestLpdaacMydGrids(unittest.TestCase):
+    """
+    Run LPDAAC/MYD grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
+    def test_MYD09A1_sur_refl_b02_gdal(self):
+        """
+        """
+        hdffile = 'MYD09A1.A2007273.h03v07.005.2007285103507.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.run(hdffile)
+
+    def test_MYD09A1_sur_refl_b02_netcdf(self):
+        """
+        """
+        hdffile = 'MYD09A1.A2007273.h03v07.005.2007285103507.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = True
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.run(hdffile)
+
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
+    def test_MYD09GQ_A2012246_h35v10_005_2012248075505_gdal(self):
+        """
+        """
+        hdffile = 'MYD09GQ.A2012246.h35v10.005.2012248075505.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD09GQ_A2012246_h35v10_005_2012248075505.run(hdffile)
+
+    def test_MYD09GQ_A2012246_h35v10_005_2012248075505_netcdf(self):
+        """
+        """
+        hdffile = 'MYD09GQ.A2012246.h35v10.005.2012248075505.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD09A1_sur_refl_b02.USE_NETCDF = True
+        zoo.lpdaac.myd.MYD09GQ_A2012246_h35v10_005_2012248075505.run(hdffile)
+
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
+    def test_MYD11C2_LST_Night_CMG_gdal(self):
+        """
+        """
+        hdffile = 'MYD11C2.A2006337.004.2006348062459.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.run(hdffile)
+
+    def test_MYD11C2_LST_Night_CMG_netcdf(self):
+        """
+        """
+        hdffile = 'MYD11C2.A2006337.004.2006348062459.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.USE_NETCDF = True
+        zoo.lpdaac.myd.MYD11C2_LST_Night_CMG.run(hdffile)
+
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
+    def test_MYD13A1_MODIS_Grid_16DAY_500m_NDVI_gdal(self):
+        """
+        """
+        hdffile = 'MYD13A1.A2006321.h10v05.004.2006341182856.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD13A1_MODIS_Grid_16DAY_500m_NDVI.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD13A1_MODIS_Grid_16DAY_500m_NDVI.run(hdffile)
+
+    def test_MYD13A1_MODIS_Grid_16DAY_500m_NDVI_netcdf(self):
+        """
+        """
+        hdffile = 'MYD13A1.A2006321.h10v05.004.2006341182856.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD13A1_MODIS_Grid_16DAY_500m_NDVI.USE_NETCDF = True
+        zoo.lpdaac.myd.MYD13A1_MODIS_Grid_16DAY_500m_NDVI.run(hdffile)
+
+    @unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
+                     'GDAL is wacky on Anaconda')
+    def test_MYD17A2_Gpp_1km_gdal(self):
+        """
+        """
+        hdffile = 'MYD17A2.A2007073.h09v08.005.2007096132046.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD17A2_Gpp_1km.USE_NETCDF = False
+        zoo.lpdaac.myd.MYD17A2_Gpp_1km.run(hdffile)
+
+    def test_MYD17A2_Gpp_1km_netcdf(self):
+        """
+        """
+        hdffile = 'MYD17A2.A2007073.h09v08.005.2007096132046.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.myd.MYD17A2_Gpp_1km.USE_NETCDF = True
+        zoo.lpdaac.myd.MYD17A2_Gpp_1km.run(hdffile)
+
+
+class TestLpdaacMcdGrids(unittest.TestCase):
+    """
+    Run LPDAAC/MCD grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MCD43A3_A2013305_h12v11_005_2013322102420(self):
+        """
+        """
+        hdffile = 'MCD43A3.A2013305.h12v11.005.2013322102420.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43A3_A2013305_h12v11_005_2013322102420.run(hdffile)
+
+    def test_MCD43B4_Nadir_Reflectance_Band1(self):
+        """
+        """
+        hdffile = 'MCD43B4.A2007193.h25v05.005.2007211152315.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43B4_Nadir_Reflectance_Band1.run(hdffile)
+
+    def test_MCD43C1_Black_Sky_Albedo_Num_Albedo_Bands1(self):
+        """
+        """
+        hdffile = 'MCD43C1.A2006353.004.2007012185705.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.lpdaac.mcd.MCD43C1_Black_Sky_Albedo_Num_Albedo_Bands1.run(hdffile)
 
 class TestNsidcAmsreSwaths(unittest.TestCase):
     """
@@ -695,6 +929,70 @@ class TestLaadsModGrids(unittest.TestCase):
         """
         hdffile = 'MOD08_D3.A2010001.005.2010006233008.hdf'
         zoo.laads.mod.MOD08_D3_Cloud_Fraction_Liquid.run(fullpath(hdffile))
+
+class TestLaadsMydGrids(unittest.TestCase):
+    """
+    Run LAADS MYD grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD08_D3_Cloud_Fraction_Liquid(self):
+        """
+        """
+        hdffile = 'MYD08_D3.A2009001.005.2009048010832.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD08_D3_Cloud_Fraction_Liquid.run(hdffile)
+
+class TestLaadsMydSwaths(unittest.TestCase):
+    """
+    Run LAADS MYD swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MYD07_L2_Water_Vapor(self):
+        """
+        """
+        hdffile = 'MYD07_L2.A2002184.2200.005.2006133121629.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD07_L2_Water_Vapor.run(hdffile)
+
+    def test_MYDARNSS_EV_1KM_Emissive_lvl9(self):
+        """
+        """
+        hdffile = 'MYDARNSS.Barrow.A2002184.2200.005.2007051063709.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYDARNSS_EV_1KM_Emissive_lvl9.run(hdffile)
+
+    def test_MYD021KM_EV_Band26(self):
+        """
+        """
+        hdffile = 'MYD021KM.A2002226.0000.005.2009193222735.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD021KM_EV_Band26.run(hdffile)
+
+    def test_MYD021KM_EV_1KM_Emissive_level0(self):
+        """
+        """
+        hdffile = 'MYD021KM.A2002226.0000.005.2009193222735.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.laads.myd.MYD021KM_EV_1KM_Emissive_level0.run(hdffile)
+
+    def test_MYD02HKM_A2010031_0035_005_2010031183706_EV_500_RefSB_lvl0(self):
+        """
+        """
+        hdffile = 'MYD02HKM.A2010031.0035.005.2010031183706.hdf'
+        hdffile = fullpath(hdffile)
+        pkg = zoo.laads.myd
+        module = pkg.MYD02HKM_A2010031_0035_005_2010031183706_EV_500_RefSB_lvl0
+        module.run(hdffile)
 
 class TestLaadsViirsGrids(unittest.TestCase):
     """
