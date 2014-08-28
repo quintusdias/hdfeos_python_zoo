@@ -23,7 +23,6 @@ code to work.  Please see the README for details.
 import os
 import re
 
-import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
@@ -33,34 +32,43 @@ import numpy as np
 
 def run(FILE_NAME):
     
-    # Identify the data field.
-    GRID_NAME = 'MOD_Grid_Seaice_4km_South'
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance_SP'
-    
     nc = Dataset(FILE_NAME)
-    data = nc.variables[DATAFIELD_NAME][:]
+    ncvar = nc.variables[DATAFIELD_NAME]
+    data = ncvar[:].astype(np.float64)
 
-    # Only use gdal to get the projection information.
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
-    gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray()
-    meta = gdset.GetMetadata()
-    x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
-    nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
-    x = np.linspace(x0, x0 + xinc*nx, nx)
-    y = np.linspace(y0, y0 + yinc*ny, ny)
+    # Construct the grid.  The needed information is in a global attribute
+    # called 'StructMetadata.0'.  Use regular expressions to tease out the
+    # extents of the grid.  
+    gridmeta = getattr(nc, 'StructMetadata.0')
+    ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
+                              (?P<upper_left_x>[+-]?\d+\.\d+)
+                              ,
+                              (?P<upper_left_y>[+-]?\d+\.\d+)
+                              \)''', re.VERBOSE)
+    match = ul_regex.search(gridmeta)
+    x0 = np.float(match.group('upper_left_x'))
+    y0 = np.float(match.group('upper_left_y'))
+
+    lr_regex = re.compile(r'''LowerRightMtrs=\(
+                              (?P<lower_right_x>[+-]?\d+\.\d+)
+                              ,
+                              (?P<lower_right_y>[+-]?\d+\.\d+)
+                              \)''', re.VERBOSE)
+    match = lr_regex.search(gridmeta)
+    x1 = np.float(match.group('lower_right_x'))
+    y1 = np.float(match.group('lower_right_y'))
+        
+    ny, nx = data.shape
+    x = np.linspace(x0, x1, nx)
+    y = np.linspace(y0, y1, ny)
     xv, yv = np.meshgrid(x, y)
-
+    
+    # Reproject into latlon
     # Reproject the coordinates out of lamaz into lat/lon.
     lamaz = pyproj.Proj("+proj=laea +a=6371228 +lat_0=-90 +lon_0=0 +units=m")
     wgs84 = pyproj.Proj("+init=EPSG:4326") 
     lon, lat= pyproj.transform(lamaz, wgs84, xv, yv)
-
-    # Use netcdf4 to read the actual data.
-    dset = Dataset(FILE_NAME)
-    data = dset.variables[DATAFIELD_NAME][:]
 
     # Use a south polar azimuthal equal area projection.
     m = Basemap(projection='splaea', resolution='l',
@@ -115,8 +123,6 @@ def run(FILE_NAME):
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
-
-    del gdset
 
 
 if __name__ == "__main__":
