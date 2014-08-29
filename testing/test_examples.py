@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestLarcTesGrids(unittest.TestCase):
+    """
+    Run LARC/TES grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_TES_L3_CH4_SurfacePressure(self):
+        """
+        """
+        hdffile = 'TES-Aura_L3-CH4_r0000010410_F01_07.he5'
+        hdffile = fullpath(hdffile)
+        zoo.larc.tes.TES_L3_CH4_SurfacePressure.run(hdffile)
+
 class TestLpdaacMydSwaths(unittest.TestCase):
     """
     Run LPDAAC/MYD swath codes.
