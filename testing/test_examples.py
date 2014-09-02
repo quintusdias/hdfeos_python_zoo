@@ -49,6 +49,58 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestLarcCeresGrids(unittest.TestCase):
+    """
+    Run LARC/CERES grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_CERES_EBAF_netclr_lvl0(self):
+        """
+        """
+        hdffile = 'CERES_EBAF_TOA_Terra_Edition1A_200003-200510.nc.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CERES_EBAF_netclr_lvl0.run(hdffile)
+
+    def test_CER_ES4_TRMM_Longwave_Flux_2_5_R(self):
+        """
+        """
+        hdffile = 'CER_ES4_TRMM-PFM_Edition1_009001.199808.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ES4_TRMM_Longwave_Flux_2_5_R.run(hdffile)
+
+    def test_CER_ISCCP_GEO_Effective_Temperature_M_tt0_MHA0(self):
+        """
+        """
+        hdffile = 'CER_ISCCP-D2like-GEO_Composite_Beta1_023031.200510.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ISCCP_GEO_Effective_Temperature_M_tt0_MHA0.run(hdffile)
+
+    def test_CER_ISCCP_Day_LLO_Dep_Alt_M_Ham(self):
+        """
+        """
+        hdffile = 'CER_ISCCP-D2like-Day_Aqua-FM3-MODIS_Beta1_023030.200612.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ISCCP_Day_LLO_Dep_Alt_M_Ham.run(hdffile)
+
+    def test_CER_ISCCP_Day_LLO_Dep_Alt_M_Sin(self):
+        """
+        """
+        hdffile = 'CER_ISCCP-D2like-Day_Aqua-FM3-MODIS_Beta1_023030.200612.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ISCCP_Day_LLO_Dep_Alt_M_Sin.run(hdffile)
+
+    def test_CER_SYN_Aqua_OTF_LTC_Sky_lvl2_Ham(self):
+        """
+        """
+        hdffile = 'CER_SYN_Aqua-FM3-MODIS_Edition2B_007005.20051031.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_SYN_Aqua_OTF_LTC_Sky_lvl2_Ham.run(hdffile)
+
 class TestLarcTesGrids(unittest.TestCase):
     """
     Run LARC/TES grid codes.
@@ -93,22 +145,11 @@ class TestLpdaacGedGrids(unittest.TestCase):
         """
         plt.close()
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
-    def test_AGNS100_v003_64__089_0001_gdal(self):
+    def test_AGNS100_v003_64__089_0001(self):
         """
         """
         hdffile = 'AGNS100.v003.64.-089.0001.h5'
         hdffile = fullpath(hdffile)
-        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = False
-        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
-
-    def test_AGNS100_v003_64__089_0001_netcdf(self):
-        """
-        """
-        hdffile = 'AGNS100.v003.64.-089.0001.h5'
-        hdffile = fullpath(hdffile)
-        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = True
         zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
 
 class TestLpdaacWeldGrids(unittest.TestCase):
@@ -121,22 +162,11 @@ class TestLpdaacWeldGrids(unittest.TestCase):
         """
         plt.close()
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
-    def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_gdal(self):
-        """
-        """
-        hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
-        hdffile = fullpath(hdffile)
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = False
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
-
     def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_netcdf(self):
         """
         """
         hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
         hdffile = fullpath(hdffile)
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = True
         zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
 
 class TestLpdaacVipGrids(unittest.TestCase):
@@ -268,7 +298,7 @@ class TestLpdaacMydGrids(unittest.TestCase):
         zoo.lpdaac.myd.MYD17A2_Gpp_1km.run(hdffile)
 
 
-class TestLpdaacMcdGrids(unittest.TestCase):
+class TestLpdaacModGrids(unittest.TestCase):
     """
     Run LPDAAC/MCD grid codes.
     """

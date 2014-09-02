@@ -37,7 +37,7 @@ def run(FILE_NAME):
                                                      GRID_NAME,
                                                      DATAFIELD_NAME)
     gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray().astype(np.float64)
+    data = gdset.ReadAsArray().astype(np.float64)[0, :, :]
 
     # Apply the attributes.
     meta = gdset.GetMetadata()

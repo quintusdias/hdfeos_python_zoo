@@ -22,41 +22,22 @@ References:
 
 import os
 
+import h5py
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
-
 def run(FILE_NAME):
 
-    if USE_NETCDF4:
+    with h5py.File(FILE_NAME, mode='r') as f:
 
-        from netCDF4 import Dataset
-
-        nc = Dataset(FILE_NAME)
-        var = nc.groups['Emissivity'].variables['Mean']
-
-        # Subset for Band 10.
-        data = var[1,:,:].astype(np.float64)
+        dset = f['/Emissivity/Mean']
+        data = dset[0,:,:].astype(np.float64)
 
         # Retrieve the geolocation data.
-        latitude = nc.groups['Geolocation'].variables['Latitude'][:]
-        longitude = nc.groups['Geolocation'].variables['Longitude'][:]
-
-    else:
-        
-        import h5py
-
-        with h5py.File(FILE_NAME, mode='r') as f:
-
-            dset = f['/Emissivity/Mean']
-            data =dset[:].astype(np.float64)
-
-            # Retrieve the geolocation data.
-            latitude = f['/Geolocation/Latitude'][:]
-            longitude = f['/Geolocation/Longitude'][:]
+        latitude = f['/Geolocation/Latitude'][:]
+        longitude = f['/Geolocation/Longitude'][:]
 
     # Apply the fillvalue and scaling (see [1])
     data[data == -9999] = np.nan
