@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestLarcCeresGrids(unittest.TestCase):
+    """
+    Run LARC/CERES grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_CERES_EBAF_netclr_lvl0(self):
+        """
+        """
+        hdffile = 'CERES_EBAF_TOA_Terra_Edition1A_200003-200510.nc.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CERES_EBAF_netclr_lvl0.run(hdffile)
+
 class TestLarcTesGrids(unittest.TestCase):
     """
     Run LARC/TES grid codes.
@@ -121,22 +138,11 @@ class TestLpdaacWeldGrids(unittest.TestCase):
         """
         plt.close()
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
-    def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_gdal(self):
-        """
-        """
-        hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
-        hdffile = fullpath(hdffile)
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = False
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
-
     def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_netcdf(self):
         """
         """
         hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
         hdffile = fullpath(hdffile)
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = True
         zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
 
 class TestLpdaacVipGrids(unittest.TestCase):
