@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestLarcMisrGrids(unittest.TestCase):
+    """
+    Run LARC/Misr grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MISR_AM1_CGAL_Loc_alb_ave_1_deg_lvl3(self):
+        """
+        """
+        hdffile = 'MISR_AM1_CGAL_2005_F06_0012.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.misr.MISR_AM1_CGAL_Loc_alb_ave_1_deg_lvl3.run(hdffile)
+
 class TestLarcCeresGrids(unittest.TestCase):
     """
     Run LARC/CERES grid codes.
