@@ -28,6 +28,27 @@ still install basemap via pip::
 
 The RPM for the GDAL library includes support for HDF-EOS2.
 
+Linux Mint 17
+=============
+The packaged version of the netcdf library is a bit old (and is not built to 
+handle HDF4 files), so we'll use the source version instead. 
+
+* Remove libnetcdfc7 and libhdf4-0 packages if installed
+* Download hdf-4.2.10 from the HDF Group website.
+* Configure with ```./configure --prefix=/path/to/install --enable-netcdf=no --enable-shared --disable-static --disable-fortran``` then ```make & make install```
+* Download netcdf-4.3.2 from Unidata
+* configure with ```CPPFLAGS="-I/path/to/install/include" LDFLAGS="-L/path/to/install/lib  -lmfhdf -ldf -ljpeg -lz" ./configure --prefix=/path/to/install --enable-hdf4=yes --enable-netcdf-4=yes --disable-static --enable-shared``` then ```make & make install```
+* Download netCDF4 from pypi (get at least version 1.1.1)
+* Install with ```NETCDF4_DIR=/path/to/install python3 setup.py install --user```
+* Download the gdal library version 1.11.0
+* Configure with ```CPPFLAGS="-I/opt/local/include" LDFLAGS="-L/opt/local/lib" ./configure --prefix=/opt/local```
+* Download the gdal python bindings from pypi, version 1.11.0
+* ```mkdir -p /opt/local/lib/python2.7/site-packages```
+* Install with ```python setup.py install --prefix=/opt/local```
+
+
+
+
 Anaconda
 ========
 
