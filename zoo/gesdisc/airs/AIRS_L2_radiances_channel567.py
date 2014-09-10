@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize a GESDISC AIRS grid
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC AIRS swath
 in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -25,24 +28,43 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
+
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     # Identify the HDF-EOS2 swath data file.
     DATAFIELD_NAME = 'radiances'
-    
-    nc = Dataset(FILE_NAME)
-    data = nc.variables['radiances'][:,:,567]
+
+    if USE_NETCDF4:
+        from netCDF4 import Dataset    
+        nc = Dataset(FILE_NAME)
+        data = nc.variables['radiances'][:,:,567]
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data3D = hdf.select(DATAFIELD_NAME)
+        data = data3D[:,:,567]
+
+        # Read geolocation dataset.
+        lat = hdf.select('Latitude')
+        latitude = lat[:,:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:,:]
+        
+
     
     # Replace the filled value with NaN, replace with a masked array.
     data[data == -9999] = np.nan
     datam = np.ma.masked_array(data, np.isnan(data))
     
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
-    
+ 
     # Draw a polar stereographic projection using the low resolution coastline
     # database.
     m = Basemap(projection='spstere', resolution='l',
@@ -52,20 +74,19 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180., 181., 20.), labels=[1, 0, 0, 1])
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, datam)
-    m.colorbar()
-    
-    # See page 101 of "AIRS Version 5.0 Released Files Description" document [1]
+
+   # See page 101 of "AIRS Version 5.0 Released Files Description" document [1]
     # for unit specification.
     units = 'mW/m**2/cm**-1/sr'
-    plt.title('{0} ({1}) at channel 567'.format(DATAFIELD_NAME, units))
-
-    fig = plt.gcf()
-    plt.show()
+    cb = m.colorbar()
+    cb.set_label('Unit:'+units)
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n {1} at TempPrsLvls=11'.format(basename, DATAFIELD_NAME))
+    fig = plt.gcf()
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
 
 if __name__ == "__main__":
 
