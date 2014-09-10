@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestPodaacSeawindsGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_SW_S3E_rep_wind_speed_lvl0(self):
+        """
+        """
+        hdffile = 'SW_S3E_2003100.20053531923.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.seawinds.SW_S3E_rep_wind_speed_lvl0.run(hdffile)
+
 class TestPodaacAvhrrGrids(unittest.TestCase):
     """
     Run PODAAC/AVHRR grid codes.
