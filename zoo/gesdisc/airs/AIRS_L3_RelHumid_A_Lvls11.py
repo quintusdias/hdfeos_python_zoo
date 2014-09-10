@@ -41,8 +41,8 @@ def run(FILE_NAME):
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
 
-        # The variable has a fill value, so netCDF4 converts it to a float64 masked
-        # array for us.
+        # The variable has a fill value, 
+        # so netCDF4 converts it to a float64 masked array for us.
         data = nc.variables[DATAFIELD_NAME][11,:,:]
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
@@ -50,10 +50,10 @@ def run(FILE_NAME):
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
+
         # List available SDS datasets.
         # print hdf.datasets()
-        # Read dataset.
-        DATAFIELD_NAME='RelHumid_A'
+
         data3D = hdf.select(DATAFIELD_NAME)
         data = data3D[11,:,:]
         # Read geolocation dataset.

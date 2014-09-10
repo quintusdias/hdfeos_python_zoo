@@ -64,9 +64,10 @@ Download netcdf4-1.1.0 from Pypi, configure and install with::
 Anaconda
 ========
 Anaconda is ideal for the Windows platform although the netcdf4 library was not 
-compiled with hdf4 support.  The H5PY package that is installed by default will read
-HDF5 swath files, and the gdal package (not installed by default) will read both
-HDF4 and HDF5 grid files.  The HDF4 swath files cannot currently be read.
+compiled with hdf4 support. For HDF4, you can use PyHDF at http://hdfeos.org/software/pyhdf.php. The H5PY package that is installed by default will
+read HDF5 swath files, and the gdal package (not installed by default) will 
+read both HDF4 and HDF5 grid files. The HDF4 swath files cannot currently be 
+read.
 
     $ conda install basemap
     $ conda install netcdf4
