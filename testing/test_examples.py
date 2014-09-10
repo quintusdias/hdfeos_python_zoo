@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestPodaacAvhrrGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_PODAAC_L3_bsst(self):
+        """
+        """
+        hdffile = '2006001-2006005.s0454pfrt-bsst.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.avhrr.PODAAC_L3_bsst.run(hdffile)
+
 class TestLarcCeresGrids(unittest.TestCase):
     """
     Run LARC/CERES grid codes.
