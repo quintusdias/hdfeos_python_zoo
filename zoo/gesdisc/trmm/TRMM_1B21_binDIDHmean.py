@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a GESDISC TRMM file
 in Python.
 
@@ -24,19 +27,31 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'binDIDHmean'
+
+    if USE_NETCDF4:    
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
     
-    nc = Dataset(FILE_NAME)
-    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
-    
-    # Retrieve the geolocation data.
-    latitude = nc.variables['geolocation'][:,:,0]
-    longitude = nc.variables['geolocation'][:,:,1]
+        # Retrieve the geolocation data.
+        latitude = nc.variables['geolocation'][:,:,0]
+        longitude = nc.variables['geolocation'][:,:,1]
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+        
+        ds = hdf.select(DATAFIELD_NAME)
+        data = ds[:,:]
+        geo = hdf.select('geolocation')
+        latitude = geo[:,:,0]
+        longitude = geo[:,:,1]
     
     # The swath crosses the international dateline between row 8000 and 9000.
     # This causes the mesh to smear, so we'll adjust the longitude (modulus
@@ -53,15 +68,16 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
-    m.colorbar()
-    plt.title('{0}'.format(DATAFIELD_NAME))
+    cb = m.colorbar()
+    cb.set_label('Unit:none')
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n {1}'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
+
 
 if __name__ == "__main__":
 
