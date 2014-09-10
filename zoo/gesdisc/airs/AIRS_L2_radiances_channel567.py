@@ -82,7 +82,7 @@ def run(FILE_NAME):
     cb.set_label('Unit:'+units)
     
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n {1} at TempPrsLvls=11'.format(basename, DATAFIELD_NAME))
+    plt.title('{0}\n {1} at channel=567'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
