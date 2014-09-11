@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestPodaacQuikscatGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_QS_XWGRDS_des_avg_wind_speed(self):
+        """
+        """
+        hdffile = 'QS_XWGRD3_2008001.20080021608.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.quikscat.QS_XWGRDS_des_avg_wind_speed.run(hdffile)
+
 class TestPodaacSeawindsGrids(unittest.TestCase):
     """
     Run PODAAC/AVHRR grid codes.
