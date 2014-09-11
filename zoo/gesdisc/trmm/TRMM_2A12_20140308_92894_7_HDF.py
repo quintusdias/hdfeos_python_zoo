@@ -1,6 +1,9 @@
 """
-This example code illustrates how to access and visualize a GESDISC TRMM file
-in Python.
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC TRMM 2A12
+version 7 file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -24,17 +27,42 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'surfaceRain'
-    
-    # Retrieve the data.
-    nc = Dataset(FILE_NAME)
-    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
-    units = nc.variables[DATAFIELD_NAME].units
+
+    if USE_NETCDF4:        
+        from netCDF4 import Dataset
+        # Retrieve the data.
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
+        units = nc.variables[DATAFIELD_NAME].units
+        # Retrieve the geolocation data.
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+        
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+        
+        ds = hdf.select(DATAFIELD_NAME)
+        data = ds[:,:].astype(np.double)
+
+        # Handle scale/osffset attributes.
+        attrs = ds.attributes(full=1)
+        ua=attrs["units"]
+        units = ua[0]
+
+        # Retrieve the geolocation data.        
+        lat = hdf.select('Latitude')
+        latitude = lat[:,:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:,:]
+
     
     # Construct an indexed version of the data.
     levels = [0.0, 0.1, 1.0, 10.0, 30.0]
@@ -43,9 +71,6 @@ def run(FILE_NAME):
         Z[np.logical_and(data >= levels[j], data < levels[j+1])] = j  
     Z[data >= levels[-1]] = len(levels)
     
-    # Retrieve the geolocation data.
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
     
     # There is a wrap-around effect to deal with.  Adjust the longitude by
     # modulus 360 to avoid the swath being smeared.
@@ -67,17 +92,23 @@ def run(FILE_NAME):
     bounds = np.arange(6)
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     m.pcolormesh(longitude, latitude, Z, latlon=True, cmap=cmap, norm=norm)
-    color_bar = plt.colorbar()
+    basename = os.path.basename(FILE_NAME)    
+    plt.title('{0}\n{1}'.format(basename, DATAFIELD_NAME))
+
+    # Adjust colorbar height.
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    divider = make_axes_locatable(plt.gca())
+    cax = divider.append_axes("right", "5%", pad="3%")
+    color_bar = plt.colorbar(cax=cax)
+
     color_bar.set_ticks([0.5, 1.5, 2.5, 3.5, 4.5])
     color_bar.set_ticklabels(['0', '0.1', '1.0', '10', '30'])
-    
+    color_bar.set_label('Unit:'+units)
+
     fig = plt.gcf()
+    # plt.show()
     
-    plt.title('{0} ({1})'.format(DATAFIELD_NAME, units))
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

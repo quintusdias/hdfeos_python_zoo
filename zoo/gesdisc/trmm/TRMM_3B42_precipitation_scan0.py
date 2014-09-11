@@ -1,6 +1,9 @@
 """
-This example code illustrates how to access and visualize a GESDISC TRMM file
-in Python.
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC TRMM 3B42
+Grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -24,16 +27,25 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'precipitation'
-    
-    # Ignore the leading singleton dimension.
-    nc = Dataset(FILE_NAME)
-    data = nc.variables[DATAFIELD_NAME][0,:,:].astype(np.float64)
+
+    if USE_NETCDF4:    
+        from netCDF4 import Dataset    
+        # Ignore the leading singleton dimension.
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][0,:,:].astype(np.float64)
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+        ds = hdf.select(DATAFIELD_NAME)
+        data = ds[0,:,:].astype(np.float64)
+        
     
     # Consider 0.0 to be the fill value.
     # Must create a masked array where nan is involved.
@@ -56,14 +68,17 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(-90, 120, 30), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180, 45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, datam.T, latlon=True)
-    m.colorbar()
-    plt.title('{0} (mm/hr)'.format(DATAFIELD_NAME))
+    cb = m.colorbar()
+    cb.set_label('Unit:mm/hr')
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at scan=0'.format(basename, DATAFIELD_NAME))
 
     fig = plt.gcf()
-    plt.show()
+#    plt.show()
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
