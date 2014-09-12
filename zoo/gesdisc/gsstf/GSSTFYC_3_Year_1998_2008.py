@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize a GESDISC MEaSURES
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC MEaSUREs
 GSSTF HDF-EOS5 grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -79,14 +82,16 @@ def run(FILE_NAME):
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, data)
-    m.colorbar()
-    plt.title('{0} ({1})'.format(data_longname, data_units))
+    cb = m.colorbar()
+    cb.set_label(data_units) 
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, data_longname))
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'sst')
+    pngfile = "{0}.py.png".format(basename)    
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
