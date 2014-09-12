@@ -1,6 +1,9 @@
 """
-This example code illustrates how to access and visualize a GESDISC MLS file
-in Python.
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC MLS Swath 
+v1 file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -95,13 +98,14 @@ def run(FILE_NAME):
     plt.plot(pressure[12:16], data[12:16])
     plt.xlabel('Pressure ({0})'.format(pres_units))
     plt.ylabel('{0} ({1})'.format(title, units))
-    plt.title('{0} at Time = {1}'.format(title, time1lvl))
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at Time = {2}'.format(basename, title, time1lvl))
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'BrO')
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
