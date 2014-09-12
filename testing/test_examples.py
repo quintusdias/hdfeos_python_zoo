@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestPodaacAquariusSwaths(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_Q2011280003000_L2_EVSCI_V1_2(self):
+        """
+        """
+        hdffile = 'Q2011280003000.L2_EVSCI_V1.2.h5'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.aquarius.Q2011280003000_L2_EVSCI_V1_2.run(hdffile)
+
 class TestPodaacQuikscatGrids(unittest.TestCase):
     """
     Run PODAAC/AVHRR grid codes.
