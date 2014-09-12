@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a GESDISC GOSAT ACOS
 L2 Swath HDF5 file in Python.
 
@@ -99,8 +102,9 @@ def run(FILE_NAME):
                  xy=(x[0] + 200000, y[0]),
                  xycoords='data',
                  color='red')
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\nGOSAT Trajectory'.format(basename), fontsize=12)
 
-    plt.title('GOSAT Trajectory')
 
     # Second subplot will be time vs. CO2
     ax1 = plt.subplot(1, 2, 2)
@@ -136,10 +140,8 @@ def run(FILE_NAME):
              fontsize=12,
              transform=ax2.transAxes)
 
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'xco2')
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)    
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
