@@ -49,6 +49,91 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestPodaacAquariusGrids(unittest.TestCase):
+    """
+    Run PODAAC/AQUARIUS grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_Q2012034_L3m_DAY_EVSCI_V1_2DR_SSS_1deg(self):
+        """
+        """
+        hdffile = 'Q2012034.L3m_DAY_EVSCI_V1.2DR_SSS_1deg.h5'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.aquarius.Q2012034_L3m_DAY_EVSCI_V1_2DR_SSS_1deg.run(hdffile)
+
+class TestPodaacAquariusSwaths(unittest.TestCase):
+    """
+    Run PODAAC/AQUARIUS swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_Q2011280003000_L2_EVSCI_V1_2(self):
+        """
+        """
+        hdffile = 'Q2011280003000.L2_EVSCI_V1.2.h5'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.aquarius.Q2011280003000_L2_EVSCI_V1_2.run(hdffile)
+
+class TestPodaacQuikscatGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_QS_XWGRDS_des_avg_wind_speed(self):
+        """
+        """
+        hdffile = 'QS_XWGRD3_2008001.20080021608.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.quikscat.QS_XWGRDS_des_avg_wind_speed.run(hdffile)
+
+class TestPodaacSeawindsGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_SW_S3E_rep_wind_speed_lvl0(self):
+        """
+        """
+        hdffile = 'SW_S3E_2003100.20053531923.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.seawinds.SW_S3E_rep_wind_speed_lvl0.run(hdffile)
+
+class TestPodaacAvhrrGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_PODAAC_L3_bsst(self):
+        """
+        """
+        hdffile = '2006001-2006005.s0454pfrt-bsst.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.avhrr.PODAAC_L3_bsst.run(hdffile)
+
 class TestLarcCeresGrids(unittest.TestCase):
     """
     Run LARC/CERES grid codes.
