@@ -56,8 +56,9 @@ def run(FILE_NAME):
     latdim, londim = data.shape
     latinc = 180 / latdim
     loninc = 360 / londim
-    latitude = np.linspace(-90 + latinc/2, 90 - latinc/2, latdim)
-    longitude = np.linspace(0 + loninc/2, 360 - loninc/2, londim)
+    x = np.linspace(0 + loninc/2, 360 - loninc/2, londim)
+    y = np.linspace(-90 + latinc/2, 90 - latinc/2, latdim)
+    longitude, latitude = np.meshgrid(x, y)
     
     # Draw a southern polar stereographic projection using the low resolution
     # coastline database.

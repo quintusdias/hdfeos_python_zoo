@@ -11,7 +11,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python SW_S3E_rep_wind_lvl0.py
+    python SW_S3E_rep_wind_speed_lvl0.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -62,8 +62,9 @@ def run(FILE_NAME):
     latdim, londim = data.shape
     latinc = 180 / latdim
     loninc = 360 / londim
-    latitude = np.linspace(-90 + latinc/2, 90 - latinc/2, latdim)
-    longitude = np.linspace(0 + loninc/2, 360 - loninc/2, londim)
+    y = np.linspace(-90 + latinc/2, 90 - latinc/2, latdim)
+    x = np.linspace(0 + loninc/2, 360 - loninc/2, londim)
+    longitude, latitude = np.meshgrid(x, y)
     
     # Draw a southern polar stereographic projection using the low resolution
     # coastline database.
