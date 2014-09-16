@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize a GESDISC OMI file
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC OMI L2 file
 in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -51,6 +54,7 @@ def run(FILE_NAME):
         title = var.Title
         missing_value = var.MissingValue
         fill_value = var._FillValue
+        units = var.Units
 
         # Retrieve the geolocation data.
         latitude = grp.groups['Geolocation Fields'].variables['Latitude'][:]
@@ -74,6 +78,7 @@ def run(FILE_NAME):
             missing_value = f[DATAFIELD_NAME].attrs['MissingValue']
             fill_value = f[DATAFIELD_NAME].attrs['_FillValue']
             title = f[DATAFIELD_NAME].attrs['Title'].decode()
+            units = f[DATAFIELD_NAME].attrs['Units'].decode()
 
             # Retrieve the geolocation data.
             path = '/HDFEOS/SWATHS/ColumnAmountNO2/Geolocation Fields/'
@@ -94,14 +99,17 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
-    m.colorbar()
-    plt.title('{0}'.format(title))
+    cb = m.colorbar()
+    cb.set_label(units)
+
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, title), fontsize=12)
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'CloudFraction')
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

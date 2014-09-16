@@ -1,4 +1,8 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+
 This example code illustrates how to access and visualize a GESDISC MERRA file
 in Python.
 
@@ -24,24 +28,55 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'PLE'
     
-    nc = Dataset(FILE_NAME)
-    data = nc.variables[DATAFIELD_NAME][0, 72, :, :].astype(np.float64)
+    if USE_NETCDF4:
+        from netCDF4 import Dataset    
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][0, 72, :, :].astype(np.float64)
     
-    # Replace the missing values with NaN.
-    missing_value = nc.variables[DATAFIELD_NAME].missing_value
+        # Retrieve the attributes.
+        missing_value = nc.variables[DATAFIELD_NAME].missing_value
+        long_name = nc.variables[DATAFIELD_NAME].long_name
+        units = nc.variables[DATAFIELD_NAME].units
+
+        # Retrieve the geolocation data.
+        latitude = nc.variables['YDim'][:]
+        longitude = nc.variables['XDim'][:]
+
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data4D = hdf.select(DATAFIELD_NAME)
+        data = data4D[0,72,:,:].astype(np.float64)
+
+        # Retrieve the attributes.
+        attrs = data4D.attributes(full=1)
+        mva=attrs["missing_value"]
+        missing_value = mva[0]
+        lna=attrs["long_name"]
+        long_name = lna[0]
+        ua=attrs["units"]
+        units = ua[0]        
+
+        # Read geolocation dataset.
+        lat = hdf.select('YDim')
+        latitude = lat[:]
+        lon = hdf.select('XDim')
+        longitude = lon[:]
+
+    # Replace the missing values with NaN.        
     data[data == missing_value] = np.nan
     datam = np.ma.masked_array(data, np.isnan(data))
     
-    # Retrieve the geolocation data.
-    latitude = nc.variables['YDim'][:]
-    longitude = nc.variables['XDim'][:]
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
@@ -53,16 +88,17 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
-    m.colorbar()
-    plt.title('{0} ({1}) at TIME=4 and Height=42m'.format(
-        nc.variables[DATAFIELD_NAME].long_name,
-        nc.variables[DATAFIELD_NAME].units))
+    cb = m.colorbar()
+    cb.set_label(units,  labelpad=-40, y=1.05)
+
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at TIME=1 and Height=72'.format(basename,long_name))
 
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

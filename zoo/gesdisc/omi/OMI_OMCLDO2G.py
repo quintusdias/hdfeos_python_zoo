@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize a GESDISC OMI file
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC OMI L2G file
 in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -79,13 +82,17 @@ def run(FILE_NAME):
             latitude = f[varname][0,:,:]
             lat_fv = f[varname].attrs['_FillValue'][0]
             
-    # The latitude and longitude grid is not complete and has a lot of fill values,
-    # which is not the usual case.  Restrict the data in this case to a 1D array
-    # of valid points.
-    data = data[data != fill_value]
-    longitude = longitude[longitude != lon_fv]
-    latitude = latitude[latitude != lat_fv]
+    # The latitude and longitude grid is not complete and has a lot of fill 
+    # values, which is not the usual case. 
+    data[data == fill_value] = np.nan
+    datam = np.ma.masked_array(data, np.isnan(data))
     
+    longitude[longitude == lon_fv] = np.nan
+    lonm = np.ma.masked_array(longitude, np.isnan(longitude))
+
+    latitude[latitude == lat_fv] = np.nan
+    latm = np.ma.masked_array(latitude, np.isnan(latitude))
+
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
@@ -94,19 +101,17 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-    
-    x, y = m(longitude, latitude)
-    cmap = plt.cm.jet
-    sc = m.scatter(x, y, c=data, s=1, cmap=cmap, edgecolors=None,
-                   linewidth=0)
-    m.colorbar(sc)
-    plt.title('{0} ({1})'.format(title, units))
+    m.pcolormesh(lonm, latm, datam, latlon=True)
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at nCandidate=0'.format(basename, title))
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

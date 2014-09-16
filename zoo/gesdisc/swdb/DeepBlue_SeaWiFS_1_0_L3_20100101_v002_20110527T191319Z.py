@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a GESDISC MEaSUREs
 SeaWiFS L3 grid file in Python.
 
@@ -69,13 +72,14 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180, 180., 45.))
     m.pcolormesh(longitude, latitude, data, vmin=0, vmax=1, latlon=True)
     m.colorbar()
-    plt.title('{0}'.format(long_name))
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
 
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

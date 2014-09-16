@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize a GESDISC HIRDLES
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC HIRDLS
 HDF-EOS5 swath file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -25,7 +28,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = False
+USE_NETCDF4 = True
 
 def run(FILE_NAME):
     
@@ -94,14 +97,15 @@ def run(FILE_NAME):
 
     plt.xlabel('{0} ({1})'.format(data_title, data_units))
     plt.ylabel('{0} ({1})\nin log10 scale'.format(pres_title, pres_units))
-    plt.title('{0}\nDate:  {1}'.format(data_title,
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at {2}'.format(basename, data_title,
         datestr.strftime('%Y-%m-%d %H:%M:%S')))
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'Bro')
+    pngfile = "{0}.py.png".format(basename)    
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
