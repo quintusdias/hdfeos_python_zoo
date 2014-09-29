@@ -49,6 +49,23 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestGHRCLisGrids(unittest.TestCase):
+    """
+    Run GHRS/LIS grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_GHRC_LISOTD_H_COM_F_lvl0(self):
+        """
+        """
+        hdffile = 'LISOTD_HRAC_V2.2.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.ghrc.lis.GHRC_LISOTD_H_COM_F_lvl0.run(hdffile)
+
 class TestPodaacAquariusGrids(unittest.TestCase):
     """
     Run PODAAC/AQUARIUS grid codes.
