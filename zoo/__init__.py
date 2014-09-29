@@ -1,4 +1,5 @@
 from . import gesdisc
+from . import ghrc
 from . import laads
 from . import larc
 from . import lpdaac
