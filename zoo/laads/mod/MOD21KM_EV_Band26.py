@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LAADS MODIS swath
 file in Python.
 
@@ -20,33 +23,81 @@ The netcdf library must be compiled with HDF4 support in order for this example
 code to work.  Please see the README for details.
 """
 import os
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
 
+USE_NETCDF4 = False
+
 def run(FILE_NAME):
-
+    GEO_FILE_NAME = 'MOD03.A2000055.0000.005.2010029175839.hdf'
+    GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], GEO_FILE_NAME)
     DATAFIELD_NAME = 'EV_Band26'
-    
-    nc = Dataset(FILE_NAME)
-    var = nc.variables[DATAFIELD_NAME]
 
-    # Have to be very careful of the scaling equation here.
-    # We'll turn autoscaling off in order to correctly scale the data.
-    # Also need to subset the data to match the lat/lon dimensions.
-    var.set_auto_maskandscale(False)
-    data = var[2:2030:5, 2:1354:5].astype(np.double)
-    data[data == var._FillValue] = np.nan
-    data[data > var.valid_range[1]] = np.nan
-    data = (data - var.radiance_offsets) * var.radiance_scales 
-    datam = np.ma.masked_array(data, np.isnan(data))
-    
-    # Retrieve the geolocation data.
-    longitude = nc.variables['Longitude'][:]
-    latitude = nc.variables['Latitude'][:]
+    if USE_NETCDF4:    
+        from netCDF4 import Dataset    
+        nc = Dataset(FILE_NAME)
+        var = nc.variables[DATAFIELD_NAME]
+
+        # Have to be very careful of the scaling equation here.
+        # We'll turn autoscaling off in order to correctly scale the data.
+        # Also need to subset the data to match the lat/lon dimensions.
+        var.set_auto_maskandscale(False)
+        data = var[:,:].astype(np.double)
+
+        # Retrieve the geolocation data from MOD03 product.
+        nc_geo = Dataset(GEO_FILE_NAME)
+        longitude = nc_geo.variables['Longitude'][:]
+        latitude = nc_geo.variables['Latitude'][:]
+
+        # Retrieve attributes.
+        scale_factor = var.radiance_scales
+        add_offset = var.radiance_offsets
+        _FillValue = var._FillValue
+        valid_min = var.valid_range[0]
+        valid_max = var.valid_range[1]
+        long_name = var.long_name
+        units = var.radiance_units
+
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.double)
+
+        hdf_geo = SD(GEO_FILE_NAME, SDC.READ)
+
+        # Read geolocation dataset from MOD03 product.
+        lat = hdf_geo.select('Latitude')
+        latitude = lat[:,:]
+        lon = hdf_geo.select('Longitude')
+        longitude = lon[:,:]
+        
+        # Retrieve attributes.
+        attrs = data2D.attributes(full=1)
+        lna=attrs["long_name"]
+        long_name = lna[0]
+        aoa=attrs["radiance_offsets"]
+        add_offset = aoa[0]
+        fva=attrs["_FillValue"]
+        _FillValue = fva[0]
+        sfa=attrs["radiance_scales"]
+        scale_factor = sfa[0]        
+        vra=attrs["valid_range"]
+        valid_min = vra[0][0]        
+        valid_max = vra[0][1]        
+        ua=attrs["radiance_units"]
+        units = ua[0]
+        
+    invalid = np.logical_or(data > valid_max,
+                            data < valid_min)
+    invalid = np.logical_or(invalid, data == _FillValue)
+    data[invalid] = np.nan
+    data = (data - add_offset) * scale_factor 
+    data = np.ma.masked_array(data, np.isnan(data))
     
     # Render the plot in a lambert equal area projection.
     m = Basemap(projection='laea', resolution='l', lat_ts=65,
@@ -55,17 +106,15 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(50., 91., 10.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
-    m.pcolormesh(longitude, latitude, datam, latlon=True)
-    m.colorbar()
-    titlestr = 'Radiance derived from Earth View Band 26 Scaled Integers\n'
-    titlestr += '(watts/m^2/micrometer/steradian)'
-    plt.title(titlestr)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
+    cb=m.colorbar()
+    cb.set_label(units, fontsize=8)
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, 'Radiance derived from ' + long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 
