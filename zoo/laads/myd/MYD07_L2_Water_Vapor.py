@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LAADS MYD (MODIS-
 AQUA) swath file in Python.
 
@@ -25,22 +28,67 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'Water_Vapor'
-    
-    nc = Dataset(FILE_NAME)
 
-    # The netCDF4 module will correctly apply the scaling equation.
-    data = nc.variables[DATAFIELD_NAME][:]
-    units = nc.variables[DATAFIELD_NAME].units
-    long_name = nc.variables[DATAFIELD_NAME].long_name
+    if USE_NETCDF4:    
+        
+        from netCDF4 import Dataset    
+        nc = Dataset(FILE_NAME)
 
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
+        # The netCDF4 module will correctly apply fill value and
+        # scaling equation.
+        data = nc.variables[DATAFIELD_NAME][:]
+
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+        
+        # Retrieve attributes.
+        units = nc.variables[DATAFIELD_NAME].units
+        long_name = nc.variables[DATAFIELD_NAME].long_name
+
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.double)
+
+        # Read geolocation dataset.
+        lat = hdf.select('Latitude')
+        latitude = lat[:,:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:,:]
+
+        # Retrieve attributes.
+        attrs = data2D.attributes(full=1)
+        lna=attrs["long_name"]
+        long_name = lna[0]
+        aoa=attrs["add_offset"]
+        add_offset = aoa[0]
+        fva=attrs["_FillValue"]
+        _FillValue = fva[0]
+        sfa=attrs["scale_factor"]
+        scale_factor = sfa[0]        
+        ua=attrs["units"]
+        units = ua[0]
+        vra=attrs["valid_range"]
+        valid_min = vra[0][0]        
+        valid_max = vra[0][1]        
+
+        # Apply _FillValue, scale and offset.
+        invalid = np.logical_or(data > valid_max,
+                                data < valid_min)
+        invalid = np.logical_or(invalid, data == _FillValue)
+        data[invalid] = np.nan
+        data = data * scale_factor + add_offset
+        data = np.ma.masked_array(data, np.isnan(data))
     
     # The data is local to Alaska, so no need for a global or hemispherical
     # projection.
@@ -51,16 +99,15 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(40, 81, 10), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-210, -89., 30), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
-    m.colorbar()
-    plt.title('{0} ({1})'.format(long_name, units))
+    cb = m.colorbar()
+    cb.set_label(units)
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.png".format(basename)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
 
 if __name__ == "__main__":
 
