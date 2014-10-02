@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize an LP DAAC Modis
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize an LP DAAC MOD11C2
 grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -23,46 +26,79 @@ code to work.  Please see the README for details.
 import os
 import re
 
-import gdal
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
+USE_GDAL = False
+
 def run(FILE_NAME):
     
     # Identify the data field.
-    GRID_NAME = 'MODIS_8DAY_0.05DEG_CMG_LST'
+
     DATAFIELD_NAME = 'LST_Night_CMG'
-    
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
+    if  USE_GDAL:    
+        import gdal    
+        GRID_NAME = 'MODIS_8DAY_0.05DEG_CMG_LST'
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
 
-    gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray().astype(np.float64)
+        gdset = gdal.Open(gname)
+        data = gdset.ReadAsArray().astype(np.float64)
 
-    # Apply the attributes.
-    meta = gdset.GetMetadata()
-    fillvalue = np.float(meta['_FillValue'])
-    scale = np.float(meta['scale_factor'])
-    offset = np.float(meta['add_offset'])
-    units = meta['units']
+        # Read the attributes.
+        meta = gdset.GetMetadata()
+        long_name = meta['long_name']        
+        units = meta['units']
+        _FillValue = np.float(meta['_FillValue'])
+        scale_factor = np.float(meta['scale_factor'])
+        add_offset = np.float(meta['add_offset'])
+        valid_range = [np.float(x) for x in meta['valid_range'].split(', ')] 
+        del gdset
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.double)
+
+        
+        # Read attributes.
+        attrs = data2D.attributes(full=1)
+        lna=attrs["long_name"]
+        long_name = lna[0]
+        vra=attrs["valid_range"]
+        valid_range = vra[0]
+        aoa=attrs["add_offset"]
+        add_offset = aoa[0]
+        fva=attrs["_FillValue"]
+        _FillValue = fva[0]
+        sfa=attrs["scale_factor"]
+        scale_factor = sfa[0]        
+        ua=attrs["units"]
+        units = ua[0]
+
 
     # Have to be careful of the scaling equation here.
-    data[data == fillvalue] = np.nan
-    data = (data - offset) * scale;
-
+    invalid = data == _FillValue
+    invalid = np.logical_or(invalid, data < valid_range[0])
+    invalid = np.logical_or(invalid, data > valid_range[1])
+    data[invalid] = np.nan
+    data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
+        
 
-    # Normally we would use the following code to reconstruct the grid, but
+    # Normally we would use the HDF-EOS metadata to reconstruct the grid, but
     # the grid metadata is incorrect in this case, specifically the upper left
     # and lower right coordinates of the grid.  We'll construct the grid
-    # manually, taking into account the fact that we're going to subset the
-    # data by a factor of 10 (the grid size is 3600 x 7200).
-    x = np.linspace(-180, 180, 720)
-    y = np.linspace(90, -90, 360)
+    # manually.
+    x = np.linspace(-180, 180, data.shape[1])
+    y = np.linspace(90, -90, data.shape[0])
     lon, lat = np.meshgrid(x, y)
 
     m = Basemap(projection='cyl', resolution='l',
@@ -71,20 +107,16 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, 90, 45), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
-    m.pcolormesh(lon, lat, data[::10,::10])
-    m.colorbar()
-    title = "{0} ({1})".format(DATAFIELD_NAME.replace('_', ' '), units)
-    plt.title(title)
+    m.pcolormesh(lon, lat, data)
+    cb = m.colorbar()
+    cb.set_label(units)
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
-    del gdset
-
 
 if __name__ == "__main__":
 

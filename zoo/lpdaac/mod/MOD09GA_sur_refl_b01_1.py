@@ -33,16 +33,16 @@ from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-USE_GDAL = False
+USE_GDAL = True
 
 def run(FILE_NAME):
     
     # Identify the data field.
-    DATAFIELD_NAME = 'Range_1'
+    DATAFIELD_NAME = 'sur_refl_b01_1'
 
     if  USE_GDAL:    
         import gdal
-        GRID_NAME = 'MODIS_Grid_1km_2D'
+        GRID_NAME = 'MODIS_Grid_500m_2D'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
@@ -82,7 +82,7 @@ def run(FILE_NAME):
         data = data2D[:,:].astype(np.double)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
-        GEO_FILE_NAME = 'lat_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_1km_2D.output'
+        GEO_FILE_NAME = 'lat_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_500m_2D.output'
         GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
                                      GEO_FILE_NAME)
         lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
