@@ -28,39 +28,6 @@ still install basemap via pip.
 
 The RPM for the GDAL library includes support for HDF-EOS2.
 
-Ubuntu 13.10
-============
-The versions of the netcdf and hdf packages that come with Ubuntu are a bit 
-dated, so we'll detail how to do a source install here.
-
-From a base install, use apt-get to additionally install 
-
-    * python-dev
-    * ipython
-    * python-matplotlib
-    * python-mpltoolkits.basemap-data
-    * python-mpltoolkits.basemap
-
-Download HDF 4.2.10 from http://www.hdfgroup.org.  Configure and install with::
-
-    $ ./configure --prefix=/usr/local --disable-netcdf --enable-fortran=no --enable-shared --disable-static
-    $ make install
-
-Download HDF5 1.8.13, configure and install with::
-
-    $ ./configure --prefix=/usr/local --disable-static --enable-shared
-    $ make install
-
-Download netcdf 4.3.2 from Unidata, configure and install with::
-
-    $ ./configure --prefix=/usr/local --disable-static --enable-shared --enable-hdf4 --enable-dap
-    $ make install
-
-Download netcdf4-1.1.0 from Pypi, configure and install with::
-
-    $ python setup.py install --user
-
-
 Anaconda
 ========
 Anaconda is ideal for the Windows platform although the netcdf4 library was not 
