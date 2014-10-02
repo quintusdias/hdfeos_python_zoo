@@ -129,7 +129,7 @@ def run(FILE_NAME):
     plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
     # plt.show()
-    pngfile = "{0}.py.png".format(basename)
+    pngfile = "{0}.sur_refl_b01_1.py.png".format(basename)
     fig.savefig(pngfile)
 
 
