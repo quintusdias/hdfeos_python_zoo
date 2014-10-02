@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LAADS NPP VIIRS
 swath file in Python.
 
@@ -24,22 +27,43 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'SurfaceTemperature'
-    nc = Dataset(FILE_NAME)
 
     # The dataset is (6144 x 6400).  Subset it to be around than 1K x 1K
+    # Otherwise, the plot will skip processing some regions.
     rows = slice(0, 6144, 6)
     cols = slice(0, 6400, 6)
-    data = nc.variables[DATAFIELD_NAME][rows, cols]
+
+    if USE_NETCDF4:    
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
+
+        data = nc.variables[DATAFIELD_NAME][rows, cols]
     
-    # Retrieve the geolocation data.
-    latitude = nc.variables['Latitude'][rows, cols]
-    longitude = nc.variables['Longitude'][rows, cols]
+        # Retrieve the geolocation data.
+        latitude = nc.variables['Latitude'][rows, cols]
+        longitude = nc.variables['Longitude'][rows, cols]
+        
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[rows,cols]
+
+        # Read geolocation dataset.
+        lat = hdf.select('Latitude')
+        latitude = lat[rows,cols]
+        lon = hdf.select('Longitude')
+        longitude = lon[rows,cols]
+        
 
     # Apply the fill value.  The valid minimum is zero, although there's no
     # attribute.
@@ -54,14 +78,14 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180, 180, 30))
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, data)
-    m.colorbar()
-    plt.title('{0}'.format(DATAFIELD_NAME))
+    cb = m.colorbar()
+    cb.set_label('Unknown')
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

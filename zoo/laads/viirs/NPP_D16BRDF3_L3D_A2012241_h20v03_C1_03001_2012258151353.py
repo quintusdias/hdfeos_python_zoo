@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LAADS NPP VIIRS
 grid file in Python.
 
@@ -20,52 +23,104 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 import os
 import re
 
-import gdal
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
+USE_GDAL = False
+
 def run(FILE_NAME):
     
     # Identify the data field.
-    GRID_NAME = 'NPP_Grid_BRDF'
     DATAFIELD_NAME = 'Albedo_BSA_Band1'
     
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
-    gdset = gdal.Open(gname)
+    if USE_GDAL:
 
-    data = gdset.ReadAsArray().astype(np.float64)
-    meta = gdset.GetMetadata()
+        import gdal
 
-    # Apply the scale factor, valid range, fill value because GDAL does not
-    # do this.  Also, GDAL reads the attributes as character values, so we have
-    # to properly convert them.
-    fill_value = float(meta['_FillValue'])
-    valid_range = [float(x) for x in meta['valid_range'].split(', ')]
+        # Read dataset.
+        GRID_NAME = 'NPP_Grid_BRDF'
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
+        gdset = gdal.Open(gname)
+        data = gdset.ReadAsArray().astype(np.float64)
+
+        # Read parameters for constructing the grid.
+        x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
+        nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
+
+        # Construct the grid.
+        x = np.linspace(x0, x0 + xinc*nx, nx)
+        y = np.linspace(y0, y0 + yinc*ny, ny)
+        xv, yv = np.meshgrid(x, y)
+
+        # In basemap, the sinusoidal projection is global, so we won't use it.
+        # Instead we'll convert the grid back to lat/lons.
+        sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
+        wgs84 = pyproj.Proj("+init=EPSG:4326") 
+        lon, lat= pyproj.transform(sinu, wgs84, xv, yv)
+
+        # Read fill value, valid range, scale factor, add_offset attributes.
+        meta = gdset.GetMetadata()
+
+        # Apply the scale factor, valid range, fill value because GDAL does not
+        # do this.  Also, GDAL reads the attributes as character values, so we 
+        # have to properly convert them.
+        _FillValue = float(meta['_FillValue'])
+        valid_range = [float(x) for x in meta['valid_range'].split(', ')]
+        scale_factor = float(meta['scale_factor'])
+        add_offset = float(meta['add_offset'])
+        units = meta['units']
+        long_name = meta['long_name']
+        del gdset
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.double)
+
+
+        # Read geolocation dataset from HDF-EOS2 dumper output.
+        GEO_FILE_NAME = 'lat_NPP_D16BRDF3_L3D.A2012241.h20v03.C1_03001.2012258151353.output'
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
+                                     GEO_FILE_NAME)
+        lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        lat = lat.reshape(data.shape)
+
+        GEO_FILE_NAME = 'lon_NPP_D16BRDF3_L3D.A2012241.h20v03.C1_03001.2012258151353.output'
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
+                                      GEO_FILE_NAME)
+        lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        lon = lon.reshape(data.shape)
+
+        # Read attributes
+        attrs = data2D.attributes(full=1)
+        lna=attrs["long_name"]
+        long_name = lna[0]
+        vra=attrs["valid_range"]
+        valid_range = vra[0]
+        aoa=attrs["add_offset"]
+        add_offset = aoa[0]
+        fva=attrs["_FillValue"]
+        _FillValue = fva[0]
+        sfa=attrs["scale_factor"]
+        scale_factor = sfa[0]        
+        ua=attrs["units"]
+        units = ua[0]
+
+    
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
-    invalid = np.logical_or(invalid, data == fill_value)
+    invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    scale_factor = float(meta['scale_factor'])
-    data = data * scale_factor
-
+    data = data * scale_factor + add_offset
     data = np.ma.masked_array(data, np.isnan(data))
 
-    # Construct the grid.
-    x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
-    nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
-    x = np.linspace(x0, x0 + xinc*nx, nx)
-    y = np.linspace(y0, y0 + yinc*ny, ny)
-    xv, yv = np.meshgrid(x, y)
-
-    # In basemap, the sinusoidal projection is global, so we won't use it.
-    # Instead we'll convert the grid back to lat/lons.
-    sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(sinu, wgs84, xv, yv)
 
     m = Basemap(projection='cyl', resolution='i',
                 lon_0=-10,
@@ -75,17 +130,17 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(45, 61, 5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(25, 56, 10), labels=[0, 0, 0, 1])
     m.pcolormesh(lon, lat, data, latlon=True)
-    m.colorbar()
-    plt.title(DATAFIELD_NAME.replace('_', ' '))
-    
+
+    cb=m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
-    del gdset
 
 
 if __name__ == "__main__":

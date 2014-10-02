@@ -22,7 +22,7 @@ includes support for HDFEOS, so for python2, everything just works.
 This is the ideal situation, yay Fedora!
 
 The Fedora 20 repositories do not include a Python3 RPM for basemap, but you can
-still install basemap via pip::
+still install basemap via pip.
 
     $ pip-python3 install basemap --user
 
@@ -30,32 +30,15 @@ The RPM for the GDAL library includes support for HDF-EOS2.
 
 Anaconda
 ========
+Anaconda is ideal for the Windows platform although the netcdf4 library was not 
+compiled with hdf4 support. For HDF4, you can use PyHDF at http://hdfeos.org/software/pyhdf.php. The H5PY package that is installed by default will
+read HDF5 swath files, and the gdal package (not installed by default) will 
+read both HDF4 and HDF5 grid files. The HDF4 swath files cannot currently be 
+read.
 
-Mac, Linux
-----------
-The following steps give you a netcdf library that allows you to read HDF4
-files on Python3/Anaconda 2.0.1 on Fedora 19, CentOS 6.5, and Mac.
-
-Download and install the free version of anaconda, then follow these
-directions ::
-
-    $ conda create -n hdfeos python
-    $ source activate hdfeos
-    $ conda install basemap 
-    $ conda install --channel https://conda.binstar.org/jevans hdf4 hdf5 h5py libnetcdf netcdf4-python gdal
-
-You may have to deal with issue#32 as described at
-https://github.com/ContinuumIO/anaconda-issues/issues/32.  This may or
-may not occur on other platforms.  For instance, it did not occur on a
-CenOS 6.5 platform.
-
-Windows
--------
-Anaconda is ideal for the Windows platform although the netcdf4 library
-was not compiled with hdf4 support.  The H5PY package that is installed by
-default will read HDF5 swath files, and the gdal package (not installed
-by default) will read both HDF4 and HDF5 grid files.  The HDF4 swath
-files cannot currently be read.
+    $ conda install basemap
+    $ conda install netcdf4
+    $ conda install gdal
 
 Mac
 ===
@@ -68,10 +51,11 @@ port.
 Python2
 -------
 Also with MacPorts, you should install the hdf4, hdf5, and netcdf
-variant of the gdal port along with basemap::
+variant of the gdal port along with basemap.
 
     $ sudo port install gdal +hdf4 +hdf5 +netcdf
     $ sudo port install py27-matplotlib-basemap
+    $ sudo port install py27-netcdf4
 
 Python3
 -------

@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LAADS MYD swath
 file in Python.
 
@@ -25,34 +28,81 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'EV_1KM_Emissive'
-    
-    nc = Dataset(FILE_NAME)
 
-    # Subset the data to match the lat/lon resolution.
-    data = nc.variables[DATAFIELD_NAME][9,:,:].astype(np.float64)
-    units = nc.variables[DATAFIELD_NAME].radiance_units
-    long_name = nc.variables[DATAFIELD_NAME].long_name
+    if USE_NETCDF4:    
+        from netCDF4 import Dataset    
+        nc = Dataset(FILE_NAME)
 
-    # The scale and offset attributes do not have standard names in this case,
-    # so we have to apply the scaling equation ourselves.
-    scale = nc.variables[DATAFIELD_NAME].radiance_scales[9]
-    offset = nc.variables[DATAFIELD_NAME].radiance_offsets[9]
-    valid_range = nc.variables[DATAFIELD_NAME].valid_range
-    fill_value = nc.variables[DATAFIELD_NAME]._FillValue
-    invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
-    invalid = np.logical_or(invalid, data == fill_value)
+        # Read 3D dataset and subset it.
+        data = nc.variables[DATAFIELD_NAME][9,:,:].astype(np.float64)
+
+        # Read geo-location dataset.
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+
+        # Read attributes.
+        units = nc.variables[DATAFIELD_NAME].radiance_units
+        long_name = nc.variables[DATAFIELD_NAME].long_name
+
+        # The scale and offset attributes do not have standard names in this 
+        # case, so we have to apply the scaling equation ourselves.
+        scale_factor = nc.variables[DATAFIELD_NAME].radiance_scales[9]
+        add_offset = nc.variables[DATAFIELD_NAME].radiance_offsets[9]
+        valid_range = nc.variables[DATAFIELD_NAME].valid_range
+        _FillValue = nc.variables[DATAFIELD_NAME]._FillValue
+        valid_min = valid_range[0]
+        valid_max = valid_range[1]
+
+        # Retrieve dimension name.
+        dimname = nc.variables[DATAFIELD_NAME].dimensions[0]
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data3D = hdf.select(DATAFIELD_NAME)
+        data = data3D[9,:,:].astype(np.double)
+        
+        # Read geolocation dataset.
+        lat = hdf.select('Latitude')
+        latitude = lat[:,:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:,:]
+
+        # Retrieve attributes.
+        attrs = data3D.attributes(full=1)
+        lna=attrs["long_name"]
+        long_name = lna[0]
+        aoa=attrs["radiance_offsets"]
+        add_offset = aoa[0][9]
+        fva=attrs["_FillValue"]
+        _FillValue = fva[0]
+        sfa=attrs["radiance_scales"]
+        scale_factor = sfa[0][9]       
+        vra=attrs["valid_range"]
+        valid_min = vra[0][0]        
+        valid_max = vra[0][1]        
+        ua=attrs["radiance_units"]
+        units = ua[0]
+
+        # Retrieve dimension name.
+        dim = data3D.dim(0)
+        dimname = dim.info()[0]
+
+    invalid = np.logical_or(data > valid_max,
+                            data < valid_min)
+    invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = scale * (data - offset)
+    data = scale_factor * (data - add_offset)
     data = np.ma.masked_array(data, np.isnan(data))
 
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
     
     m = Basemap(projection='laea', resolution='i',
                 lat_ts=71.25, lat_0=71.25, lon_0=-156.5,
@@ -61,16 +111,17 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(70, 72.1, 0.5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-158, -154.9, 0.5), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
-    m.colorbar()
-    plt.title('{0}\n({1})'.format(long_name, units))
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}\nat {2}=9'.format(basename, 'Radiance derived from '
+                                          + long_name, dimname), fontsize=11)
 
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.png".format(basename)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
 
 if __name__ == "__main__":
 
