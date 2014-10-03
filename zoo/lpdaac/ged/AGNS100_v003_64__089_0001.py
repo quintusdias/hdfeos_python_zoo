@@ -25,21 +25,24 @@ References:
 
 import os
 
-import h5py
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
-    with h5py.File(FILE_NAME, mode='r') as f:
+    if USE_NETCDF4:
 
-        dset = f['/Emissivity/Mean']
-        data = dset[0,:,:].astype(np.float64)
+        from netCDF4 import Dataset
+
+        nc = Dataset(FILE_NAME)
+        var = nc.groups['Emissivity'].variables['Mean']
+
+        # Subset for Band 10.
+        data = var[1,:,:].astype(np.float64)
 
         # Retrieve the geolocation data.
         latitude = nc.groups['Geolocation'].variables['Latitude'][:]
