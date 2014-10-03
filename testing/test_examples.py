@@ -220,6 +220,23 @@ class TestLarcTesGrids(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.larc.tes.TES_L3_CH4_SurfacePressure.run(hdffile)
 
+class TestLarcMopittSwaths(unittest.TestCase):
+    """
+    Run LARC/MOPITT swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MOP02J_20131129_L2V16_2_3(self):
+        """
+        """
+        hdffile = 'MOP02J-20131129-L2V16.2.3.he5'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP02J_20131129_L2V16_2_3.run(hdffile)
+
 class TestLpdaacMydSwaths(unittest.TestCase):
     """
     Run LPDAAC/MYD swath codes.
