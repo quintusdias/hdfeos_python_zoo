@@ -1,0 +1,27 @@
+package:
+  name: libnetcdf
+  version: 4.3.2
+
+source:
+  fn: netcdf-4.3.2.tar.gz
+  url: http://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.3.2.tar.gz
+  md5: 2fd2365e1fe9685368cd6ab0ada532a0
+
+requirements:
+  build:
+    - curl
+    - hdf4
+    - hdf5
+    - zlib
+  run:
+    - curl
+    - hdf4
+    - hdf5
+    - zlib
+
+build:
+  number: 0
+
+about:
+  home: http://www.unidata.ucar.edu/software/netcdf/
+  license: MIT

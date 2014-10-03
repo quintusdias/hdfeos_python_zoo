@@ -1,0 +1,35 @@
+package:
+  name: gdal
+  version: 1.11.0
+
+source:
+  fn: gdal-1.11.0.tar.gz
+  url: http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz
+  md5: 9fdf0f2371a3e9863d83e69951c71ec4
+
+requirements:
+  build:
+    - python
+    - hdf4
+    - hdf5
+    - libnetcdf
+    - numpy
+    - geos
+    - proj4
+    - curl
+  run:
+    - python
+    - hdf4
+    - hdf5
+    - libnetcdf
+    - numpy
+    - geos
+    - proj4
+    - curl
+
+build:
+  number: 0
+
+about:
+  home: http://www.gdal.org/
+  license: MIT

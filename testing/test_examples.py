@@ -49,6 +49,177 @@ class TestDocstrings(unittest.TestCase):
                     self.assertTrue(run_info in docstring, msg)
 
 
+class TestGHRCLisGrids(unittest.TestCase):
+    """
+    Run GHRS/LIS grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_GHRC_LISOTD_H_COM_F_lvl0(self):
+        """
+        """
+        hdffile = 'LISOTD_HRAC_V2.2.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.ghrc.lis.GHRC_LISOTD_H_COM_F_lvl0.run(hdffile)
+
+class TestPodaacAquariusGrids(unittest.TestCase):
+    """
+    Run PODAAC/AQUARIUS grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_Q2012034_L3m_DAY_EVSCI_V1_2DR_SSS_1deg(self):
+        """
+        """
+        hdffile = 'Q2012034.L3m_DAY_EVSCI_V1.2DR_SSS_1deg.h5'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.aquarius.Q2012034_L3m_DAY_EVSCI_V1_2DR_SSS_1deg.run(hdffile)
+
+class TestPodaacAquariusSwaths(unittest.TestCase):
+    """
+    Run PODAAC/AQUARIUS swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_Q2011280003000_L2_EVSCI_V1_2(self):
+        """
+        """
+        hdffile = 'Q2011280003000.L2_EVSCI_V1.2.h5'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.aquarius.Q2011280003000_L2_EVSCI_V1_2.run(hdffile)
+
+class TestPodaacQuikscatGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_QS_XWGRDS_des_avg_wind_speed(self):
+        """
+        """
+        hdffile = 'QS_XWGRD3_2008001.20080021608.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.quikscat.QS_XWGRDS_des_avg_wind_speed.run(hdffile)
+
+class TestPodaacSeawindsGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_SW_S3E_rep_wind_speed_lvl0(self):
+        """
+        """
+        hdffile = 'SW_S3E_2003100.20053531923.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.seawinds.SW_S3E_rep_wind_speed_lvl0.run(hdffile)
+
+class TestPodaacAvhrrGrids(unittest.TestCase):
+    """
+    Run PODAAC/AVHRR grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_PODAAC_L3_bsst(self):
+        """
+        """
+        hdffile = '2006001-2006005.s0454pfrt-bsst.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.podaac.avhrr.PODAAC_L3_bsst.run(hdffile)
+
+class TestLarcCeresGrids(unittest.TestCase):
+    """
+    Run LARC/CERES grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_CERES_EBAF_netclr_lvl0(self):
+        """
+        """
+        hdffile = 'CERES_EBAF_TOA_Terra_Edition1A_200003-200510.nc.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CERES_EBAF_netclr_lvl0.run(hdffile)
+
+    def test_CER_ES4_TRMM_Longwave_Flux_2_5_R(self):
+        """
+        """
+        hdffile = 'CER_ES4_TRMM-PFM_Edition1_009001.199808.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ES4_TRMM_Longwave_Flux_2_5_R.run(hdffile)
+
+    def test_CER_ISCCP_GEO_Effective_Temperature_M_tt0_MHA0(self):
+        """
+        """
+        hdffile = 'CER_ISCCP-D2like-GEO_Composite_Beta1_023031.200510.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ISCCP_GEO_Effective_Temperature_M_tt0_MHA0.run(hdffile)
+
+    def test_CER_ISCCP_Day_LLO_Dep_Alt_M_Ham(self):
+        """
+        """
+        hdffile = 'CER_ISCCP-D2like-Day_Aqua-FM3-MODIS_Beta1_023030.200612.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ISCCP_Day_LLO_Dep_Alt_M_Ham.run(hdffile)
+
+    def test_CER_ISCCP_Day_LLO_Dep_Alt_M_Sin(self):
+        """
+        """
+        hdffile = 'CER_ISCCP-D2like-Day_Aqua-FM3-MODIS_Beta1_023030.200612.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_ISCCP_Day_LLO_Dep_Alt_M_Sin.run(hdffile)
+
+    def test_CER_SYN_Aqua_OTF_LTC_Sky_lvl2_Ham(self):
+        """
+        """
+        hdffile = 'CER_SYN_Aqua-FM3-MODIS_Edition2B_007005.20051031.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.ceres.CER_SYN_Aqua_OTF_LTC_Sky_lvl2_Ham.run(hdffile)
+
+class TestLarcTesGrids(unittest.TestCase):
+    """
+    Run LARC/TES grid codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_TES_L3_CH4_SurfacePressure(self):
+        """
+        """
+        hdffile = 'TES-Aura_L3-CH4_r0000010410_F01_07.he5'
+        hdffile = fullpath(hdffile)
+        zoo.larc.tes.TES_L3_CH4_SurfacePressure.run(hdffile)
+
 class TestLpdaacMydSwaths(unittest.TestCase):
     """
     Run LPDAAC/MYD swath codes.
@@ -76,22 +247,11 @@ class TestLpdaacGedGrids(unittest.TestCase):
         """
         plt.close()
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
-    def test_AGNS100_v003_64__089_0001_gdal(self):
+    def test_AGNS100_v003_64__089_0001(self):
         """
         """
         hdffile = 'AGNS100.v003.64.-089.0001.h5'
         hdffile = fullpath(hdffile)
-        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = False
-        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
-
-    def test_AGNS100_v003_64__089_0001_netcdf(self):
-        """
-        """
-        hdffile = 'AGNS100.v003.64.-089.0001.h5'
-        hdffile = fullpath(hdffile)
-        zoo.lpdaac.ged.AGNS100_v003_64__089_0001.USE_NETCDF = True
         zoo.lpdaac.ged.AGNS100_v003_64__089_0001.run(hdffile)
 
 class TestLpdaacWeldGrids(unittest.TestCase):
@@ -104,22 +264,11 @@ class TestLpdaacWeldGrids(unittest.TestCase):
         """
         plt.close()
 
-    unittest.skipIf('Continuum Analytics, Inc.' in sys.version,
-                    'GDAL is wacky on Anaconda')
-    def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_gdal(self):
-        """
-        """
-        hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
-        hdffile = fullpath(hdffile)
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = False
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
-
     def test_CONUS_annual_2012_h01v06_doy007to356_v1_5_netcdf(self):
         """
         """
         hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
         hdffile = fullpath(hdffile)
-        zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.USE_NETCDF = True
         zoo.lpdaac.weld.CONUS_annual_2012_h01v06_doy007to356_v1_5.run(hdffile)
 
 class TestLpdaacVipGrids(unittest.TestCase):
@@ -251,7 +400,7 @@ class TestLpdaacMydGrids(unittest.TestCase):
         zoo.lpdaac.myd.MYD17A2_Gpp_1km.run(hdffile)
 
 
-class TestLpdaacMcdGrids(unittest.TestCase):
+class TestLpdaacModGrids(unittest.TestCase):
     """
     Run LPDAAC/MCD grid codes.
     """
