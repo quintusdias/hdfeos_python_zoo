@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an LP DAAC ASTER GED
 HDF5 file in Python.
 
@@ -28,6 +31,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+
+USE_NETCDF4 = False
+
 def run(FILE_NAME):
 
     with h5py.File(FILE_NAME, mode='r') as f:
@@ -36,8 +42,28 @@ def run(FILE_NAME):
         data = dset[0,:,:].astype(np.float64)
 
         # Retrieve the geolocation data.
-        latitude = f['/Geolocation/Latitude'][:]
-        longitude = f['/Geolocation/Longitude'][:]
+        latitude = nc.groups['Geolocation'].variables['Latitude'][:]
+        longitude = nc.groups['Geolocation'].variables['Longitude'][:]
+
+        # Read attribute
+        description = var.Description
+
+    else:
+        
+        import h5py
+
+        with h5py.File(FILE_NAME, mode='r') as f:
+
+            dset = f['/Emissivity/Mean']
+            data =dset[1,:,:].astype(np.float64)
+
+            # Retrieve the geolocation data.
+            latitude = f['/Geolocation/Latitude'][:]
+            longitude = f['/Geolocation/Longitude'][:]
+
+            # Retrieve attribute
+            description = dset.attrs['Description'][0]
+
 
     # Apply the fillvalue and scaling (see [1])
     data[data == -9999] = np.nan
@@ -54,13 +80,18 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-89, -87.5, 1), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
-    plt.title('Mean Emissivity for Band 10')
+    cb = m.colorbar()
+    units = 'None'
+    cb.set_label(units)
 
+    long_name = 'Mean Emissivity for Band 10'
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
+
+    plt.figtext(0.25, 0.01, description, fontsize=8)
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'CloudFraction')
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
