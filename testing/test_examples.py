@@ -237,6 +237,13 @@ class TestLarcMopittSwaths(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.larc.mopitt.MOP02J_20131129_L2V16_2_3.run(hdffile)
 
+    def test_MOP02_20000303_L2V5_7_1(self):
+        """
+        """
+        hdffile = 'MOP02-20000303-L2V5.7.1.val.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP02_20000303_L2V5_7_1.run(hdffile)
+
 class TestLpdaacMydSwaths(unittest.TestCase):
     """
     Run LPDAAC/MYD swath codes.
