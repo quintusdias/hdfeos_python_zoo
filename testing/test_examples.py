@@ -251,6 +251,13 @@ class TestLarcMopitt(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.larc.mopitt.MOP02_20000303_L2V5_7_1.run(hdffile)
 
+    def test_MOP03_CO_Profiles_Day_horizontal_lvl111(self):
+        """
+        """
+        hdffile = 'MOP03-20000303-L3V1.0.1.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP03_CO_Profiles_Day_horizontal_lvl111.run(hdffile)
+
 class TestLpdaacMydSwaths(unittest.TestCase):
     """
     Run LPDAAC/MYD swath codes.
