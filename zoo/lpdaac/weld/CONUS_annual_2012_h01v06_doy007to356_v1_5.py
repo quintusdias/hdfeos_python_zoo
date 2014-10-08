@@ -18,9 +18,6 @@ Usage:  save this script and run
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
-
-In order for the netCDF code path to work, the netcdf library must be compiled
-with HDF4 support.  Please see the README for details.
 """
 
 import os
@@ -31,7 +28,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
-from netCDF4 import Dataset
 import numpy as np
 
 USE_GDAL = False
@@ -41,47 +37,6 @@ def run(FILE_NAME):
     
     DATAFIELD_NAME = 'NDVI_TOA'
     if USE_GDAL:    
-
-    # Scale down the data by a factor of 5 so that low-memory machines
-    # can handle it.
-    nc = Dataset(FILE_NAME)
-    ncvar = nc.variables[DATAFIELD_NAME]
-    ncvar.set_auto_maskandscale(False)
-    data = ncvar[::5, ::5].astype(np.float64)
-
-    # Get any needed attributes.
-    scale = ncvar.scale_factor
-    fillvalue = ncvar._FillValue
-    valid_range = ncvar.valid_range
-    units = ncvar.units
-
-    # Construct the grid.  The needed information is in a global attribute
-    # called 'StructMetadata.0'.  Use regular expressions to tease out the
-    # extents of the grid.  
-    gridmeta = getattr(nc, 'StructMetadata.0')
-    ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
-                              (?P<upper_left_x>[+-]?\d+\.\d+)
-                              ,
-                              (?P<upper_left_y>[+-]?\d+\.\d+)
-                              \)''', re.VERBOSE)
-    match = ul_regex.search(gridmeta)
-    x0 = np.float(match.group('upper_left_x'))
-    y0 = np.float(match.group('upper_left_y'))
-
-    lr_regex = re.compile(r'''LowerRightMtrs=\(
-                              (?P<lower_right_x>[+-]?\d+\.\d+)
-                              ,
-                              (?P<lower_right_y>[+-]?\d+\.\d+)
-                              \)''', re.VERBOSE)
-    match = lr_regex.search(gridmeta)
-    x1 = np.float(match.group('lower_right_x'))
-    y1 = np.float(match.group('lower_right_y'))
-    
-    ny, nx = data.shape
-    x = np.linspace(x0, x1, nx)
-    y = np.linspace(y0, y1, ny)
-    xv, yv = np.meshgrid(x, y)
-    
 
         # Gdal
         import gdal

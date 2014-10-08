@@ -36,24 +36,6 @@ def run(FILE_NAME):
     # Identify the data field.
     DATAFIELD_NAME = 'Nadir_Reflectance'
     
-<<<<<<< HEAD
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
-    gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray().astype(np.float64)[0, :, :]
-
-    # Apply the attributes.
-    meta = gdset.GetMetadata()
-    scale = np.float(meta['scale_factor'])
-    offset = np.float(meta['add_offset'])
-    fillvalue = np.float(meta['_FillValue'])
-    units = meta['units']
-    long_name = meta['long_name']
-
-    data[data == fillvalue] = np.nan
-    data = (data - offset) * scale
-=======
     if  USE_GDAL:    
         GRID_NAME = 'MOD_Grid_BRDF'
         import gdal
@@ -129,7 +111,6 @@ def run(FILE_NAME):
     invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
     data = scale_factor * (data - add_offset)
->>>>>>> pr/79
     data = np.ma.masked_array(data, np.isnan(data))
 
     m = Basemap(projection='laea', resolution='l', lat_ts=-65,
