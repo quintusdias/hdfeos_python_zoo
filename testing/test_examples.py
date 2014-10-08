@@ -220,6 +220,58 @@ class TestLarcTesGrids(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.larc.tes.TES_L3_CH4_SurfacePressure.run(hdffile)
 
+class TestLarcMopitt(unittest.TestCase):
+    """
+    Run LARC/MOPITT grid and swath codes.
+    """
+    def tearDown(self):
+        """
+        Clear any open figure windows.
+        """
+        plt.close()
+
+    def test_MOP03T_20131129_L3V4_2_1(self):
+        """
+        """
+        hdffile = 'MOP03T-20131129-L3V4.2.1.he5'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP03T_20131129_L3V4_2_1.run(hdffile)
+
+    def test_MOP02J_20131129_L2V16_2_3(self):
+        """
+        """
+        hdffile = 'MOP02J-20131129-L2V16.2.3.he5'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP02J_20131129_L2V16_2_3.run(hdffile)
+
+    def test_MOP02_20000303_L2V5_7_1(self):
+        """
+        """
+        hdffile = 'MOP02-20000303-L2V5.7.1.val.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP02_20000303_L2V5_7_1.run(hdffile)
+
+    def test_MOP03_CO_Profiles_Day_horizontal_lvl111(self):
+        """
+        """
+        hdffile = 'MOP03-20000303-L3V1.0.1.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP03_CO_Profiles_Day_horizontal_lvl111.run(hdffile)
+
+    def test_MOP03_CO_Profiles_Day_lvl1(self):
+        """
+        """
+        hdffile = 'MOP03-20000303-L3V1.0.1.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP03_CO_Profiles_Day_lvl1.run(hdffile)
+
+    def test_MOP03_CO_Profiles_Day_vertical_lvl178(self):
+        """
+        """
+        hdffile = 'MOP03-20000303-L3V1.0.1.hdf'
+        hdffile = fullpath(hdffile)
+        zoo.larc.mopitt.MOP03_CO_Profiles_Day_vertical_lvl178.run(hdffile)
+
 class TestLpdaacMydSwaths(unittest.TestCase):
     """
     Run LPDAAC/MYD swath codes.

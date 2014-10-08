@@ -48,8 +48,7 @@ def run(FILE_NAME):
     data[invalid] = np.nan
     data = np.ma.masked_array(data, np.isnan(data))
 
-    # Construct the grid.  The needed information is in a global attribute
-    # called 'StructMetadata.0'.  Use regular expressions to tease out the
+    # Construct the grid.  Use regular expressions to tease out the
     # extents of the grid.  
     ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                               (?P<upper_left_x>[+-]?\d+\.\d+)

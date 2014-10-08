@@ -18,6 +18,9 @@ Usage:  save this script and run
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
+
+In order for the netCDF code path to work, the netcdf library must be compiled
+with HDF4 support.  Please see the README for details.
 """
 
 import os
