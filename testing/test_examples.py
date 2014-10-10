@@ -186,9 +186,9 @@ class TestLarcCeresGrids(unittest.TestCase):
         hdffile = fullpath(hdffile)
         zoo.larc.ceres.CER_SYN_Aqua_OTF_LTC_Sky_lvl2_Ham.run(hdffile)
 
-class TestLarcTesGrids(unittest.TestCase):
+class TestLarcTes(unittest.TestCase):
     """
-    Run LARC/TES grid codes.
+    Run LARC/TES codes.
     """
     def tearDown(self):
         """
@@ -202,6 +202,11 @@ class TestLarcTesGrids(unittest.TestCase):
         hdffile = 'TES-Aura_L3-CH4_r0000010410_F01_07.he5'
         hdffile = fullpath(hdffile)
         zoo.larc.tes.TES_L3_CH4_SurfacePressure.run(hdffile)
+
+    def test_TES_Aura_L2_O3_Nadir_r0000011015_F05_07(self):
+        hdffile = 'TES-Aura_L2-O3-Nadir_r0000011015_F05_07.he5'
+        hdffile = fullpath(hdffile)
+        zoo.larc.tes.TES_Aura_L2_O3_Nadir_r0000011015_F05_07.run(hdffile)
 
 class TestLpdaacMydSwaths(unittest.TestCase):
     """
