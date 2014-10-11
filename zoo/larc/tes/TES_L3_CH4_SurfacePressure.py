@@ -88,7 +88,8 @@ def run(FILE_NAME):
     plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'Surface Pressure')
+    varname = 'Surface_Pressure'
+    pngfile = "{0}.{1}.png".format(os.path.basename(__file__), varname)
     fig.savefig(pngfile)
 
 

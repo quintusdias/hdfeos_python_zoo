@@ -71,7 +71,7 @@ def run(FILE_NAME):
 
     ax1 = plt.subplot(2, 2, 1)
     ax1.semilogy(o3_data[55,:], pressure_data[55,:])
-    ax1.set_xlabel(xlabel)
+    #ax1.set_xlabel(xlabel)
     ax1.set_ylabel(ylabel)
     delta =  datetime.timedelta(days=time_data[55]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
@@ -89,7 +89,7 @@ def run(FILE_NAME):
 
     ax3 = plt.subplot(2, 2, 2)
     ax3.semilogy(o3_data[955,:], pressure_data[955,:])
-    ax3.set_xlabel(xlabel)
+    #ax3.set_xlabel(xlabel)
     ax3.set_ylabel(ylabel)
     delta =  datetime.timedelta(days=time_data[955]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
@@ -110,7 +110,7 @@ def run(FILE_NAME):
     
     # Make an output filename out of the filename and the variable itself.
     base = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.O3.png".format(base)
+    pngfile = "{0}.O3.png".format(os.path.basename(__file__))
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

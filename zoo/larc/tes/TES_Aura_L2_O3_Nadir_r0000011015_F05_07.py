@@ -58,7 +58,7 @@ def run(FILE_NAME):
     # Make an output filename out of the filename and the variable itself.
     base = os.path.splitext(os.path.basename(FILE_NAME))[0]
     varname = os.path.basename(name)
-    pngfile = "{0}.{1}.png".format(base, varname)
+    pngfile = "{0}.{1}.png".format(os.path.basename(__file__), varname)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
