@@ -2,8 +2,7 @@
 Copyright (C) 2014 The HDF Group
 Copyright (C) 2014 John Evans
 
-
-This example code illustrates how to access and visualize an LP_DAAC MOD09GHK
+This example code illustrates how to access and visualize an LP_DAAC MOD09GA
 grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -15,14 +14,18 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MOD09GHK_sur_refl_01_1.py
+    python MOD09GA_Range.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
+
+The netcdf library must be compiled with HDF4 support in order for this example
+code to work.  Please see the README for details.
 """
 
 import os
 import re
+
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -30,7 +33,7 @@ from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-USE_GDAL = False
+USE_GDAL = True
 
 def run(FILE_NAME):
     
@@ -39,12 +42,13 @@ def run(FILE_NAME):
 
     if  USE_GDAL:    
         import gdal
-        GRID_NAME = 'MOD_Grid_L2g_2d'
+        GRID_NAME = 'MODIS_Grid_500m_2D'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
         gdset = gdal.Open(gname)
         data = gdset.ReadAsArray().astype(np.float64)
+
 
         # Construct the grid.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
@@ -67,6 +71,7 @@ def run(FILE_NAME):
         scale_factor = np.float(meta['scale_factor'])
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')] 
 
+
         del gdset
     else:
         from pyhdf.SD import SD, SDC
@@ -77,13 +82,13 @@ def run(FILE_NAME):
         data = data2D[:,:].astype(np.double)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
-        GEO_FILE_NAME = 'lat_MOD09GHK.A2007001.h31v08.004.2007003192844.output'
+        GEO_FILE_NAME = 'lat_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_500m_2D.output'
         GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
                                      GEO_FILE_NAME)
         lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
         lat = lat.reshape(data.shape)
 
-        GEO_FILE_NAME = 'lon_MOD09GHK.A2007001.h31v08.004.2007003192844.output'
+        GEO_FILE_NAME = 'lon_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_1km_2D.output'
         GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
                                       GEO_FILE_NAME)
         lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
@@ -112,10 +117,10 @@ def run(FILE_NAME):
 
     m = Basemap(projection='cyl', resolution='h',
                 llcrnrlat=-2.5, urcrnrlat = 12.5,
-                llcrnrlon=127.5, urcrnrlon = 142.5)
+                llcrnrlon=-82.5, urcrnrlon = -67.5)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(0, 15, 5), labels=[1, 0, 0, 0])
-    m.drawmeridians(np.arange(125, 145, 5), labels=[0, 0, 0, 1])
+    m.drawmeridians(np.arange(-80, -65, 5), labels=[0, 0, 0, 1])
     m.pcolormesh(lon, lat, data, latlon=True)
     cb = m.colorbar()
     cb.set_label(units)
@@ -124,15 +129,16 @@ def run(FILE_NAME):
     plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
     # plt.show()
-    pngfile = "{0}.py.png".format(basename)
+    pngfile = "{0}.sur_refl_b01_1.py.png".format(basename)
     fig.savefig(pngfile)
+
 
 
 if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = 'MOD09GHK.A2007001.h31v08.004.2007003192844.hdf'
+    hdffile = 'MOD09GA.A2007268.h10v08.005.2007272184810.hdf'
     try:
         hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
     except KeyError:

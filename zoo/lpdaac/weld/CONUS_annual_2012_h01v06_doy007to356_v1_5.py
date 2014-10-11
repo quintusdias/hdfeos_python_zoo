@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an LP_DAAC MEaSURES
 WELD CONUS Albers grid file in Python.
 
@@ -15,67 +18,126 @@ Usage:  save this script and run
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
-
-In order for the netCDF code path to work, the netcdf library must be compiled
-with HDF4 support.  Please see the README for details.
 """
 
 import os
 import re
 
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
-from netCDF4 import Dataset
 import numpy as np
 
-USE_NETCDF = True
+USE_GDAL = False
+USE_NETCDF = False
 
 def run(FILE_NAME):
     
     DATAFIELD_NAME = 'NDVI_TOA'
+    if USE_GDAL:    
 
-    # Scale down the data by a factor of 5 so that low-memory machines
-    # can handle it.
-    nc = Dataset(FILE_NAME)
-    ncvar = nc.variables[DATAFIELD_NAME]
-    ncvar.set_auto_maskandscale(False)
-    data = ncvar[::5, ::5].astype(np.float64)
+        # Gdal
+        import gdal
 
-    # Get any needed attributes.
-    scale = ncvar.scale_factor
-    fillvalue = ncvar._FillValue
-    valid_range = ncvar.valid_range
-    units = ncvar.units
+        GRID_NAME = 'WELD_GRID'
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
 
-    # Construct the grid.  The needed information is in a global attribute
-    # called 'StructMetadata.0'.  Use regular expressions to tease out the
-    # extents of the grid.  
-    gridmeta = getattr(nc, 'StructMetadata.0')
-    ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
-                              (?P<upper_left_x>[+-]?\d+\.\d+)
-                              ,
-                              (?P<upper_left_y>[+-]?\d+\.\d+)
-                              \)''', re.VERBOSE)
-    match = ul_regex.search(gridmeta)
-    x0 = np.float(match.group('upper_left_x'))
-    y0 = np.float(match.group('upper_left_y'))
-
-    lr_regex = re.compile(r'''LowerRightMtrs=\(
-                              (?P<lower_right_x>[+-]?\d+\.\d+)
-                              ,
-                              (?P<lower_right_y>[+-]?\d+\.\d+)
-                              \)''', re.VERBOSE)
-    match = lr_regex.search(gridmeta)
-    x1 = np.float(match.group('lower_right_x'))
-    y1 = np.float(match.group('lower_right_y'))
+        # Scale down the data by a factor of 5 so that low-memory machines
+        # can handle it.
+        gdset = gdal.Open(gname)
+        data = gdset.ReadAsArray().astype(np.float64)[::5, ::5]
     
-    ny, nx = data.shape
-    x = np.linspace(x0, x1, nx)
-    y = np.linspace(y0, y1, ny)
-    xv, yv = np.meshgrid(x, y)
+        # Get any needed attributes.
+        meta = gdset.GetMetadata()
+        scale = np.float(meta['scale_factor'])
+        fillvalue = np.float(meta['_FillValue'])
+        valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
+        units = meta['units']
     
+        # Construct the grid.
+        x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
+        ny, nx = (gdset.RasterYSize / 5, gdset.RasterXSize / 5)
+        x = np.linspace(x0, x0 + xinc*5*nx, nx)
+        y = np.linspace(y0, y0 + yinc*5*ny, ny)
+        xv, yv = np.meshgrid(x, y)
+
+        del gdset
+
+    else:
+        if USE_NETCDF:
+
+            from netCDF4 import Dataset
+
+            # Scale down the data by a factor of 5 so that low-memory machines
+            # can handle it.
+            nc = Dataset(FILE_NAME)
+            ncvar = nc.variables[DATAFIELD_NAME]
+            ncvar.set_auto_maskandscale(False)
+            data = ncvar[::5, ::5].astype(np.float64)
+
+            # Get any needed attributes.
+            scale = ncvar.scale_factor
+            fillvalue = ncvar._FillValue
+            valid_range = ncvar.valid_range
+            units = ncvar.units
+            gridmeta = getattr(nc, 'StructMetadata.0')
+        else:
+            from pyhdf.SD import SD, SDC
+            hdf = SD(FILE_NAME, SDC.READ)
+
+            # Read dataset.
+            data2D = hdf.select(DATAFIELD_NAME)
+            data = data2D[:,:].astype(np.double)
+
+            # Scale down the data by a factor of 6 so that low-memory machines
+            # can handle it.
+            data = data[::6, ::6]
+
+        
+            # Read attributes.
+            attrs = data2D.attributes(full=1)
+            vra=attrs["valid_range"]
+            valid_range = vra[0]
+            fva=attrs["_FillValue"]
+            fillvalue = fva[0]
+            sfa=attrs["scale_factor"]
+            scale = sfa[0]        
+            ua=attrs["units"]
+            units = ua[0]
+            fattrs = hdf.attributes(full=1)
+            ga = fattrs["StructMetadata.0"]
+            gridmeta = ga[0]
+        # Construct the grid.  The needed information is in a global attribute
+        # called 'StructMetadata.0'.  Use regular expressions to tease out the
+        # extents of the grid.  
+
+        ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
+                                  (?P<upper_left_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<upper_left_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = ul_regex.search(gridmeta)
+        x0 = np.float(match.group('upper_left_x'))
+        y0 = np.float(match.group('upper_left_y'))
+
+        lr_regex = re.compile(r'''LowerRightMtrs=\(
+                                  (?P<lower_right_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<lower_right_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = lr_regex.search(gridmeta)
+        x1 = np.float(match.group('lower_right_x'))
+        y1 = np.float(match.group('lower_right_y'))
+        
+        ny, nx = data.shape
+        x = np.linspace(x0, x1, nx)
+        y = np.linspace(y0, y1, ny)
+        xv, yv = np.meshgrid(x, y)
+
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
     invalid = np.logical_or(invalid, data == fillvalue)
@@ -114,17 +176,16 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-130, -120, 1), labels=[0, 0, 0, 1])
 
     m.pcolormesh(lon, lat, data, latlon=True)
-    m.colorbar()
-    title = "{0}".format(DATAFIELD_NAME.replace('_', ' '))
-    plt.title(title)
+    cb = m.colorbar()
+    cb.set_label(units)
 
+    long_name = DATAFIELD_NAME
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
 
 if __name__ == "__main__":
 
