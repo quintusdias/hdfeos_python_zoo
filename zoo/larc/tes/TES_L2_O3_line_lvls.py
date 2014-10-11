@@ -71,11 +71,13 @@ def run(FILE_NAME):
 
     ax1 = plt.subplot(2, 2, 1)
     ax1.semilogy(o3_data[55,:], pressure_data[55,:])
+    #ax1.set_xticks(
     #ax1.set_xlabel(xlabel)
     ax1.set_ylabel(ylabel)
     delta =  datetime.timedelta(days=time_data[55]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax1.set_title("{0} at {1}".format(o3_longname, timedatum))
+    ax1.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
+    ax1.set_xticks(np.arange(0e-6, 9e-6, 2e-6))
     ax1.xaxis.set_major_formatter(formatter)
 
     ax2 = plt.subplot(2, 2, 3)
@@ -84,16 +86,16 @@ def run(FILE_NAME):
     ax2.set_ylabel(ylabel)
     delta =  datetime.timedelta(days=time_data[155]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax2.set_title("{0} at {1}".format(o3_longname, timedatum))
+    ax2.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
     ax2.xaxis.set_major_formatter(formatter)
 
     ax3 = plt.subplot(2, 2, 2)
     ax3.semilogy(o3_data[955,:], pressure_data[955,:])
-    #ax3.set_xlabel(xlabel)
     ax3.set_ylabel(ylabel)
     delta =  datetime.timedelta(days=time_data[955]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax3.set_title("{0} at {1}".format(o3_longname, timedatum))
+    ax3.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
+    ax3.set_xticks(np.arange(0e-6, 9e-6, 2e-6))
     ax3.xaxis.set_major_formatter(formatter)
 
     ax4 = plt.subplot(2, 2, 4)
@@ -102,7 +104,7 @@ def run(FILE_NAME):
     ax4.set_ylabel(ylabel)
     delta =  datetime.timedelta(days=time_data[1555]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax4.set_title("{0} at {1}".format(o3_longname, timedatum))
+    ax4.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
     ax4.xaxis.set_major_formatter(formatter)
 
     fig = plt.gcf()
