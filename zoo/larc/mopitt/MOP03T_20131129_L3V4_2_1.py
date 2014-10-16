@@ -14,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MOP02J_20131129_L2V16_2_3.py
+    python MOP03T_20131129_L3V4_2_1.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
