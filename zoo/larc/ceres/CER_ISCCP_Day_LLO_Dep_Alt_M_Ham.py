@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LaRC CERES file in
 file in Python.
 
@@ -26,24 +29,44 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
-    nc = Dataset(FILE_NAME)
-
     # Identify the data field.
     DATAFIELD_NAME = 'Liquid Log Optical Depth - Altocumulus - M'
+
+    if USE_NETCDF4:    
     
-    # Subset the data to match the size of the swath geolocation fields.
-    # Turn off autoscaling, we'll handle that ourselves due to presence of
-    # a valid range.
-    var = nc.variables[DATAFIELD_NAME]
-    data = var[0,:,:].astype(np.float64)
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
+        # Subset the data to match the size of the swath geolocation fields.
+        # Turn off autoscaling, we'll handle that ourselves due to presence of
+        # a valid range.
+        var = nc.variables[DATAFIELD_NAME]
+        data = var[0,:,:].astype(np.float64)
     
-    # Apply the attributes.
-    fillvalue = var._FillValue
+        # Read the attributes.
+        fillvalue = var._FillValue
+        units = var.units
+        
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+        # Read dataset.
+        data3D = hdf.select(DATAFIELD_NAME)
+        data = data3D[0,:,:].astype(np.float64)
+
+        # Read attributes.
+        attrs = data3D.attributes(full=1)
+        fva=attrs["_FillValue"]
+        fillvalue = fva[0]
+        ua=attrs["units"]
+        units = ua[0]
+
+    # Handle fill value.
     data[data == fillvalue] = np.nan
     datam = np.ma.masked_array(data, mask=np.isnan(data))
 
@@ -62,23 +85,21 @@ def run(FILE_NAME):
     longitude, latitude = np.meshgrid(lon, lat)
     
     # The data is global, so render in a global projection.
-    m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-90, urcrnrlat=90,
-                llcrnrlon=-180, urcrnrlon=180)
     m = Basemap(projection='hammer', lon_0=0, resolution='l')
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90.,90,45))
     m.drawmeridians(np.arange(-180.,180,45))
     m.pcolormesh(longitude, latitude, datam, latlon=True)
-    m.colorbar()
-    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, var.units))
-    
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = basename + ".png"
+    # plt.show()
+    pngfile = "{0}.py.ham.png".format(basename)
     fig.savefig(pngfile)
+    
     
 if __name__ == "__main__":
 

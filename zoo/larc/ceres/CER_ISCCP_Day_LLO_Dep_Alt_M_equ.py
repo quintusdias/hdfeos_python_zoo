@@ -14,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python CER_ISCCP_Day_LLO_Dep_Alt_M_Sin.py
+    python CER_ISCCP_Day_LLO_Dep_Alt_M_Ham.py
 
 The netCDF file must either be in your current working directory
 or in a directory specified by the environment variable HDFEOS_ZOO_DIR.
@@ -29,18 +29,17 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-
 import numpy as np
 
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
-
     # Identify the data field.
     DATAFIELD_NAME = 'Liquid Log Optical Depth - Altocumulus - M'
 
     if USE_NETCDF4:    
+    
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
         # Subset the data to match the size of the swath geolocation fields.
@@ -48,8 +47,11 @@ def run(FILE_NAME):
         # a valid range.
         var = nc.variables[DATAFIELD_NAME]
         data = var[0,:,:].astype(np.float64)
+    
+        # Read the attributes.
         fillvalue = var._FillValue
         units = var.units
+        
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
@@ -63,8 +65,8 @@ def run(FILE_NAME):
         fillvalue = fva[0]
         ua=attrs["units"]
         units = ua[0]
-        
-    # Apply the attributes.
+
+    # Handle fill value.
     data[data == fillvalue] = np.nan
     datam = np.ma.masked_array(data, mask=np.isnan(data))
 
@@ -83,7 +85,9 @@ def run(FILE_NAME):
     longitude, latitude = np.meshgrid(lon, lat)
     
     # The data is global, so render in a global projection.
-    m = Basemap(projection='sinu', resolution='l', lon_0=0)
+    m = Basemap(projection='cyl', resolution='l',
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90.,90,45))
     m.drawmeridians(np.arange(-180.,180,45))
@@ -95,8 +99,9 @@ def run(FILE_NAME):
     plt.title('{0}\n{1}'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
     # plt.show()
-    pngfile = "{0}.py.sin.png".format(basename)
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
+    
     
 if __name__ == "__main__":
 
