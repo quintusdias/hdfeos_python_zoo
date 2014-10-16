@@ -2,8 +2,8 @@
 Copyright (C) 2014 The HDF Group
 Copyright (C) 2014 John Evans
 
-This example code illustrates how to access and visualize a LaRC CERES file in
-file in Python.
+This example code illustrates how to access and visualize a LaRC CERES AVG Grid
+HDF4 file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -14,14 +14,10 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python CER_ISCCP_Day_LLO_Dep_Alt_M_Sin.py
+    python CER_AVG_Aqua-FM3-MODIS_Edition2B_007005.200510.hdf.py
 
 The netCDF file must either be in your current working directory
 or in a directory specified by the environment variable HDFEOS_ZOO_DIR.
-
-References
-----------
-[1] http://eosweb.larc.nasa.gov/PRODOCS/ceres/SRBAVG/Quality_Summaries/srbavg_ed2d/nestedgrid.html
 """
 
 import os
@@ -29,84 +25,88 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-
 import numpy as np
 
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
-
     # Identify the data field.
-    DATAFIELD_NAME = 'Liquid Log Optical Depth - Altocumulus - M'
+    DATAFIELD_NAME = 'LW TOA Clear-Sky'
 
-    if USE_NETCDF4:    
+    if USE_NETCDF4:
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
+    
         # Subset the data to match the size of the swath geolocation fields.
         # Turn off autoscaling, we'll handle that ourselves due to presence of
         # a valid range.
         var = nc.variables[DATAFIELD_NAME]
-        data = var[0,:,:].astype(np.float64)
-        fillvalue = var._FillValue
-        units = var.units
+        data = var[1,0,:,:].astype(np.float64)
+        latitude = nc.variables['Colatitude'][:]
+        longitude = nc.variables['Longitude'][:]
+
+        # Read attributes.
+        units = ncvar.units
+        fillvalue = ncvar._FillValue
+
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
+        
         # Read dataset.
-        data3D = hdf.select(DATAFIELD_NAME)
-        data = data3D[0,:,:].astype(np.float64)
+        data4D = hdf.select(DATAFIELD_NAME)
+
+        data = data4D[1,0,:,:].astype(np.double)
+
+        # Read geolocation datasets.
+        lat = hdf.select('Colatitude')
+        latitude = lat[:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:]
 
         # Read attributes.
-        attrs = data3D.attributes(full=1)
-        fva=attrs["_FillValue"]
-        fillvalue = fva[0]
+        attrs = data4D.attributes(full=1)
         ua=attrs["units"]
         units = ua[0]
-        
-    # Apply the attributes.
+        fva=attrs["_FillValue"]
+        fillvalue = fva[0]
+
+    # Apply the fill value attribute.
     data[data == fillvalue] = np.nan
-    datam = np.ma.masked_array(data, mask=np.isnan(data))
+    data = np.ma.masked_array(data, np.isnan(data))
 
-    # The normal grid information is not present.  We have to generate the geo-
-    # location data, see [1] for details.
-    ysize, xsize = data.shape
-    xinc = 360.0 / xsize
-    yinc = 180.0 / ysize
-    x0, x1 = (-180, 180)
-    y0, y1 = (-90, 90)
-    lon = np.linspace(x0 + xinc/2, x1 - xinc/2, xsize)
-    lat = np.linspace(y0 + yinc/2, y1 - yinc/2, ysize)
+    # Adjust lat/lon values.
+    latitude = 90 - latitude
+    longitude[longitude>180]=longitude[longitude>180]-360;
 
-    # Flip the latitude to run from 90 to -90.
-    lat = lat[::-1]
-    longitude, latitude = np.meshgrid(lon, lat)
-    
     # The data is global, so render in a global projection.
-    m = Basemap(projection='sinu', resolution='l', lon_0=0)
+    m = Basemap(projection='cyl', resolution='l',
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90.,90,45))
-    m.drawmeridians(np.arange(-180.,180,45))
-    m.pcolormesh(longitude, latitude, datam, latlon=True)
+    m.drawparallels(np.arange(-90, 91, 30), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
+    m.pcolormesh(longitude, latitude, data, latlon=True)
     cb = m.colorbar()
     cb.set_label(units)
 
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n{1}'.format(basename, DATAFIELD_NAME))
+    long_name = DATAFIELD_NAME
+    plt.title('{0}\n{1} at Monthly_Hourly_Avgs=0 and Stats=1'.format(basename, long_name))
     fig = plt.gcf()
     # plt.show()
-    pngfile = "{0}.py.sin.png".format(basename)
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
     
 if __name__ == "__main__":
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
-    hdffile = 'CER_ISCCP-D2like-Day_Aqua-FM3-MODIS_Beta1_023030.200612.hdf'
+    ncfile = 'CER_AVG_Aqua-FM3-MODIS_Edition2B_007005.200510.hdf'
     try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
+        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], ncfile)
     except KeyError:
         fname = hdffile
 
     run(fname)
-
