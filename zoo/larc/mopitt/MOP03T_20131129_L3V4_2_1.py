@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a MOPITT ASDC MOP03 
 version 6 HDF-EOS5 grid file in Python.
 
@@ -55,15 +58,16 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180, 180, 45), labels=[True,False,False,True])
     sc = m.scatter(longitude, latitude, c=data, s=1, cmap=plt.cm.jet,
                    edgecolors=None, linewidth=0)
-    m.colorbar()
-    plt.title('{0} ({1})\n'.format(dsname, units))
-    
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename,  longname))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, dsname)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
+
 
 if __name__ == "__main__":
 

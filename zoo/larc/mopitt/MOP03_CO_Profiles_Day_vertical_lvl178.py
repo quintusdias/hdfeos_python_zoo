@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LaRC MOPITT grid
 HDF-EOS2 file in Python.
 
@@ -25,18 +28,35 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
 
+USE_NETCDF4=False
+
 def run(FILE_NAME):
-    
-    nc = Dataset(FILE_NAME)
 
     DATAFIELD_NAME = 'CO Profiles Day'
-    data = nc.variables[DATAFIELD_NAME][:, 178, :].astype(np.float64)
-    lat = nc.variables['Latitude'][:]
-    lon = nc.variables['Longitude'][:]
-    pres = nc.variables['Pressure Grid'][:]
+
+    if USE_NETCDF4:
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][:, 178, :].astype(np.float64)
+        lat = nc.variables['Latitude'][:]
+        lon = nc.variables['Longitude'][:]
+        pres = nc.variables['Pressure Grid'][:]
+
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data3D = hdf.select(DATAFIELD_NAME)
+        data = data3D[:, 178, :].astype(np.float64)
+
+        # Read coordinates.
+        lat = hdf.select('Latitude')[:]
+        lon = hdf.select('Longitude')[:]
+        pres = hdf.select('Pressure Grid')[:]
+
 
     # Replace the fill value with NaN
     data[data == -9999] = np.nan
@@ -45,15 +65,18 @@ def run(FILE_NAME):
     # Contour the data on a grid of longitude vs. pressure
     latitude, pressure = np.meshgrid(lat, pres)
     plt.contourf(latitude, pressure, data.T)
-    plt.title("CO Profiles Day at Longitude=-1.5 degrees east")
-    plt.colorbar()
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at Longitude={2} degrees east'.format(basename, DATAFIELD_NAME, lon[178]))
+    plt.xlabel('Latitude (degrees_north)')
+    plt.ylabel('Pressure Level (hPa)')
+    cb = plt.colorbar()
+    cb.set_label('ppbv')
 
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME.replace(' ', '_'))
+    #  plt.show()
+    pngfile = "{0}.py.v.png".format(basename)
     fig.savefig(pngfile)
+
 
 if __name__ == "__main__":
 

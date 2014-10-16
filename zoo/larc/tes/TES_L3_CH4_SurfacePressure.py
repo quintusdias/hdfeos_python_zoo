@@ -1,6 +1,9 @@
 """
-This example code illustrates how to access and visualize a NSIDC Level-2
-MODIS Grid file in Python.
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a TES L3 Grid file
+in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -81,15 +84,17 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180, 180, 45), labels=[0, 0, 0, 1])
 
     m.pcolormesh(lon, lat, data, latlon=True)
-    m.colorbar()
-    plt.title('Surface Pressure')
+    cb = m.colorbar()
+    cb.set_label(units)
+
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    varname = 'Surface_Pressure'
-    pngfile = "{0}.{1}.png".format(os.path.basename(__file__), varname)
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, title))
+
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 

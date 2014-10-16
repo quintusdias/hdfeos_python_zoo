@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LaRC CERES file in
 file in Python.
 
@@ -22,27 +25,58 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
-    nc = Dataset(FILE_NAME)
-
     # Identify the data field.
     DATAFIELD_NAME = 'netclr'
+
+    if USE_NETCDF4:
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
     
-    # Subset the data to match the size of the swath geolocation fields.
-    # Turn off autoscaling, we'll handle that ourselves due to presence of
-    # a valid range.
-    var = nc.variables[DATAFIELD_NAME]
-    data = var[0,:,:].astype(np.float64)
-    latitude = nc.variables['lat'][:]
-    longitude = nc.variables['lon'][:]
-    
-    # Apply the attributes.
-    invalid = np.logical_or(data < var.valid_range[0],
-                            data > var.valid_range[1])
+        # Subset the data to match the size of the swath geolocation fields.
+        # Turn off autoscaling, we'll handle that ourselves due to presence of
+        # a valid range.
+        var = nc.variables[DATAFIELD_NAME]
+        data = var[0,:,:].astype(np.float64)
+        latitude = nc.variables['lat'][:]
+        longitude = nc.variables['lon'][:]
+
+        # Read attributes.
+        valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
+        units = ncvar.units
+        long_name = ncvar.long_name
+
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+        
+        # Read dataset.
+        data3D = hdf.select(DATAFIELD_NAME)
+        data = data3D[0,:,:]
+
+        # Read geolocation datasets.
+        lat = hdf.select('lat')
+        latitude = lat[:]
+        lon = hdf.select('lon')
+        longitude = lon[:]
+
+        # Read attributes.
+        attrs = data3D.attributes(full=1)
+        ua=attrs["units"]
+        units = ua[0]
+        vra=attrs["valid_range"]
+        valid_range = vra[0]
+        lna=attrs["long_name"]
+        long_name = lna[0]    
+
+    # Apply the valid_range attribute.
+    invalid = np.logical_or(data < valid_range[0],
+                            data > valid_range[1])
     data[invalid] = np.nan
     datam = np.ma.masked_array(data, mask=np.isnan(data))
     
@@ -51,17 +85,17 @@ def run(FILE_NAME):
                 llcrnrlat=-90, urcrnrlat=90,
                 llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90.,90,45))
-    m.drawmeridians(np.arange(-180.,180,45), labels=[True,False,False,True])
+    m.drawparallels(np.arange(-90, 91, 30), labels=[1, 0, 0, 0])
+    m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
-    m.colorbar()
-    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, var.units))
-    
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at time=0'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = basename + ".png"
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
     
 if __name__ == "__main__":

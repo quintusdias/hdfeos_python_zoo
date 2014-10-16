@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LaRC MOPITT grid
 HDF-EOS2 file in Python.
 
@@ -25,17 +28,36 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
 
+USE_NETCDF4=False
+
 def run(FILE_NAME):
-    
-    nc = Dataset(FILE_NAME)
 
     DATAFIELD_NAME = 'CO Profiles Day'
-    data = nc.variables[DATAFIELD_NAME][:, :, 1].astype(np.float64)
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
+
+    if USE_NETCDF4:
+        from netCDF4 import Dataset
+    
+        nc = Dataset(FILE_NAME)
+
+        data = nc.variables[DATAFIELD_NAME][:, :, 1].astype(np.float64)
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+        pressure = nc.variables['Pressure Grid'][:]
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data3D = hdf.select(DATAFIELD_NAME)
+        data = data3D[:, :, 1].astype(np.float64)
+
+        # Read coordinates.
+        latitude = hdf.select('Latitude')[:]
+        longitude = hdf.select('Longitude')[:]
+        pressure = hdf.select('Pressure Grid')[:]
+
 
     # Replace the fill value with NaN
     data[data == -9999] = np.nan
@@ -45,17 +67,18 @@ def run(FILE_NAME):
                 llcrnrlat=-90, urcrnrlat=90,
                 llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90, 91, 45))
+    m.drawparallels(np.arange(-90, 91, 45), labels=[True,False,False,True])
     m.drawmeridians(np.arange(-180, 180, 45), labels=[True,False,False,True])
     m.pcolormesh(longitude, latitude, data, latlon=True)
-    m.colorbar()
-    plt.title('CO Profiles Day at Pressure=850 hPa')
+    cb = m.colorbar()
+    cb.set_label('ppbv')
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at Pressure={2} hPa'.format(basename, DATAFIELD_NAME, pressure[1]))
 
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME.replace(' ', '_'))
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":

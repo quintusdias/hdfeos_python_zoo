@@ -1,6 +1,9 @@
 """
-This example code illustrates how to access and visualize a MOPITT HDF-EOS2 
-swath file in Python.
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a LaRC TES Swath
+HDF-EOS5 file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -11,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MOP02_20000303_L2V5_7_1.py
+    python TES_Aura_L2_O3_Nadir_r0000011015_F05_07.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
@@ -49,16 +52,14 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180, 180, 45), labels=[True,False,False,True])
     m.scatter(longitude, latitude, c=data, s=1, cmap=plt.cm.jet,
             edgecolors=None, linewidth=0)
-    m.colorbar()
-    plt.title('{0} ({1})\n'.format(name, 'hPa'))
-    
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at nLevels=5'.format(basename, longname))
     fig = plt.gcf()
-    plt.show()
-    
-    # Make an output filename out of the filename and the variable itself.
-    base = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    varname = os.path.basename(name)
-    pngfile = "{0}.{1}.png".format(os.path.basename(__file__), varname)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
