@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a MOPITT HDF-EOS2 
 swath file in Python.
 
@@ -64,55 +67,56 @@ def run(FILE_NAME):
     timebase = datetime.datetime(1993, 1, 1, 0, 0, 0)
 
     formatter = mpl.ticker.FormatStrFormatter('%.2g')
+    basename = os.path.basename(FILE_NAME)
 
-    #fig = plt.figure(figsize = (15, 6))
     xlabel = "{0} ({1})".format(o3_longname, o3_units)
     ylabel = "{0} ({1})".format(pressure_longname, pressure_units)
 
     ax1 = plt.subplot(2, 2, 1)
     ax1.semilogy(o3_data[55,:], pressure_data[55,:])
-    #ax1.set_xticks(
-    #ax1.set_xlabel(xlabel)
-    ax1.set_ylabel(ylabel)
+    ax1.set_ylabel(ylabel, fontsize=8)
     delta =  datetime.timedelta(days=time_data[55]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax1.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
+    ax1.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
     ax1.set_xticks(np.arange(0e-6, 9e-6, 2e-6))
     ax1.xaxis.set_major_formatter(formatter)
+    plt.tick_params(axis='both', labelsize=8)
 
     ax2 = plt.subplot(2, 2, 3)
     ax2.semilogy(o3_data[155,:], pressure_data[155,:])
-    ax2.set_xlabel(xlabel)
-    ax2.set_ylabel(ylabel)
+    ax2.set_xlabel(xlabel, fontsize=8)
+    ax2.set_ylabel(ylabel, fontsize=8)
     delta =  datetime.timedelta(days=time_data[155]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax2.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
+    ax2.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
     ax2.xaxis.set_major_formatter(formatter)
+    plt.tick_params(axis='both', labelsize=8)
 
     ax3 = plt.subplot(2, 2, 2)
     ax3.semilogy(o3_data[955,:], pressure_data[955,:])
-    ax3.set_ylabel(ylabel)
+    #    ax3.set_ylabel(ylabel, fontsize=8)
     delta =  datetime.timedelta(days=time_data[955]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax3.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
+    ax3.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
     ax3.set_xticks(np.arange(0e-6, 9e-6, 2e-6))
     ax3.xaxis.set_major_formatter(formatter)
+    plt.tick_params(axis='both', labelsize=8)
 
     ax4 = plt.subplot(2, 2, 4)
     ax4.semilogy(o3_data[1555,:], pressure_data[1555,:])
-    ax4.set_xlabel(xlabel)
-    ax4.set_ylabel(ylabel)
+    ax4.set_xlabel(xlabel, fontsize=8)
+    #   ax4.set_ylabel(ylabel, fontsize=8)
     delta =  datetime.timedelta(days=time_data[1555]/86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax4.set_title("{0} at {1}".format(o3_longname, timedatum), fontsize=12)
+    ax4.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
     ax4.xaxis.set_major_formatter(formatter)
+    plt.tick_params(axis='both', labelsize=8)
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     
-    # Make an output filename out of the filename and the variable itself.
-    base = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.O3.png".format(os.path.basename(__file__))
+
+    pngfile = "{0}.py.l.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
@@ -127,3 +131,4 @@ if __name__ == "__main__":
         pass
 
     run(hdffile)
+
