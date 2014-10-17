@@ -121,7 +121,7 @@ def run(FILE_NAME):
     cb.set_label(r'$Wm^{-2}sr^{-1}{\mu}m^{-1}$')
 
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n{1}'.format(basename, DATAFIELD_NAME))
+    plt.title('{0}\n{1}'.format(basename, 'Blue Radiance'))
     fig = plt.gcf()
     # plt.show()
     pngfile = "{0}.py.agp.png".format(basename)
