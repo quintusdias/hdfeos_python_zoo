@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a MOPITT HDF-EOS2 
 swath file in Python.
 
@@ -68,15 +71,17 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180, 180, 45), labels=[True,False,False,True])
     m.scatter(longitude, latitude, c=data, s=1, cmap=plt.cm.jet,
             edgecolors=None, linewidth=0)
-    m.colorbar()
-    plt.title('{0} ({1})\n'.format(name, 'hPa'))
-    
+
+    cb = m.colorbar()
+    cb.set_label('hPa')
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename,  name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, name)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
+
 
 if __name__ == "__main__":
 
