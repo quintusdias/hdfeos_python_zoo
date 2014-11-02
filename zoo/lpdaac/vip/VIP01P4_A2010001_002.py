@@ -33,7 +33,7 @@ from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-USE_NETCDF = True
+USE_NETCDF = False
 USE_GDAL = False
 def run(FILE_NAME):
     
@@ -76,8 +76,6 @@ def run(FILE_NAME):
             from netCDF4 import Dataset
 
             # The scaling equation isn't what netcdf4 expects, so turn it off.
-            # Scale down the data by a factor of 6 so that low-memory machines
-            # can handle it.
             nc = Dataset(FILE_NAME)
             ncvar = nc.variables[DATAFIELD_NAME]
             ncvar.set_auto_maskandscale(False)
@@ -95,8 +93,39 @@ def run(FILE_NAME):
             long_name = ncvar.long_name
             gridmeta = getattr(nc, 'StructMetadata.0')
 
+            # Construct the grid.  The needed information is in a global attribute
+            # called 'StructMetadata.0'.  Use regular expressions to tease out the
+            # extents of the grid.  In addition, the grid is in packed decimal
+            # degrees, so we need to normalize to degrees.
+    
+            ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
+                                      (?P<upper_left_x>[+-]?\d+\.\d+)
+                                      ,
+                                      (?P<upper_left_y>[+-]?\d+\.\d+)
+                                      \)''', re.VERBOSE)
+            match = ul_regex.search(gridmeta)
+            x0 = np.float(match.group('upper_left_x')) / 1e6
+            y0 = np.float(match.group('upper_left_y')) / 1e6
+    
+            lr_regex = re.compile(r'''LowerRightMtrs=\(
+                                      (?P<lower_right_x>[+-]?\d+\.\d+)
+                                      ,
+                                      (?P<lower_right_y>[+-]?\d+\.\d+)
+                                      \)''', re.VERBOSE)
+            match = lr_regex.search(gridmeta)
+            x1 = np.float(match.group('lower_right_x')) / 1e6
+            y1 = np.float(match.group('lower_right_y')) / 1e6
+            
+            ny, nx = data.shape
+            x = np.linspace(x0, x1, nx)
+            y = np.linspace(y0, y1, ny)
+            lon, lat = np.meshgrid(x, y)
+        
         else:
+
             from pyhdf.SD import SD, SDC
+            from pyhdfeos.gd import GridFile
+
             hdf = SD(FILE_NAME, SDC.READ)
 
             # Read dataset.
@@ -106,14 +135,14 @@ def run(FILE_NAME):
             # Scale down the data by a factor of 6 so that low-memory machines
             # can handle it.
             data = data[::6, ::6]
-
         
             # Read attributes.
             attrs = data2D.attributes(full=1)
             lna=attrs["long_name"]
             long_name = lna[0]
             vra=attrs["valid_range"]
-            valid_range = vra[0]
+            attr = vra[0]
+            valid_range = [float(x) for x in attr.split(', ')]
             fva=attrs["_FillValue"]
             fillvalue = fva[0]
             sfa=attrs["scale_factor"]
@@ -122,37 +151,10 @@ def run(FILE_NAME):
             units = ua[0]
             fattrs = hdf.attributes(full=1)
             ga = fattrs["StructMetadata.0"]
-            gridmeta = ga[0]
+
+            with GridFile(FILE_NAME) as gdf:
+                lat, lon = gdf.grids['VIP_CMG_GRID'][::6, ::6]
             
-        # Construct the grid.  The needed information is in a global attribute
-        # called 'StructMetadata.0'.  Use regular expressions to tease out the
-        # extents of the grid.  In addition, the grid is in packed decimal
-        # degrees, so we need to normalize to degrees.
-
-        ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
-                                  (?P<upper_left_x>[+-]?\d+\.\d+)
-                                  ,
-                                  (?P<upper_left_y>[+-]?\d+\.\d+)
-                                  \)''', re.VERBOSE)
-        match = ul_regex.search(gridmeta)
-        x0 = np.float(match.group('upper_left_x')) / 1e6
-        y0 = np.float(match.group('upper_left_y')) / 1e6
-
-        lr_regex = re.compile(r'''LowerRightMtrs=\(
-                                  (?P<lower_right_x>[+-]?\d+\.\d+)
-                                  ,
-                                  (?P<lower_right_y>[+-]?\d+\.\d+)
-                                  \)''', re.VERBOSE)
-        match = lr_regex.search(gridmeta)
-        x1 = np.float(match.group('lower_right_x')) / 1e6
-        y1 = np.float(match.group('lower_right_y')) / 1e6
-        
-        ny, nx = data.shape
-        x = np.linspace(x0, x1, nx)
-        y = np.linspace(y0, y1, ny)
-        lon, lat = np.meshgrid(x, y)
-    
-
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
     invalid = np.logical_or(invalid, data == fillvalue)

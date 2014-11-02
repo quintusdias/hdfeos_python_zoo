@@ -26,30 +26,49 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
+from pyhdfeos.gd import GridFile
+from pyhdf.SD import *
+
+
+USE_GDAL = False
 
 def run(FILE_NAME):
     
-    # Identify the data field.
     GRID_NAME = 'MOD_Grid_Seaice_1km'
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance'
     
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
-    gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray()
+    if USE_GDAL:
 
-    meta = gdset.GetMetadata()
-    x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
-    nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
-    x = np.linspace(x0, x0 + xinc*nx, nx)
-    y = np.linspace(y0, y0 + yinc*ny, ny)
-    xv, yv = np.meshgrid(x, y)
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
+        gdset = gdal.Open(gname)
+        data = gdset.ReadAsArray()
 
-    # Reproject the coordinates out of lamaz into lat/lon.
-    lamaz = pyproj.Proj("+proj=laea +a=6371228 +lat_0=90 +lon_0=0 +units=m")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(lamaz, wgs84, xv, yv)
+        meta = gdset.GetMetadata()
+        x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
+        nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
+        x = np.linspace(x0, x0 + xinc*nx, nx)
+        y = np.linspace(y0, y0 + yinc*ny, ny)
+        xv, yv = np.meshgrid(x, y)
+
+        # Reproject the coordinates out of lamaz into lat/lon.
+        lamaz = pyproj.Proj("+proj=laea +a=6371228 +lat_0=90 +lon_0=0 +units=m")
+        wgs84 = pyproj.Proj("+init=EPSG:4326") 
+        lon, lat= pyproj.transform(lamaz, wgs84, xv, yv)
+
+        del gdset
+
+    else:
+
+        gdf = GridFile(FILE_NAME)
+        lat, lon = gdf.grids[GRID_NAME][:]
+
+        sd_id = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        sds_id = sd_id.select(DATAFIELD_NAME)
+        data = sds_id[:]
 
     # Draw a lambert equal area azimuthal basemap.
     m = Basemap(projection='laea', resolution='l', lat_ts=70,
@@ -101,8 +120,6 @@ def run(FILE_NAME):
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
-
-    del gdset
 
 
 if __name__ == "__main__":

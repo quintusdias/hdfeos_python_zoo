@@ -46,8 +46,10 @@ def run(FILE_NAME):
 
         latitude = nc.variables['YDim:TOMS Level 3'][:]
         longitude = nc.variables['XDim:TOMS Level 3'][:]
+
     else:
         from pyhdf.SD import SD, SDC
+        from pyhdfeos.gd import GridFile
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
@@ -64,10 +66,8 @@ def run(FILE_NAME):
         units = ua[0]        
 
         # Read geolocation dataset.
-        lat = hdf.select('YDim:TOMS Level 3')
-        latitude = lat[:]
-        lon = hdf.select('XDim:TOMS Level 3')
-        longitude = lon[:]
+        gdf = GridFile(FILE_NAME)
+        latitude, longitude = gdf.grids['TOMS Level 3'][:]
 
     # Replace the missing values with NaN.        
     data[data == missing_value] = np.nan
