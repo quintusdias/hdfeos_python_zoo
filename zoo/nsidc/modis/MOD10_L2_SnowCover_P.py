@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a NSIDC Level-2
 MODIS Swath data file in Python.
 
@@ -25,22 +28,45 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
 
+USE_NETCDF4 = False
+
 def run(FILE_NAME):
-    
-    nc = Dataset(FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Snow_Cover'
     
-    # Subset the data to match the size of the swath geolocation fields.
-    rows = slice(5, 4060, 10)
-    cols = slice(5, 2708, 10)
-    data = nc.variables['Snow_Cover'][rows, cols]
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
+    if USE_NETCDF4:
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
+        # Subset the data to match the size of the swath geolocation fields.
+        rows = slice(5, 4060, 10)
+        cols = slice(5, 2708, 10)
+        data = nc.variables['Snow_Cover'][rows, cols]
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.float64)
+
+        # Read geolocation dataset from HDF-EOS2 dumper output.
+        GEO_FILE_NAME = 'lat_MOD10_L2.A2000065.0040.005.2008235221207.output'
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
+                                     GEO_FILE_NAME)
+        lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        latitude = lat.reshape(data.shape)
+        
+        GEO_FILE_NAME = 'lon_MOD10_L2.A2000065.0040.005.2008235221207.output'
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
+                                     GEO_FILE_NAME)
+        lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        longitude = lon.reshape(data.shape)
+
     
     # Draw a polar stereographic projection using the low resolution coastline
     # database.
@@ -64,15 +90,14 @@ def run(FILE_NAME):
     color_bar.set_ticks([9.75, 29.25])
     color_bar.set_ticklabels(['missing data', 'ocean'])
     color_bar.draw_all()
-    plt.title('Snow Cover')
 
+    basename = os.path.basename(FILE_NAME)
+    long_name = 'Snow Cover'
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
 
 if __name__ == "__main__":
 

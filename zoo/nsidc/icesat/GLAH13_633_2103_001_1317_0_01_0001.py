@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an NSIDC ICESat/GLAS
 L2 swath data file in Python.
 
@@ -25,11 +28,11 @@ from mpl_toolkits.basemap import Basemap
 import numpy as np
 
 # Can do this using either netCDF4 or h5py.
-USE_NETCDF4 = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
-    DATAFIELD_NAME = '/Data_1HZ/Geolocation/d_'
+    DATAFIELD_NAME = '/Data_1HZ/Atmosphere/d_Surface_temp'
 
     if USE_NETCDF4:
     
@@ -46,6 +49,9 @@ def run(FILE_NAME):
         lon_vr = [lonvar.valid_min, lonvar.valid_max]
 
         tempvar = nc.groups['Data_1HZ'].groups['Atmosphere'].variables['d_Surface_temp']
+        long_name = tempvar.long_name
+        units = tempvar.units
+
         temp = tempvar[:]
         temp_vr = [tempvar.valid_min, tempvar.valid_max]
 
@@ -58,14 +64,21 @@ def run(FILE_NAME):
     
         with h5py.File(FILE_NAME, mode='r') as f:
     
-            latitude = f['/Data_1HZ/Geolocation/d_lat'][:]
-            longitude = f['/Data_1HZ/Geolocation/d_lon'][:]
-            temp = f['/Data_1HZ/Atmosphere/d_Surface_temp'][:]
-            time = f['/Data_1HZ/Time/d_UTCTime_1'][:]
+            latvar = f['/Data_1HZ/Geolocation/d_lat']
+            latitude = latvar[:]
+            lat_vr = [latvar.attrs['valid_min'], latvar.attrs['valid_max']]
     
-            # String attributes actually come in as the bytes type and should
-            # be decoded to UTF-8 (python3).
-            long_name = f[DATAFIELD_NAME].attrs['long_name'].decode()
+            lonvar = f['/Data_1HZ/Geolocation/d_lon']
+            longitude = lonvar[:]
+            lon_vr = [lonvar.attrs['valid_min'], lonvar.attrs['valid_max']]
+    
+            tempvar = f['/Data_1HZ/Atmosphere/d_Surface_temp']
+            temp = tempvar[:]
+            temp_vr = [tempvar.attrs['valid_min'], tempvar.attrs['valid_max']]
+            units = tempvar.attrs['units']
+            long_name = tempvar.attrs['long_name']
+    
+            time = f['/Data_1HZ/Time/d_UTCTime_1'][:]
 
     # apply valid max, min
     latitude[latitude < lat_vr[0]] = np.nan
@@ -76,10 +89,14 @@ def run(FILE_NAME):
     temp[temp > temp_vr[1]] = np.nan
 
     fig = plt.figure(figsize=(15, 6))
-    plt.subplot(1, 2, 1)
+    ax1 =  plt.subplot(1, 2, 1)
+    elapsed_time = (time - time[0])/60
+    ax1.plot(elapsed_time, temp, 'b-')
+    ax1.set_xlabel('Elapsed Time (minutes)')
+    ax1.set_ylabel(units)
 
     # Plot surface temperature vs time.
-    plt.plot(time, temp)
+    # plt.plot(time, temp)
 
     # Plot the trajectory
     plt.subplot(1, 2, 2)
@@ -92,15 +109,17 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.))
     m.drawmeridians(np.arange(-180, 180., 45.))
-    m.pcolormesh(longitude, latitude, data, latlon=True, vmin=0, vmax=1)
-    m.colorbar()
-    plt.title('{0}'.format(long_name))
+    # m.pcolormesh(longitude, latitude, temp, latlon=True, vmin=0, vmax=1)
+    m.scatter(longitude, latitude, c=temp, s=1, cmap=plt.cm.jet,
+              edgecolors=None, linewidth=0)
+    cb = m.colorbar()
+    cb.set_label(units)
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.png".format(basename)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
