@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an NSIDC/ICESat/GLAS
 L2 HDF5 file in Python.
 
@@ -25,7 +28,7 @@ from mpl_toolkits.basemap import Basemap
 import numpy as np
 
 # Can do this using either netCDF4 or h5py.
-USE_NETCDF4 = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     if USE_NETCDF4:
@@ -89,9 +92,11 @@ def run(FILE_NAME):
     ax1 = plt.subplot(1, 2, 1)
     elapsed_time = (time - time[0])/60
     ax1.plot(elapsed_time[idx], temp[idx], 'b-')
-    ax1.set_xlabel('Time (minutes)')
+    ax1.set_xlabel('Elapsed Time (minutes)')
     ax1.set_ylabel(units)
-    ax1.set_title(longname)
+
+    basename = os.path.basename(FILE_NAME)
+    ax1.set_title('{0}\n{1}'.format(basename, longname))
 
     # The 2nd plot is the trajectory.
     # Use a north polar azimuthal equal area projection.
@@ -106,10 +111,8 @@ def run(FILE_NAME):
     plt.title('Trajectory of Flight Path')
 
     fig = plt.gcf()
-    plt.show()
-
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'ColumnAmountO3')
+    # plt.show()
+    pngfile = "{0}.a.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
