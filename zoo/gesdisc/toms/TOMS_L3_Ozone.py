@@ -31,6 +31,7 @@ from mpl_toolkits.basemap import Basemap
 import numpy as np
 
 USE_NETCDF4 = False
+USE_PYHDF = False
 
 def run(FILE_NAME):
 
@@ -47,9 +48,8 @@ def run(FILE_NAME):
         latitude = nc.variables['YDim:TOMS Level 3'][:]
         longitude = nc.variables['XDim:TOMS Level 3'][:]
 
-    else:
+    elif USE_PYHDF:
         from pyhdf.SD import SD, SDC
-        from pyhdfeos.gd import GridFile
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
@@ -66,14 +66,27 @@ def run(FILE_NAME):
         units = ua[0]        
 
         # Read geolocation dataset.
+        lat = hdf.select('YDim:Toms Level 3')
+        latitude = lat[:]
+        lon = hdf.select('XDim:TOMS Level 3')
+        longitude = lon[:]
+
+    else:
+        from pyhdfeos import GridFile
         gdf = GridFile(FILE_NAME)
         latitude, longitude = gdf.grids['TOMS Level 3'][:]
+        data = gdf.grids['TOMS Level 3'].fields['Ozone'][:]
+
+        # HDF-EOS2 does not provide for a way to retrieve field attributes.
+        # HDF-EOS5, however, does
+        long_name = "Column Amount Ozone"
+        units = "DU"
+        missing_value = 0.0
 
     # Replace the missing values with NaN.        
     data[data == missing_value] = np.nan
     datam = np.ma.masked_array(data, np.isnan(data))
 
-    
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',

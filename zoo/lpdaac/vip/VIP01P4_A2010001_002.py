@@ -35,6 +35,7 @@ import numpy as np
 
 USE_NETCDF = False
 USE_GDAL = False
+
 def run(FILE_NAME):
     
     DATAFIELD_NAME = 'CMG 0.05 Deg NDVI'
@@ -123,37 +124,23 @@ def run(FILE_NAME):
         
         else:
 
-            from pyhdf.SD import SD, SDC
-            from pyhdfeos.gd import GridFile
-
-            hdf = SD(FILE_NAME, SDC.READ)
-
-            # Read dataset.
-            data2D = hdf.select(DATAFIELD_NAME)
-            data = data2D[:,:].astype(np.double)
+            from pyhdfeos import GridFile
+            gdf = GridFile(FILE_NAME)
 
             # Scale down the data by a factor of 6 so that low-memory machines
             # can handle it.
-            data = data[::6, ::6]
-        
-            # Read attributes.
-            attrs = data2D.attributes(full=1)
-            lna=attrs["long_name"]
-            long_name = lna[0]
-            vra=attrs["valid_range"]
-            attr = vra[0]
-            valid_range = [float(x) for x in attr.split(', ')]
-            fva=attrs["_FillValue"]
-            fillvalue = fva[0]
-            sfa=attrs["scale_factor"]
-            scale = sfa[0]        
-            ua=attrs["units"]
-            units = ua[0]
-            fattrs = hdf.attributes(full=1)
-            ga = fattrs["StructMetadata.0"]
 
-            with GridFile(FILE_NAME) as gdf:
-                lat, lon = gdf.grids['VIP_CMG_GRID'][::6, ::6]
+            lat, lon = gdf.grids['VIP_CMG_GRID'][::6, ::6]
+            field = gdf.grids['VIP_CMG_GRID'].fields[DATAFIELD_NAME]
+            data = field[::6, ::6].astype(np.float64)
+        
+            # HDF-EOS2 does not provide for a way to retrieve field attributes.
+            # HDF-EOS5, however, does
+            long_name = 'Normalized Differential Vegetation Index'
+            valid_range = [-10000, 10000]
+            fillvalue = -13000
+            scale = 10000
+            units = 'VI'
             
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])

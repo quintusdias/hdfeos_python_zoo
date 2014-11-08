@@ -28,17 +28,40 @@ import numpy as np
 
 FILE_NAME = 'OMI-Aura_L3-OMTO3e_2005m1214_v002-2006m0929t143855.he5'
 
-# Can do this using either netCDF4 or h5py.
-USE_NETCDF4 = True
+# Can do this using either pyhdfeos, netCDF4 or h5py.
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
-    if USE_NETCDF4:
+
+    GRID = 'OMI Column Amount O3'        
+    DATAFIELD_NAME = 'ColumnAmountO3'
+
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import GridFile
+        gdf = GridFile(FILE_NAME)
+        latitude, longitude = gdf.grids[GRID][:]
+        data = gdf.grids[GRID].fields[DATAFIELD_NAME][:].astype(np.float64)
+
+        attrs = gdf.grids[GRID].fields[DATAFIELD_NAME].attrs
+        title = attrs['Title']
+        units = attrs['Units']
+        fillvalue = attrs['_FillValue']
+        valid_range = attrs['ValidRange']
+
+        invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
+        invalid = np.logical_or(invalid, data == fillvalue)
+        data[invalid] = np.nan
+
+        data = np.ma.masked_where(np.isnan(data), data)
+
+    elif USE_NETCDF4:
     
         from netCDF4 import Dataset
     
-        DATAFIELD_NAME = 'ColumnAmountO3'
         nc = Dataset(FILE_NAME)
-        grp = nc.groups['HDFEOS'].groups['GRIDS'].groups['OMI Column Amount O3']
+        grp = nc.groups['HDFEOS'].groups['GRIDS'].groups[GRID]
         var = grp.groups['Data Fields'].variables[DATAFIELD_NAME]
         data = var[:]
     
@@ -46,6 +69,10 @@ def run(FILE_NAME):
         title = var.Title
         units = var.Units
         nc.close()
+    
+        # There is no explicit geolocation data, so construct it ourselves.
+        longitude = np.arange(0., 1440.0) * 0.25 - 180 + 0.125
+        latitude = np.arange(0., 720.0) * 0.25 - 90 + 0.125
     
     else:
     
@@ -69,9 +96,9 @@ def run(FILE_NAME):
             title = dset.attrs['Title'].decode()
             units = dset.attrs['Units'].decode()
     
-    # There is no geolocation data, so construct it ourselves.
-    longitude = np.arange(0., 1440.0) * 0.25 - 180 + 0.125
-    latitude = np.arange(0., 720.0) * 0.25 - 90 + 0.125
+        # There is no explicit geolocation data, so construct it ourselves.
+        longitude = np.arange(0., 1440.0) * 0.25 - 180 + 0.125
+        latitude = np.arange(0., 720.0) * 0.25 - 90 + 0.125
     
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
