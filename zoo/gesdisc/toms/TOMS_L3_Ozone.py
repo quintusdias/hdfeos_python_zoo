@@ -75,13 +75,12 @@ def run(FILE_NAME):
         from pyhdfeos import GridFile
         gdf = GridFile(FILE_NAME)
         latitude, longitude = gdf.grids['TOMS Level 3'][:]
-        data = gdf.grids['TOMS Level 3'].fields['Ozone'][:]
 
-        # HDF-EOS2 does not provide for a way to retrieve field attributes.
-        # HDF-EOS5, however, does
-        long_name = "Column Amount Ozone"
-        units = "DU"
-        missing_value = 0.0
+        ozone = gdf.grids['TOMS Level 3'].fields['Ozone']
+        data = ozone[:]
+        long_name = ozone.attrs['long_name']
+        units = ozone.attrs['units']
+        missing_value = ozone.attrs['missing_value']
 
     # Replace the missing values with NaN.        
     data[data == missing_value] = np.nan

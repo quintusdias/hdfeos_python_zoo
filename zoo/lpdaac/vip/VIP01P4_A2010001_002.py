@@ -129,18 +129,19 @@ def run(FILE_NAME):
 
             # Scale down the data by a factor of 6 so that low-memory machines
             # can handle it.
-
             lat, lon = gdf.grids['VIP_CMG_GRID'][::6, ::6]
+
             field = gdf.grids['VIP_CMG_GRID'].fields[DATAFIELD_NAME]
             data = field[::6, ::6].astype(np.float64)
         
-            # HDF-EOS2 does not provide for a way to retrieve field attributes.
-            # HDF-EOS5, however, does
-            long_name = 'Normalized Differential Vegetation Index'
-            valid_range = [-10000, 10000]
-            fillvalue = -13000
-            scale = 10000
-            units = 'VI'
+            # Get any needed attributes.  The valid_range attribute is a string,
+            # which is not usually the case.
+            vrs = field.attrs['valid_range']
+            valid_range = [float(x) for x in vrs.split(', ')]
+            long_name = field.attrs['long_name']
+            fillvalue = field.attrs['_FillValue']
+            scale = field.attrs['scale_factor']
+            units = field.attrs['units']
             
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
