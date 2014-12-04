@@ -23,56 +23,27 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 import os
 import re
 
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
-from pyhdf.HDF import *
-from pyhdf.SD import *
-from pyhdf.V import *
+
+from pyhdfeos import GridFile
 
 def run(FILE_NAME):
     
-    # Identify the data field.
-    DATAFIELD_NAME = 'Blue Radiance/RDQI'
+    gdf = GridFile(FILE_NAME)
 
-    hdf = SD(FILE_NAME, SDC.READ)
+    # Subset the XY extents by a factor of 4.
+    data = gdf.grids['BlueBand'].fields['Blue Radiance/RDQI'][:,::4,::4]
+    lat, lon = gdf.grids['BlueBand'][:, ::4, ::4]
 
-    # Read dataset.
-    data3D = hdf.select(DATAFIELD_NAME)
-    data = data3D[:,:,:]
-
-
-    # Read geolocation dataset from HDF-EOS2 dumper output.
-    GEO_FILE_NAME = 'lat_MISR_ELLIPSOID_P117_F03.output'
-    GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                 GEO_FILE_NAME)
-    lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
-    lat = lat.reshape(data.shape)
-    
-    GEO_FILE_NAME = 'lon_MISR_ELLIPSOID_P117_F03.output'
-    GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                 GEO_FILE_NAME)
-    lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
-    lon = lon.reshape(data.shape)
-        
     # Read attributes.
-    attrs = data3D.attributes(full=1)
-    fva=attrs["_FillValue"]
-    _FillValue = fva[0]
+    fv = gdf.grids['BlueBand'].fields['Blue Radiance/RDQI'].attrs['_FillValue']
 
     # Read scale factor attribute.
-    f = HDF(FILE_NAME, HC.READ)
-    v = f.vgstart()
-    vg = v.attach(8)
     # PyHDF cannot read attributes from Vgroup properly.
-    # sfa = vg.attr('Scale Factor')
-    # scale_factor = sfa.get()
-    vg.detach()
-    v.end()
-
     # Set it manually using HDFView.
     scale_factor = 0.047203224152326584
 
@@ -84,7 +55,7 @@ def run(FILE_NAME):
     dataf = datas.astype(np.double)
 
     # Apply the fill value.
-    dataf[data == _FillValue] = np.nan
+    dataf[data == fv] = np.nan
 
     # Filter out values (> 16376) used for "Flag Data".
     # See Table 1.2 in "Level 1 Radiance Scaling and Conditioning
@@ -95,23 +66,15 @@ def run(FILE_NAME):
     # Apply scale facotr.
     datam = scale_factor * datam;
 
-    nblocks = data.shape[0]
-    ydimsize = data.shape[1]
-    xdimsize = data.shape[2]
-
-    datam = datam.reshape(nblocks*ydimsize, xdimsize)
-    lat = lat.reshape(nblocks*ydimsize, xdimsize)
-    lon = lon.reshape(nblocks*ydimsize, xdimsize)
-
-
     # Set the limit for the plot.
-    m = Basemap(projection='cyl', resolution='h',
+    m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=np.min(lat), urcrnrlat = np.max(lat),
                 llcrnrlon=np.min(lon), urcrnrlon = np.max(lon))
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1])
-    m.pcolormesh(lon, lat, datam, latlon=True)
+    for k in range(datam.shape[0]):
+        m.pcolormesh(lon[k], lat[k], datam[k], latlon=True)
     cb = m.colorbar()
     cb.set_label(r'$Wm^{-2}sr^{-1}{\mu}m^{-1}$')
 
