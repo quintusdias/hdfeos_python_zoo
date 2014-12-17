@@ -29,7 +29,7 @@ from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-USE_PYHDFEOS = TRUE
+USE_PYHDFEOS = True
 USE_GDAL = False
 
 def run(FILE_NAME):
@@ -41,8 +41,8 @@ def run(FILE_NAME):
         from pyhdfeos import GridFile
 
         gdf = GridFile(FILE_NAME)
-        lat, lon = gdf.grids[GRID][:]
-        data = gdf.grids[GRID].fields[DATAFIELD_NAME][:]
+        lat, lon = gdf.grids[GRID_NAME][:]
+        data = gdf.grids[GRID_NAME].fields[DATAFIELD_NAME][:]
 
     else:
         if USE_GDAL:
@@ -59,6 +59,7 @@ def run(FILE_NAME):
             del gdset
     
         else:
+            # Use pyhdf
             from pyhdf.SD import SD, SDC
             hdf = SD(FILE_NAME, SDC.READ)
     
