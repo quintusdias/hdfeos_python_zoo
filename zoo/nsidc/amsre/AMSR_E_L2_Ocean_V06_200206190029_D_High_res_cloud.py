@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
@@ -37,13 +38,29 @@ def run(FILE_NAME):
     # Identify the data field.
     DATAFIELD_NAME = 'High_res_cloud'
 
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import SwathFile
+
+        swf = SwathFile(FILE_NAME)
+        swath = swf.swaths['Swath1']
+
+        field = swath.datafields[DATAFIELD_NAME]
+        data = field[:].astype(np.float64)
+        scale_factor = field.attrs['Scale']
+
+        latitude = swath.geofields['Latitude'][:]
+        longitude = swath.geofields['Longitude'][:]
+
+    elif USE_NETCDF4:
+
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
         data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
         scale_factor = nc.variables[DATAFIELD_NAME].Scale
+
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)

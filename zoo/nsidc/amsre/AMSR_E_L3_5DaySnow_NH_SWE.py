@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_GDAL = False
 
 def run(FILE_NAME):
@@ -36,7 +37,16 @@ def run(FILE_NAME):
     # Identify the data field.
     DATAFIELD_NAME = 'SWE_NorthernPentad'
 
-    if USE_GDAL:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import GridFile
+        gdf = GridFile(FILE_NAME)
+        grid = gdf.grids['Northern Hemisphere']
+        data = grid.fields[DATAFIELD_NAME][:].astype(np.float64)
+        lat, lon = grid[:]
+
+    elif USE_GDAL:
+
         import gdal
         import mpl_toolkits.basemap.pyproj as pyproj
         GRID_NAME = 'Northern Hemisphere'
@@ -58,7 +68,9 @@ def run(FILE_NAME):
         wgs84 = pyproj.Proj("+init=EPSG:4326") 
         lon, lat= pyproj.transform(lamaz, wgs84, xv, yv)
         del gdset
+
     else:
+
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
         # Read dataset.
@@ -83,6 +95,7 @@ def run(FILE_NAME):
             pass
         lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
         lon = lon.reshape(data.shape)
+
     # Filter out invalid range values, multiply by two according to the data
     # spec.
     data[data > 240] = np.nan
