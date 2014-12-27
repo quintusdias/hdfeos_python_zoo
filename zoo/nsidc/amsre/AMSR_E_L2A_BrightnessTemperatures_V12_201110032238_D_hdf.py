@@ -31,13 +31,30 @@ from mpl_toolkits.basemap import Basemap
 
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = '89.0V_Res.5B_TB_(not-resampled)'
 
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+        from pyhdfeos import SwathFile
+
+        swf = SwathFile(FILE_NAME)
+        swath = swf.swaths['High_Res_B_Swath']
+        field = swath.datafields[DATAFIELD_NAME]
+        data = field[:].astype(np.float64)
+
+        # Retrieve the attributes for the scaling equation.  These attributes
+        # are named in a VERY non-standard manner.
+        scale_factor = field.attrs['SCALE FACTOR']
+        add_offset = field.attrs['OFFSET']
+
+        latitude = swath.geofields['Latitude'][:]
+        longitude = swath.geofields['Longitude'][:]
+
+    elif USE_NETCDF4:
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
 
@@ -45,9 +62,8 @@ def run(FILE_NAME):
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
     
-        # Replace the filled value with NaN, replace with a masked array.
-        # Apply the scaling equation.  These attributes are named in a VERY
-        # non-standard manner.
+        # Retrieve the attributes for the scaling equation.  These attributes
+        # are named in a VERY non-standard manner.
         scale_factor = getattr(nc.variables[DATAFIELD_NAME], 'SCALE FACTOR')
         add_offset = nc.variables[DATAFIELD_NAME].OFFSET
 
@@ -60,7 +76,7 @@ def run(FILE_NAME):
         data = data2D[:,:].astype(np.float64)
 
         # Read geolocation dataset.
-		# This product has multiple 'Latitude' and 'Longitude' pair under different groups.
+	# This product has multiple 'Latitude' and 'Longitude' pair under different groups.
         lat = hdf.select(hdf.reftoindex(192)) # Use HDFView to get ref number 192.
         latitude = lat[:,:]
         lon = hdf.select(hdf.reftoindex(194)) # Use HDFView to get ref number 194.
@@ -81,8 +97,8 @@ def run(FILE_NAME):
     long_name = DATAFIELD_NAME
 
     # Since the swath starts near the south pole, but also extends over the
-    # north pole, the equidistant cylindrical becomes a possibly poor choice
-    # for a projection.  We show the full global map plus a limited polar map.
+    # north pole, the equidistant cylindrical projection could be considered a 
+    # poor choice.  We show the full global map plus a limited polar map.
     fig = plt.figure(figsize=(15, 6))
     ax1 = plt.subplot(1, 2, 1)
     m = Basemap(projection='cyl', resolution='l',
@@ -104,7 +120,6 @@ def run(FILE_NAME):
     cax = plt.axes([0.92, 0.1, 0.03, 0.8])
     cb = plt.colorbar(cax=cax)
     cb.set_label(units)
-    
 
     basename = os.path.basename(FILE_NAME)
     fig = plt.gcf()
