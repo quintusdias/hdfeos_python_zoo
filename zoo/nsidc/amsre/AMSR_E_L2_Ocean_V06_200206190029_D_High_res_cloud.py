@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an NSIDC AMSR swath
 Swath data file in Python.
 
@@ -25,19 +28,40 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
 
+USE_NETCDF4 = False
+
 def run(FILE_NAME):
-    
-    nc = Dataset(FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'High_res_cloud'
-    
-    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
+
+    if USE_NETCDF4:
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+        scale_factor = nc.variables[DATAFIELD_NAME].Scale
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.float64)
+
+        # Read geolocation dataset.
+        lat = hdf.select('Latitude')
+        latitude = lat[:,:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:,:]
+
+        # Retrieve attributes.
+        attrs = data2D.attributes(full=1)
+        sfa=attrs["Scale"]
+        scale_factor = sfa[0]        
 
     # There is a wrap-around effect to deal with, as some of the swath extends
     # eastward over the international dateline.  Adjust the longitude to avoid
@@ -46,9 +70,12 @@ def run(FILE_NAME):
 
     # Apply the fill value and scaling equation.
     data[data == -9990] = np.nan
-    data = data * nc.variables[DATAFIELD_NAME].Scale
+    data = data * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
-    
+
+    units = "mm"
+    long_name = DATAFIELD_NAME
+
     # Draw a polar stereographic projection using the low resolution coastline
     # database.
     m = Basemap(projection='cyl', resolution='l',
@@ -58,14 +85,14 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(-90, 91, 45), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180,181,45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
-    m.colorbar()
-    plt.title("{0} (mm)".format(DATAFIELD_NAME))
 
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 

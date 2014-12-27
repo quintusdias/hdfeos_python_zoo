@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a NSIDC MODIS 4km
 LAMAZ (Ease) Grid file in Python.
 
@@ -27,20 +30,36 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance_SP'
-    nc = Dataset(FILE_NAME)
-    ncvar = nc.variables[DATAFIELD_NAME]
-    data = ncvar[:].astype(np.float64)
+
+    if USE_NETCDF4:
+        from netCDF4 import Dataset
+        nc = Dataset(FILE_NAME)
+        ncvar = nc.variables[DATAFIELD_NAME]
+        data = ncvar[:].astype(np.float64)
+        gridmeta = getattr(nc, 'StructMetadata.0')
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.float64)
+
+        # Read global attribute.
+        fattrs = hdf.attributes(full=1)
+        ga = fattrs["StructMetadata.0"]
+        gridmeta = ga[0]
 
     # Construct the grid.  The needed information is in a global attribute
     # called 'StructMetadata.0'.  Use regular expressions to tease out the
     # extents of the grid.  
-    gridmeta = getattr(nc, 'StructMetadata.0')
     ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                               (?P<upper_left_x>[+-]?\d+\.\d+)
                               ,
@@ -115,13 +134,14 @@ def run(FILE_NAME):
                               'no input tile\nexpected',
                               'non-production\nmask'])
     color_bar.draw_all()
-    plt.title(DATAFIELD_NAME.replace('_',' '))
 
+    basename = os.path.basename(FILE_NAME)
+    long_name = DATAFIELD_NAME
+
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 

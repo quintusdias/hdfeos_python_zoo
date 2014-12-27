@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an NSIDC AMSR grid
 file in Python.
 
@@ -20,36 +23,77 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 import os
 import re
 
-import gdal
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
+USE_GDAL = False
+
 def run(FILE_NAME):
     
     # Identify the data field.
-    GRID_NAME = 'NpPolarGrid25km'
     DATAFIELD_NAME = 'SI_25km_NH_06V_ASC'
-    
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
-    gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray().astype(np.float64)
+
+    if USE_GDAL:    
+        import gdal    
+        GRID_NAME = 'NpPolarGrid25km'
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
+        gdset = gdal.Open(gname)
+        data = gdset.ReadAsArray().astype(np.float64)
+
+        # Read projection parameters from global attribute.
+        meta = gdset.GetMetadata()
+        x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
+        nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
+        del gdset
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.float64)
+        # Read global attribute.
+        fattrs = hdf.attributes(full=1)
+        ga = fattrs["StructMetadata.0"]
+        gridmeta = ga[0]
+            
+        # Construct the grid.  The needed information is in a global attribute
+        # called 'StructMetadata.0'.  Use regular expressions to tease out the
+        # extents of the grid. 
+        ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
+                                  (?P<upper_left_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<upper_left_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = ul_regex.search(gridmeta)
+        x0 = np.float(match.group('upper_left_x')) 
+        y0 = np.float(match.group('upper_left_y')) 
+
+        lr_regex = re.compile(r'''LowerRightMtrs=\(
+                                  (?P<lower_right_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<lower_right_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = lr_regex.search(gridmeta)
+        x1 = np.float(match.group('lower_right_x'))
+        y1 = np.float(match.group('lower_right_y'))
+        ny, nx = data.shape
+        xinc = (x1 - x0) / nx
+        yinc = (y1 - y0) / ny
 
     # Apply the attributes information.
     # Ref:  http://nsidc.org/data/docs/daac/ae_si12_25km_seaice/data.html
-    meta = gdset.GetMetadata()
     data[data == 0] = np.nan
     data *= 0.1
     data = np.ma.masked_array(data, np.isnan(data))
 
     # Construct the grid.  Reproject out of the GCTP stereographic into lat/lon.
-    meta = gdset.GetMetadata()
-    x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
-    nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
     x = np.linspace(x0, x0 + xinc*nx, nx)
     y = np.linspace(y0, y0 + yinc*ny, ny)
     xv, yv = np.meshgrid(x, y)
@@ -68,24 +112,24 @@ def run(FILE_NAME):
     wgs84 = pyproj.Proj("+init=EPSG:4326") 
     lon, lat= pyproj.transform(pstereo, wgs84, xv, yv)
 
+    units = 'K'
+    long_name = DATAFIELD_NAME
+
     m = Basemap(projection='npstere', resolution='l', boundinglat=30, lon_0 = 0)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(0, 91, 20), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
     m.pcolormesh(lon, lat, data, latlon=True)
-    m.colorbar()
-    titlestr = '{0} (Kelvin)'.format(DATAFIELD_NAME.replace('_', ' '))
-    plt.title(titlestr)
 
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
-    del gdset
-
 
 if __name__ == "__main__":
 

@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a NSIDC Level-2
 MODIS Grid file in Python.
 
@@ -20,30 +23,75 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 import os
 import re
 
-import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
+USE_GDAL = False
+
 def run(FILE_NAME):
     
     # Identify the data field.
-    GRID_NAME = 'MOD_Grid_Snow_500m'
     DATAFIELD_NAME = 'Snow_Cover_Daily_Tile'
+
+    if USE_GDAL:    
+        import gdal
+        GRID_NAME = 'MOD_Grid_Snow_500m'
     
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
-    gdset = gdal.Open(gname)
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
+        gdset = gdal.Open(gname)
 
-    data = gdset.ReadAsArray()
+        data = gdset.ReadAsArray()
 
-    # Construct the grid.
-    meta = gdset.GetMetadata()
-    x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
-    nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
+        # Construct the grid.
+        meta = gdset.GetMetadata()
+        x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
+        nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
+
+        del gdset
+
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.float64)
+
+        # Read global attribute.
+        fattrs = hdf.attributes(full=1)
+        ga = fattrs["StructMetadata.0"]
+        gridmeta = ga[0]
+            
+        # Construct the grid.  The needed information is in a global attribute
+        # called 'StructMetadata.0'.  Use regular expressions to tease out the
+        # extents of the grid. 
+        ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
+                                  (?P<upper_left_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<upper_left_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = ul_regex.search(gridmeta)
+        x0 = np.float(match.group('upper_left_x')) 
+        y0 = np.float(match.group('upper_left_y')) 
+
+        lr_regex = re.compile(r'''LowerRightMtrs=\(
+                                  (?P<lower_right_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<lower_right_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = lr_regex.search(gridmeta)
+        x1 = np.float(match.group('lower_right_x')) 
+        y1 = np.float(match.group('lower_right_y')) 
+        ny, nx = data.shape
+        xinc = (x1 - x0) / nx
+        yinc = (y1 - y0) / ny
+
+
     x = np.linspace(x0, x0 + xinc*nx, nx)
     y = np.linspace(y0, y0 + yinc*ny, ny)
     xv, yv = np.meshgrid(x, y)
@@ -60,6 +108,8 @@ def run(FILE_NAME):
     # doesn't like that.
     lon[lon > 0] -= 360
 
+
+
     m = Basemap(projection='cyl', resolution='h',
                 lon_0=-10,
                 llcrnrlat=-5, urcrnrlat = 30,
@@ -70,7 +120,8 @@ def run(FILE_NAME):
 
     # Use a discretized colormap since we have only four levels.
     # fill, ocean, no snow, missing
-    cmap = mpl.colors.ListedColormap(['black','blue', 'green', 'grey'])
+    # cmap = mpl.colors.ListedColormap(['black', 'blue', 'green', 'grey'])
+    cmap = mpl.colors.ListedColormap(['grey',  'green', 'blue', 'black'])
     bounds = [0, 25, 39, 255, 256]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     
@@ -80,18 +131,17 @@ def run(FILE_NAME):
     
     color_bar = plt.colorbar()
     color_bar.set_ticks([12, 32, 147, 255.5])
-    color_bar.set_ticklabels(['fill', 'ocean', 'no snow', 'missing'])
+    # color_bar.set_ticklabels(['fill', 'ocean', 'no snow', 'missing'])
+    color_bar.set_ticklabels(['missing', 'no snow', 'ocean', 'fill'])
     color_bar.draw_all()
-    plt.title('Snow Cover Tile')
 
+    basename = os.path.basename(FILE_NAME)
+    long_name = 'Snow Cover Tile'
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
-    del gdset
 
 
 if __name__ == "__main__":

@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an NSIDC AMSR grid
 file in Python.
 
@@ -20,36 +23,68 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 import os
 import re
 
-import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
+USE_GDAL = False
+
 def run(FILE_NAME):
     
     # Identify the data field.
-    GRID_NAME = 'SpPolarGrid12km'
     DATAFIELD_NAME = 'SI_12km_SH_36H_DAY'
-    
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
-    gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray().astype(np.float64)
+
+    if USE_GDAL:    
+        import gdal
+        GRID_NAME = 'SpPolarGrid12km'
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
+        gdset = gdal.Open(gname)
+        data = gdset.ReadAsArray().astype(np.float64)
+
+        # Read projection parameters from global attribute.
+        meta = gdset.GetMetadata()
+        x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
+        nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
+        del gdset
+    else:
+        from pyhdf.SD import SD, SDC
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:,:].astype(np.float64)
+
+        # There are multiple girds in this file.
+        # Thus, simple regular expression search for 
+        # UpperLeft/LowerRightPoint from StructMetadata.0 won't work. 
+        # 
+        # Use HDFView and look for the following parameters:
+        #
+	# GROUP=GRID_2
+        #       GridName="SpPolarGrid06km"
+	#	XDim=1264
+	#	YDim=1328
+	#	UpperLeftPointMtrs=(-3950000.000000,4350000.000000)
+	#	LowerRightMtrs=(3950000.000000,-3950000.000000)
+        ny, nx = data.shape
+        x1 = 3950000
+        x0 = -3950000
+        y0 = 4350000
+        y1 = -3950000
+        xinc = (x1 - x0) / nx
+        yinc = (y1 - y0) / ny
+
 
     # Apply the attributes information.
     # Ref:  http://nsidc.org/data/docs/daac/ae_si12_12km_seaice/data.html
-    meta = gdset.GetMetadata()
     data[data == 0] = np.nan
     data *= 0.1
     data = np.ma.masked_array(data, np.isnan(data))
 
-    # Construct the grid.  Reproject out of the GCTP stereographic into lat/lon.
-    meta = gdset.GetMetadata()
-    x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
-    nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
     x = np.linspace(x0, x0 + xinc*nx, nx)
     y = np.linspace(y0, y0 + yinc*ny, ny)
     xv, yv = np.meshgrid(x, y)
@@ -68,23 +103,26 @@ def run(FILE_NAME):
     wgs84 = pyproj.Proj("+init=EPSG:4326") 
     lon, lat= pyproj.transform(pstereo, wgs84, xv, yv)
 
+    units = 'K'
+    long_name = DATAFIELD_NAME
+
     m = Basemap(projection='spstere', resolution='l', boundinglat=-45, lon_0 = 0)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-80, 0, 20), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 30), labels=[0, 0, 0, 1])
     m.pcolormesh(lon, lat, data, latlon=True)
-    m.colorbar()
-    titlestr = '{0} (Kelvin)'.format(DATAFIELD_NAME.replace('_', ' '))
-    plt.title(titlestr)
 
+ 
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.1.py.png".format(basename)
     fig.savefig(pngfile)
 
-    del gdset
 
 
 if __name__ == "__main__":
