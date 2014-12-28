@@ -28,11 +28,28 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import GridFile
+
+        grid = GridFile(FILE_NAME).grids['NCEP']
+        latitude, longitude = grid[:]
+
+        data = grid.fields['SST'][:]
+        data_longname = grid.fields['SST'].attrs['LongName']
+        data_units = grid.fields['SST'].attrs['units']
+        fv = grid.fields['SST'].attrs['_FillValue']
+
+        # We have to apply the fill value ourselves.
+        data[data == fv] = np.nan
+        data = np.ma.masked_array(data, np.isnan(data))
+
+    elif USE_NETCDF4:
 
         from netCDF4 import Dataset
 

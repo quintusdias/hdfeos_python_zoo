@@ -28,11 +28,28 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import GridFile
+
+        grid = GridFile(FILE_NAME).grids['SET1']
+        latitude, longitude = grid[:]
+
+        data = grid.fields['E'][:]
+        data_longname = grid.fields['E'].attrs['long_name']
+        data_units = grid.fields['E'].attrs['units']
+        fv = grid.fields['E'].attrs['_FillValue']
+
+        # We have to apply the fill value ourselves.
+        data[data == fv] = np.nan
+        data = np.ma.masked_array(data, np.isnan(data))
+
+    elif USE_NETCDF4:
 
         from netCDF4 import Dataset
 
@@ -43,6 +60,12 @@ def run(FILE_NAME):
 
         data_longname = data_var.long_name
         data_units = data_var.units
+
+        # The projection is GEO, so we can construct the lat/lon arrays ourselves.
+        scaleX = 360.0 / data.shape[1]
+        scaleY = 180.0 / data.shape[0]
+        longitude = np.arange(data.shape[1]) * scaleX - 180 + scaleX/2
+        latitude = np.arange(data.shape[0]) * scaleY - 90 + scaleY/2
 
     else:
         
@@ -63,11 +86,11 @@ def run(FILE_NAME):
             data[data == fv] = np.nan
             data = np.ma.masked_array(data, np.isnan(data))
 
-    # The projection is GEO, so we can construct the lat/lon arrays ourselves.
-    scaleX = 360.0 / data.shape[1]
-    scaleY = 180.0 / data.shape[0]
-    longitude = np.arange(data.shape[1]) * scaleX - 180 + scaleX/2
-    latitude = np.arange(data.shape[0]) * scaleY - 90 + scaleY/2
+        # The projection is GEO, so we can construct the lat/lon arrays ourselves.
+        scaleX = 360.0 / data.shape[1]
+        scaleY = 180.0 / data.shape[0]
+        longitude = np.arange(data.shape[1]) * scaleX - 180 + scaleX/2
+        latitude = np.arange(data.shape[0]) * scaleY - 90 + scaleY/2
 
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
