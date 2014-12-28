@@ -31,6 +31,7 @@ from mpl_toolkits.basemap import Basemap
 
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
@@ -38,12 +39,23 @@ def run(FILE_NAME):
     # Identify the HDF-EOS2 swath data file.
     DATAFIELD_NAME = 'radiances'
 
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import SwathFile
+        swathname = 'L2_Standard_cloud-cleared_radiance_product'
+        swath = SwathFile(FILE_NAME).swaths[swathname]
+        data = swath.datafields[DATAFIELD_NAME][:, :, 567]
+        latitude = swath.geofields['Latitude'][:]
+        longitude = swath.geofields['Longitude'][:]
+
+    elif USE_NETCDF4:
+
         from netCDF4 import Dataset    
         nc = Dataset(FILE_NAME)
         data = nc.variables['radiances'][:,:,567]
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
+
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)

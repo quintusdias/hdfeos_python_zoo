@@ -30,12 +30,26 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'Temperature_MW_A'
-    if USE_NETCDF4:
+
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import GridFile
+        grid = GridFile(FILE_NAME).grids['ascending_MW_only']
+        data = grid.fields[DATAFIELD_NAME][11, :, :]
+        fv = grid.fields[DATAFIELD_NAME].attrs['_FillValue']
+        data[data == fv] = np.nan
+        data = np.ma.masked_array(data, np.isnan(data))
+
+        latitude, longitude = grid[:]
+
+    elif USE_NETCDF4:
+
         from netCDF4 import Dataset    
         nc = Dataset(FILE_NAME)
 
