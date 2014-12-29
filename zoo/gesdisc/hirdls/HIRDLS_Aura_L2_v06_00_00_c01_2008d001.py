@@ -28,11 +28,32 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import SwathFile
+
+        swath = SwathFile(FILE_NAME).swaths['HIRDLS']
+
+        data = swath.datafields['O3'][0, :].astype(np.float64)
+        pressure = swath.geofields['Pressure'][:]
+        time = swath.geofields['Time'][0]
+
+        fillvalue = swath.datafields['O3'].attrs['_FillValue']
+        data[data == fillvalue] = np.nan
+
+        data_units = swath.datafields['O3'].attrs['Units']
+        pres_units = swath.geofields['Pressure'].attrs['Units']
+
+        data_title = swath.datafields['O3'].attrs['Title']
+        pres_title = swath.geofields['Pressure'].attrs['Title']
+        time_title = swath.geofields['Time'].attrs['Title']
+
+    elif USE_NETCDF4:
 
         from netCDF4 import Dataset
 
@@ -46,6 +67,7 @@ def run(FILE_NAME):
         data = data_var[0,:]
         pressure = pres_var[:]
         time = time_var[0]
+        import pdb; pdb.set_trace()
 
         # Read the needed attributes.
         data_units = data_var.Units
