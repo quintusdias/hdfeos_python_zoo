@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
@@ -36,6 +37,22 @@ def run(FILE_NAME):
     DATAFIELD_NAME = 'MFYC'
 
     if USE_NETCDF4:
+
+        from pyhdfeos import GridFile    
+        grid = GridFile(FILE_NAME).grids['EOSGRID']
+
+        # Read dataset.
+        data = grid.fields[DATAFIELD_NAME][4, 42, :, :].astype(np.float64)
+
+        # Retrieve the attributes.
+        missing_value = grid.fields[DATAFIELD_NAME].attrs['missing_value']
+        long_name = grid.fields[DATAFIELD_NAME].attrs['long_name']
+        units = grid.fields[DATAFIELD_NAME].attrs['units']
+
+        # Retrieve the geolocation data.
+        lat, lon = grid[:]
+
+    elif USE_NETCDF4:
         from netCDF4 import Dataset    
         nc = Dataset(FILE_NAME)
 
@@ -96,7 +113,6 @@ def run(FILE_NAME):
     plt.title('{0}\n{1} at TIME=4 and Height=42'.format(basename,long_name))
 
     fig = plt.gcf()
-    # plt.show()
 
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
