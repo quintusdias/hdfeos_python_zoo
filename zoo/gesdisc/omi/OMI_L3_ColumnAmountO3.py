@@ -29,7 +29,7 @@ import numpy as np
 FILE_NAME = 'OMI-Aura_L3-OMTO3e_2005m1214_v002-2006m0929t143855.he5'
 
 # Can do this using either pyhdfeos, netCDF4 or h5py.
-USE_PYHDFEOS = True
+USE_PYHDFEOS = False
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
@@ -43,6 +43,9 @@ def run(FILE_NAME):
         gdf = GridFile(FILE_NAME)
         latitude, longitude = gdf.grids[GRID][:]
         data = gdf.grids[GRID].fields[DATAFIELD_NAME][:].astype(np.float64)
+
+        # The data is upside-down with respect to the grid.
+        data = np.flipud(data)
 
         attrs = gdf.grids[GRID].fields[DATAFIELD_NAME].attrs
         title = attrs['Title']

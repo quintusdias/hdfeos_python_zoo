@@ -26,13 +26,33 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'CloudPressure'
 
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+    
+        from pyhdfeos import GridFile
+
+        grid = GridFile(FILE_NAME).grids['CloudFractionAndPressure']
+        data = grid.fields[DATAFIELD_NAME][0, :, :]
+        units = grid.fields[DATAFIELD_NAME].attrs['Units']
+        title = grid.fields[DATAFIELD_NAME].attrs['Title']
+        fill_value = grid.fields[DATAFIELD_NAME].attrs['_FillValue']
+        
+        # Retrieve the geolocation data.
+        # The longitude and latitudes are not retrieved in the normal HDFEOS
+        # grid way, as they are actual HDF5 datasets.
+        longitude = grid.fields['Longitude'][0, :, :]
+        lon_fv = grid.fields['Longitude'].attrs['_FillValue']
+
+        latitude = grid.fields['Latitude'][0, :, :]
+        lat_fv = grid.fields['Latitude'].attrs['_FillValue']
+
+    elif USE_NETCDF4:
     
         from netCDF4 import Dataset
 

@@ -27,12 +27,32 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     DATAFIELD_NAME = 'CloudFraction'
     
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import SwathFile
+
+        swath = SwathFile(FILE_NAME).swaths['ColumnAmountNO2']
+        data = swath.datafields[DATAFIELD_NAME][:].astype(np.float64)
+    
+        # Retrieve any attributes that may be needed later.
+        scale = swath.datafields[DATAFIELD_NAME].attrs['ScaleFactor']
+        offset = swath.datafields[DATAFIELD_NAME].attrs['Offset']
+        title = swath.datafields[DATAFIELD_NAME].attrs['Title']
+        missing_value = swath.datafields[DATAFIELD_NAME].attrs['MissingValue']
+        fill_value = swath.datafields[DATAFIELD_NAME].attrs['_FillValue']
+        units = swath.datafields[DATAFIELD_NAME].attrs['Units']
+
+        # Retrieve the geolocation data.
+        latitude = swath.geofields['Latitude'][:]
+        longitude = swath.geofields['Longitude'][:]
+
+    elif USE_NETCDF4:
 
         from netCDF4 import Dataset
 
