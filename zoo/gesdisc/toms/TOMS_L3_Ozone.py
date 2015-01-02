@@ -30,14 +30,28 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
-USE_PYHDF = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'Ozone'
 
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import GridFile    
+        grid = GridFile(FILE_NAME).grids['TOMS Level 3']
+        data = grid.fields[DATAFIELD_NAME][:]
+        missing_value = grid.fields[DATAFIELD_NAME].attrs['missing_value']
+        units = grid.fields[DATAFIELD_NAME].attrs['units']
+        long_name = grid.fields[DATAFIELD_NAME].attrs['long_name']
+
+        latitude, longitude = grid[:]
+        #latitude = nc.variables['YDim:TOMS Level 3'][:]
+        #longitude = nc.variables['XDim:TOMS Level 3'][:]
+
+    elif USE_NETCDF4:
+
         from netCDF4 import Dataset    
         nc = Dataset(FILE_NAME)
         data = nc.variables[DATAFIELD_NAME][:]
@@ -48,7 +62,7 @@ def run(FILE_NAME):
         latitude = nc.variables['YDim:TOMS Level 3'][:]
         longitude = nc.variables['XDim:TOMS Level 3'][:]
 
-    elif USE_PYHDF:
+    else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
 
@@ -66,21 +80,10 @@ def run(FILE_NAME):
         units = ua[0]        
 
         # Read geolocation dataset.
-        lat = hdf.select('YDim:Toms Level 3')
+        lat = hdf.select('YDim:TOMS Level 3')
         latitude = lat[:]
         lon = hdf.select('XDim:TOMS Level 3')
         longitude = lon[:]
-
-    else:
-        from pyhdfeos import GridFile
-        gdf = GridFile(FILE_NAME)
-        latitude, longitude = gdf.grids['TOMS Level 3'][:]
-
-        ozone = gdf.grids['TOMS Level 3'].fields['Ozone']
-        data = ozone[:]
-        long_name = ozone.attrs['long_name']
-        units = ozone.attrs['units']
-        missing_value = ozone.attrs['missing_value']
 
     # Replace the missing values with NaN.        
     data[data == missing_value] = np.nan
