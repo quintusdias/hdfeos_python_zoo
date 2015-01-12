@@ -30,11 +30,32 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import SwathFile
+
+        swath = SwathFile(FILE_NAME).swaths['BrO']
+        data = swath.datafields['L2gpValue'][399, :]
+        units = swath.datafields['L2gpValue'].attrs['Units']
+        fill_value = swath.datafields['L2gpValue'].attrs['_FillValue']
+        missing_value = swath.datafields['L2gpValue'].attrs['MissingValue']
+        title = swath.datafields['L2gpValue'].attrs['Title']
+
+        data[data == fill_value] = np.nan
+        data[data == missing_value] = np.nan
+        data = np.ma.masked_array(data, np.isnan(data))
+
+        pressure = swath.geofields['Pressure'][:]
+        pres_units = swath.geofields['Pressure'].attrs['Units']
+
+        time = swath.geofields['Time'][:]
+
+    elif USE_NETCDF4:
 
         from netCDF4 import Dataset
 
