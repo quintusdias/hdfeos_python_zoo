@@ -28,11 +28,35 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_PYHDFEOS = True
+USE_NETCDF4 = False
 
 def run(FILE_NAME):
     
-    if USE_NETCDF4:
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import ZonalAverageFile
+
+        zf = ZonalAverageFile(FILE_NAME)
+
+        # Read the data.
+        data = zf.zas['HIRDLS'].fields['NO2Day'][0, :, :]
+        lat = zf.zas['HIRDLS'].fields['Latitude'][:]
+        lev = zf.zas['HIRDLS'].fields['Pressure'][:]
+        time = zf.zas['HIRDLS'].fields['Time'][0]
+
+        # Read the needed attributes.
+        lat_units = zf.zas['HIRDLS'].fields['Latitude'].attrs['Units']
+        lev_units = zf.zas['HIRDLS'].fields['Pressure'].attrs['Units']
+        data_title = zf.zas['HIRDLS'].fields['NO2Day'].attrs['Title']
+        lat_title = zf.zas['HIRDLS'].fields['Latitude'].attrs['Title']
+        lev_title = zf.zas['HIRDLS'].fields['Pressure'].attrs['Title']
+        fillvalue = zf.zas['HIRDLS'].fields['NO2Day'].attrs['_FillValue']
+
+        data[data == fillvalue] = np.nan
+        data = np.ma.masked_array(data, np.isnan(data))
+
+    elif USE_NETCDF4:
 
         from netCDF4 import Dataset
 
@@ -68,6 +92,7 @@ def run(FILE_NAME):
 
             # Read the data.
             data = dset_var[0,:,:]
+            import pdb; pdb.set_trace()
             lat = dset_lat[:]
             lev = dset_lev[:]
             time = dset_date[0]
