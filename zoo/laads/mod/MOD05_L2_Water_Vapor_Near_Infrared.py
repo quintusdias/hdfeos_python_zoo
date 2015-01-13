@@ -26,16 +26,40 @@ import os
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import pdb; pdb.set_trace()
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
+
     GEO_FILE_NAME = 'MOD03.A2010001.0000.005.2010003235220.hdf'
     GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], GEO_FILE_NAME)
     DATAFIELD_NAME = 'Water_Vapor_Near_Infrared'
-    if USE_NETCDF4:    
+
+    if USE_PYHDFEOS:    
+
+        from pyhdfeos import SwathFile
+        swath = SwathFile(FILE_NAME).swaths['mod05']
+
+        # subset according to the dimension map
+        data = swath.datafields[DATAFIELD_NAME][2:5, 2:5].astype(np.double)
+
+        scale = swath.datafields[DATAFIELD_NAME].attrs['scale_factor']
+        offset = swath.datafields[DATAFIELD_NAME].attrs['add_offset']
+        fillvalue = swath.datafields[DATAFIELD_NAME].attrs['_FillValue']
+        long_name = swath.datafields[DATAFIELD_NAME].attrs['long_name']
+        units = swath.datafields[DATAFIELD_NAME].attrs['units']
+        valid_range = swath.datafields[DATAFIELD_NAME].attrs['valid_range']
+        valid_min, valid_max = valid_range
+
+        latitude = swaths.geofields['Latitude'][:]
+        longitude = swaths.geofields['Longitude'][:]
+
+    elif USE_NETCDF4:    
+
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
@@ -63,7 +87,6 @@ def run(FILE_NAME):
         long_name = var.long_name
         units = var.unit
 
-        
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
