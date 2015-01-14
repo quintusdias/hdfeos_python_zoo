@@ -24,7 +24,6 @@ code to work.  Please see the README for details.
 """
 import os
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
@@ -32,13 +31,16 @@ import numpy as np
 USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
+
 def run(FILE_NAME):
 
     GEO_FILE_NAME = 'MOD03.A2010001.0000.005.2010003235220.hdf'
     GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], GEO_FILE_NAME)
     DATAFIELD_NAME = 'Water_Vapor_Near_Infrared'
 
-    if USE_PYHDFEOS:    
+    if USE_PYHDFEOS:
+
+        from pyhdfeos import SwathFile
 
         swath = SwathFile(FILE_NAME).swaths['mod05']
 
@@ -56,13 +58,13 @@ def run(FILE_NAME):
         latitude = swath.geofields['Latitude'][:]
         longitude = swath.geofields['Longitude'][:]
 
-    elif USE_NETCDF4:    
+    elif USE_NETCDF4:
 
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
 
-        # The scaling equation to be used here is not 
+        # The scaling equation to be used here is not
         #
         #     data = data * scale + offset
         #
@@ -77,7 +79,7 @@ def run(FILE_NAME):
         latitude = nc_geo.variables['Latitude'][:]
 
         # Retrieve attributes.
-        scale_factor = var.scale_factor 
+        scale_factor = var.scale_factor
         add_offset = var.add_offset
         _FillValue = var._FillValue
         valid_min = var.valid_range[0]
@@ -91,40 +93,39 @@ def run(FILE_NAME):
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.double)
+        data = data2D[:, :].astype(np.double)
 
         hdf_geo = SD(GEO_FILE_NAME, SDC.READ)
 
         # Read geolocation dataset from MOD03 product.
         lat = hdf_geo.select('Latitude')
-        latitude = lat[:,:]
+        latitude = lat[:, :]
         lon = hdf_geo.select('Longitude')
-        longitude = lon[:,:]
-        
+        longitude = lon[:, :]
+
         # Retrieve attributes.
         attrs = data2D.attributes(full=1)
-        lna=attrs["long_name"]
+        lna = attrs["long_name"]
         long_name = lna[0]
-        aoa=attrs["add_offset"]
+        aoa = attrs["add_offset"]
         add_offset = aoa[0]
-        fva=attrs["_FillValue"]
+        fva = attrs["_FillValue"]
         _FillValue = fva[0]
-        sfa=attrs["scale_factor"]
-        scale_factor = sfa[0]        
-        vra=attrs["valid_range"]
-        valid_min = vra[0][0]        
-        valid_max = vra[0][1]        
-        ua=attrs["unit"]
+        sfa = attrs["scale_factor"]
+        scale_factor = sfa[0]
+        vra = attrs["valid_range"]
+        valid_min = vra[0][0]
+        valid_max = vra[0][1]
+        ua = attrs["unit"]
         units = ua[0]
 
     invalid = np.logical_or(data > valid_max,
                             data < valid_min)
     invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = (data - add_offset) * scale_factor 
+    data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
-    
-    
+
     # Render the plot in a south plar stereographic projection.
     m = Basemap(projection='spstere', resolution='l',
                 boundinglat=-60, lon_0=180)
@@ -154,4 +155,3 @@ if __name__ == "__main__":
         pass
 
     run(hdffile)
-    
