@@ -32,15 +32,20 @@ import numpy as np
 
 USE_PYHDFEOS = True
 USE_NETCDF4 = False
+USE_PYHDF = False
 
-def run(FILE_NAME):
+FILENAME = 'TOMS-EP_L3-TOMSEPL3_2000m0101_v8.HDF'
+
+def run():
 
     DATAFIELD_NAME = 'Ozone'
+
+    path = fullpath(FILENAME)
 
     if USE_PYHDFEOS:
 
         from pyhdfeos import GridFile    
-        grid = GridFile(FILE_NAME).grids['TOMS Level 3']
+        grid = GridFile(path).grids['TOMS Level 3']
         data = grid.fields[DATAFIELD_NAME][:]
         missing_value = grid.fields[DATAFIELD_NAME].attrs['missing_value']
         units = grid.fields[DATAFIELD_NAME].attrs['units']
@@ -53,7 +58,7 @@ def run(FILE_NAME):
     elif USE_NETCDF4:
 
         from netCDF4 import Dataset    
-        nc = Dataset(FILE_NAME)
+        nc = Dataset(path)
         data = nc.variables[DATAFIELD_NAME][:]
         missing_value = nc.variables[DATAFIELD_NAME].missing_value
         units = nc.variables[DATAFIELD_NAME].units
@@ -62,9 +67,10 @@ def run(FILE_NAME):
         latitude = nc.variables['YDim:TOMS Level 3'][:]
         longitude = nc.variables['XDim:TOMS Level 3'][:]
 
-    else:
+    elif USE_PYHDF:
+
         from pyhdf.SD import SD, SDC
-        hdf = SD(FILE_NAME, SDC.READ)
+        hdf = SD(path, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
@@ -101,7 +107,7 @@ def run(FILE_NAME):
     cb = m.colorbar()
     cb.set_label(units)
 
-    basename = os.path.basename(FILE_NAME)
+    basename = os.path.basename(path)
     plt.title('{0}\n{1}'.format(basename, long_name))
 
     fig = plt.gcf()
@@ -111,15 +117,16 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 
-if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'TOMS-EP_L3-TOMSEPL3_2000m0101_v8.HDF'
+def fullpath(filename):
     try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
+        # assume it's NOT in the current directory, but rather at a place
+        # pointed to by this particular environment variable.
+        path = os.path.join(os.environ['HDFEOS_ZOO_DIR'], filename)
     except KeyError:
-        pass
+        # assume it's in the current directory
+        path = filename
+    return path
 
-    run(hdffile)
+if __name__ == "__main__":
+    run()
     

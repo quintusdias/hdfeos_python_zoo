@@ -29,13 +29,43 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
     GEO_FILE_NAME = 'MOD03.A2010001.0000.005.2010003235220.hdf'
     GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], GEO_FILE_NAME)
     DATAFIELD_NAME = 'Cloud_Optical_Thickness'
-    if USE_NETCDF4:    
+
+    if USE_PYHDFEOS:    
+
+        from pyhdfeos import SwathFile
+        swath = SwathFile(FILE_NAME).swaths['mod06']
+
+        # Retrieve the geolocation fields.
+        longitude = swath.geofields['Longitude'][:]
+        latitude = swath.geofields['Latitude'][:]
+
+        # Examining the metadata produced by 'print(swath)' tells us what
+        # range of indexing to use.  This allows us to retrieve a selection of
+        # data that matches the full range of geolocation data available.  No
+        # need for the GEO_FILE_NAME here.
+        rows = slice(2, 2030, 5)
+        cols = slice(2, 1354, 5)
+        data = swath.datafields[DATAFIELD_NAME][rows, cols].astype(np.float64)
+
+        # Retrieve attributes.
+        scale_factor = swath.datafields[DATAFIELD_NAME].attrs['scale_factor']
+        add_offset = swath.datafields[DATAFIELD_NAME].attrs['add_offset']
+        _FillValue = swath.datafields[DATAFIELD_NAME].attrs['_FillValue']
+        valid_range = swath.datafields[DATAFIELD_NAME].attrs['valid_range']
+        valid_min = valid_range[0]
+        valid_max = valid_range[1]
+        long_name = swath.datafields[DATAFIELD_NAME].attrs['long_name']
+        units = swath.datafields[DATAFIELD_NAME].attrs['units']
+
+    elif USE_NETCDF4:    
+
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
@@ -63,7 +93,6 @@ def run(FILE_NAME):
         long_name = var.long_name
         units = var.units
 
-        
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
@@ -120,8 +149,6 @@ def run(FILE_NAME):
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
-
 
 if __name__ == "__main__":
 

@@ -29,13 +29,35 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
+USE_PYHDFEOS = True
 USE_NETCDF4 = False
 
 def run(FILE_NAME):
 
     DATAFIELD_NAME = 'Retrieved_Moisture_Profile'
 
-    if USE_NETCDF4:        
+    if USE_PYHDFEOS:        
+
+        from pyhdfeos import SwathFile
+        swath = SwathFile(FILE_NAME).swaths['mod07']
+
+        # Retrieve the geolocation data.
+        latitude = swath.geofields['Latitude'][:]
+        longitude = swath.geofields['Longitude'][:]
+
+        data = swath.datafields[DATAFIELD_NAME][5, :, :].astype(np.double)
+
+        # Retrieve attributes.
+        scale_factor = swath.datafields[DATAFIELD_NAME].attrs['scale_factor']
+        add_offset = swath.datafields[DATAFIELD_NAME].attrs['add_offset']
+        _FillValue = swath.datafields[DATAFIELD_NAME].attrs['_FillValue']
+        long_name = swath.datafields[DATAFIELD_NAME].attrs['long_name']
+        units = swath.datafields[DATAFIELD_NAME].attrs['units']
+
+        # Retrieve dimension name.
+        dimname = swath.datafields[DATAFIELD_NAME].dimlist[0]
+
+    elif USE_NETCDF4:        
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]

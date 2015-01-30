@@ -39,7 +39,6 @@ def run(FILE_NAME):
 
         swath = SwathFile(FILE_NAME).swaths['HIRDLS']
 
-<<<<<<< HEAD
         data = swath.datafields['O3'][0, :].astype(np.float64)
         pressure = swath.geofields['Pressure'][:]
         time = swath.geofields['Time'][0]
@@ -47,12 +46,6 @@ def run(FILE_NAME):
         fillvalue = swath.datafields['O3'].attrs['_FillValue']
         data[data == fillvalue] = np.nan
 
-=======
-        data = swath.datafields['O3'][0, :]
-        pressure = swath.geofields['Pressure'][:]
-        time = swath.geofields['Time'][0]
-
->>>>>>> 83883e21114139e17154bd4814b59301a286e121
         data_units = swath.datafields['O3'].attrs['Units']
         pres_units = swath.geofields['Pressure'].attrs['Units']
 

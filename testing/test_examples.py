@@ -18,6 +18,43 @@ def fullpath(fname):
     """
     return os.path.join(os.environ['HDFEOS_ZOO_DIR'], fname)
 
+class TestMultiple(unittest.TestCase):
+
+    def run_pyhdfeos(self, name, module):
+        if not hasattr(module, 'USE_PYHDFEOS'):
+            print('skipping netcdf')
+
+        if hasattr(module, 'USE_NETCDF'):
+            module.USE_NETCDF = False
+        if hasattr(module, 'USE_PYHDF'):
+            module.USE_PYHDF = False
+        if hasattr(module, 'USE_H5PY'):
+            module.USE_H5PY = False
+        module.run()
+
+    def run_netcdf(self, name, module):
+        if not hasattr(module, 'USE_NETCDF'):
+            print('skipping netcdf')
+
+        if hasattr(module, 'USE_PYHDF'):
+            module.USE_PYHDF = False
+        if hasattr(module, 'USE_H5PY'):
+            module.USE_H5PY = False
+        module.run()
+
+    def test_gesdisc(self):
+        center_module = zoo.gesdisc
+        for inst_name, inst_module in inspect.getmembers(center_module, inspect.ismodule):
+            if inst_name != 'toms':
+                continue
+            for example_name, example_module in inspect.getmembers(inst_module, inspect.ismodule):
+                self.run_pyhdfeos(example_name, example_module)
+
+                # NetCDF?
+                # PyHDF?
+                # PYHDFEOS?
+                # GDAL?
+
 class TestDocstrings(unittest.TestCase):
     """
     Verify information in the docstrings of the examples.
