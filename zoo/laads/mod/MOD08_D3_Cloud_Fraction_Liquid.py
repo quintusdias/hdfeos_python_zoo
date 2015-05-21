@@ -30,6 +30,7 @@ import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
 USE_GDAL = False
+USE_NETCDF = True
 
 def run(FILE_NAME):
     
@@ -59,6 +60,57 @@ def run(FILE_NAME):
         units = metadata['units']
         long_name = metadata['long_name']
         del gdset
+
+        x1 = x0 + xinc * nx
+        y1 = y0 + yinc * ny
+                           
+    elif USE_NETCDF:
+
+        from netCDF4 import Dataset
+
+        nc = Dataset(FILE_NAME)
+        ncvar = nc.variables[DATAFIELD_NAME]
+        ncvar.set_auto_maskandscale(False)
+        data = ncvar[:].astype(np.float64)
+
+        valid_range = ncvar.valid_range
+        _FillValue = ncvar._FillValue
+        units = ncvar.units
+        long_name = ncvar.long_name
+        scale_factor = ncvar.scale_factor
+        add_offset = ncvar.add_offset
+
+        # The geolocation information is in a global attribute called 
+        # 'StructMetadata.0'  Use regular expressions to tease out the extents
+        # of the grid.
+        gridmeta = getattr(nc, 'StructMetadata.0')
+        ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
+                                  (?P<upper_left_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<upper_left_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = ul_regex.search(gridmeta)
+        x0 = np.float(match.group('upper_left_x'))
+        y0 = np.float(match.group('upper_left_y'))
+
+        lr_regex = re.compile(r'''LowerRightMtrs=\(
+                                  (?P<lower_right_x>[+-]?\d+\.\d+)
+                                  ,
+                                  (?P<lower_right_y>[+-]?\d+\.\d+)
+                                  \)''', re.VERBOSE)
+        match = lr_regex.search(gridmeta)
+
+        x1 = np.float(match.group('lower_right_x'))
+        y1 = np.float(match.group('lower_right_y'))
+
+        # Convert to decimal degrees.
+        x0 = x0 / 1000000
+        y0 = y0 / 1000000
+        x1 = x1 / 1000000
+        y1 = y1 / 1000000
+        
+        ny, nx = data.shape
+
     else:
         from pyhdf.SD import SD, SDC
         hdf = SD(FILE_NAME, SDC.READ)
@@ -80,11 +132,10 @@ def run(FILE_NAME):
         ua=attrs["units"]
         units = ua[0]
         
-        # This product uses geographic projection. 
-        # Ideally, these parameters should be obtained by parsing
-        # StructMetadta attribute but we assume that user has 
-        # checked it with HDFView.
-        # Upper left corner: HDF-EOS2 convention
+	    # This product uses geographic projection.  Ideally, these
+	    # parameters should be obtained by parsing StructMetadata
+	    # attribute but we assume that user has checked it with
+	    # HDFView.  Upper left corner: HDF-EOS2 convention
         x0 = -180 
         y0 = 90
         # Grid spacing
@@ -93,8 +144,15 @@ def run(FILE_NAME):
         # Grid size
         nx = 360
         ny = 180
-                           
 
+        x1 = x0 + xinc * nx
+        y1 = y0 + yinc * ny
+                           
+    x = np.linspace(x0, x1, nx)
+    y = np.linspace(y0, y1, ny)
+    lon, lat = np.meshgrid(x, y)
+
+    import pdb; pdb.set_trace()
     invalid = data < valid_range[0]
     invalid = np.logical_or(invalid, data > valid_range[1])
     invalid = np.logical_or(invalid, data == _FillValue)
@@ -103,10 +161,6 @@ def run(FILE_NAME):
     data =  scale_factor * (data - add_offset)
     data = np.ma.masked_array(data, np.isnan(data))
     
-    x = np.linspace(x0, x0 + xinc*nx, nx)
-    y = np.linspace(y0, y0 + yinc*ny, ny)
-    lon, lat = np.meshgrid(x, y)
-
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat = 90,
                 llcrnrlon=-180, urcrnrlon = 180)
