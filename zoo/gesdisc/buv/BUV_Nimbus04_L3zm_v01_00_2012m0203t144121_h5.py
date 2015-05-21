@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize a GESDISC MEaSURES
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC MEaSUREs
 Ozone Zonal Average HDF5 file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -25,10 +28,17 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'BUV-Nimbus04_L3zm_v01-00-2012m0203t144121.h5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
@@ -41,7 +51,7 @@ def run(FILE_NAME):
         date_var = grp.variables['Date']
 
         # Read the data.
-        data = data_var[0,:,:]
+        data = data_var[0, :, :]
         lat = lat_var[:]
         lev = lev_var[:]
         date = date_var[0]
@@ -55,7 +65,7 @@ def run(FILE_NAME):
         lev_longname = lev_var.long_name
 
     else:
-        
+
         import h5py
 
         with h5py.File(FILE_NAME, mode='r') as f:
@@ -66,7 +76,7 @@ def run(FILE_NAME):
             dset_date = f['/Data_Fields/Date']
 
             # Read the data.
-            data = dset_var[0,:,:]
+            data = dset_var[0, :, :]
             lat = dset_lat[:]
             lev = dset_lev[:]
             date = dset_date[0]
@@ -93,30 +103,21 @@ def run(FILE_NAME):
     # Apply log scale along the y-axis to get a better image.
     lev = np.log10(lev)
     plt.contourf(lat, lev, data.T)
-    plt.colorbar()
-
+    cb = plt.colorbar()
+    cb.set_label('Unit:'+data_units)
     plt.xlabel('{0} ({1})'.format(lat_longname, lat_units))
     plt.ylabel('{0} ({1})\nin log10 scale'.format(lev_longname, lev_units))
-    
-    plt.title('{0} ({1})\nDate:  {2}'.format(data_longname,
-                                             data_units,
-                                             datestr.strftime('%Y-%m')))
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, data_longname))
 
+    # Text position (80.0, -1.2) is relative to axes values.
+    plt.text(80.0, -1.2, 'Date:{0}'.format(datestr.strftime('%Y-%m')),
+             fontsize=12)
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'ProfileOzone')
+    # plt.show()
+
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'BUV-Nimbus04_L3zm_v01-00-2012m0203t144121.h5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()

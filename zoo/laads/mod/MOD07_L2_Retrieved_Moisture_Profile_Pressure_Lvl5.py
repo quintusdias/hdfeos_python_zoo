@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LAADS MODIS swath
 file in Python.
 
@@ -24,31 +27,82 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
 
-def run(FILE_NAME):
+USE_NETCDF4 = False
+
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD07_L2.A2010001.0000.005.2010004001518.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'Retrieved_Moisture_Profile'
-    
-    nc = Dataset(FILE_NAME)
-    var = nc.variables[DATAFIELD_NAME]
 
-    # The scaling equation to be used here is not 
-    #
-    #     data = data * scale + offset
-    #
-    # We'll turn autoscaling off in order to correctly scale the data.
-    var.set_auto_maskandscale(False)
-    data = var[5,:,:].astype(np.double)
-    data[data == var._FillValue] = np.nan
-    data = (data - var.add_offset) * var.scale_factor 
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
+
+        nc = Dataset(FILE_NAME)
+        var = nc.variables[DATAFIELD_NAME]
+
+        # The scaling equation to be used here is not
+        #
+        #     data = data * scale + offset
+        #
+        # We'll turn autoscaling off in order to correctly scale the data.
+        var.set_auto_maskandscale(False)
+        data = var[5, :, :].astype(np.double)
+
+        # Retrieve the geolocation data.
+        longitude = nc.variables['Longitude'][:]
+        latitude = nc.variables['Latitude'][:]
+
+        # Retrieve attributes.
+        scale_factor = var.scale_factor
+        add_offset = var.add_offset
+        _FillValue = var._FillValue
+        long_name = var.long_name
+        units = var.units
+
+        # Retrieve dimension name.
+        dimname = var.dimensions[0]
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data3D = hdf.select(DATAFIELD_NAME)
+        data = data3D[5, :, :].astype(np.double)
+
+        # Read geolocation dataset.
+        lat = hdf.select('Latitude')
+        latitude = lat[:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:]
+
+        # Retrieve attributes.
+        attrs = data3D.attributes(full=1)
+        long_name = attrs["long_name"][0]
+        add_offset = attrs["add_offset"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        units = attrs["units"][0]
+
+        # Retrieve dimension name.
+        dim = data3D.dim(0)
+        dimname = dim.info()[0]
+
+    data[data == _FillValue] = np.nan
+    data = (data - add_offset) * scale_factor
     datam = np.ma.masked_array(data, np.isnan(data))
-    
-    # Retrieve the geolocation data.
-    longitude = nc.variables['Longitude'][:]
-    latitude = nc.variables['Latitude'][:]
-    
+
     # Render the plot in a south plar stereographic projection.
     m = Basemap(projection='spstere', resolution='l',
                 boundinglat=-60, lon_0=180)
@@ -56,27 +110,16 @@ def run(FILE_NAME):
     m.drawparallels(np.arange(-90., 50., 10.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
-    m.colorbar()
-    titlestr = "Retrieved Moisture Profile at pressure level 5 (degrees K)"
-    plt.title(titlestr)
+    cb = m.colorbar()
+    cb.set_label(units)
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at {2}=5'.format(basename, long_name, dimname))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD07_L2.A2010001.0000.005.2010004001518.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

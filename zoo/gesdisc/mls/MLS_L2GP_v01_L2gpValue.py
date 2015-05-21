@@ -1,6 +1,9 @@
 """
-This example code illustrates how to access and visualize a GESDISC MLS file
-in Python.
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC MLS Swath
+v1 file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
 the HDF-EOS Forum (http://hdfeos.org/forums).  If you would like to see an
@@ -29,17 +32,25 @@ import numpy as np
 
 USE_NETCDF4 = True
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MLS-Aura_L2GP-BrO_v01-52-c01_2007d029.he5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
 
         nc = Dataset(FILE_NAME)
-        data_grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['BrO'].groups['Data Fields']
+        brO_grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['BrO']
+        data_grp = brO_grp.groups['Data Fields']
         data_var = data_grp.variables['L2gpValue']
 
-        data = data_var[399,:]
+        data = data_var[399, :]
         units = data_var.Units
         fill_value = data_var._FillValue
         missing_value = data_var.MissingValue
@@ -49,7 +60,7 @@ def run(FILE_NAME):
         data[data == missing_value] = np.nan
         data = np.ma.masked_array(data, np.isnan(data))
 
-        geo_grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['BrO'].groups['Geolocation Fields']
+        geo_grp = brO_grp.groups['Geolocation Fields']
         pres_var = geo_grp.variables['Pressure']
         pressure = pres_var[:]
         pres_units = pres_var.Units
@@ -58,7 +69,7 @@ def run(FILE_NAME):
         time = time_var[:]
 
     else:
-        
+
         import h5py
 
         path = '/HDFEOS/SWATHS/BrO'
@@ -95,23 +106,15 @@ def run(FILE_NAME):
     plt.plot(pressure[12:16], data[12:16])
     plt.xlabel('Pressure ({0})'.format(pres_units))
     plt.ylabel('{0} ({1})'.format(title, units))
-    plt.title('{0} at Time = {1}'.format(title, time1lvl))
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1} at Time = {2}'.format(basename, title, time1lvl))
 
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'BrO')
+    # plt.show()
+
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MLS-Aura_L2GP-BrO_v01-52-c01_2007d029.he5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()

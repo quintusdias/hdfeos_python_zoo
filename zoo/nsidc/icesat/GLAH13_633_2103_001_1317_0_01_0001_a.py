@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize an NSIDC/ICESat/GLAS
 L2 HDF5 file in Python.
 
@@ -25,13 +28,21 @@ from mpl_toolkits.basemap import Basemap
 import numpy as np
 
 # Can do this using either netCDF4 or h5py.
-USE_NETCDF4 = True
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'GLAH13_633_2103_001_1317_0_01_0001.h5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     if USE_NETCDF4:
-    
+
         from netCDF4 import Dataset
-    
+
         nc = Dataset(FILE_NAME)
 
         latvar = nc.groups['Data_1HZ'].groups['Geolocation'].variables['d_lat']
@@ -42,7 +53,8 @@ def run(FILE_NAME):
         longitude = lonvar[:]
         lon_vr = [lonvar.valid_min, lonvar.valid_max]
 
-        tempvar = nc.groups['Data_1HZ'].groups['Atmosphere'].variables['d_Surface_temp']
+        atm_grp = nc.groups['Data_1HZ'].groups['Atmosphere']
+        tempvar = atm_grp.variables['d_Surface_temp']
         temp = tempvar[:]
         temp_vr = [tempvar.valid_min, tempvar.valid_max]
         units = tempvar.units
@@ -52,27 +64,27 @@ def run(FILE_NAME):
         time = timevar[:]
 
     else:
-    
+
         import h5py
-    
+
         with h5py.File(FILE_NAME, mode='r') as f:
-    
+
             latvar = f['/Data_1HZ/Geolocation/d_lat']
             latitude = latvar[:]
             lat_vr = [latvar.attrs['valid_min'], latvar.attrs['valid_max']]
-    
+
             lonvar = f['/Data_1HZ/Geolocation/d_lon']
             longitude = lonvar[:]
             lon_vr = [lonvar.attrs['valid_min'], lonvar.attrs['valid_max']]
-    
+
             tempvar = f['/Data_1HZ/Atmosphere/d_Surface_temp']
             temp = tempvar[:]
             temp_vr = [tempvar.attrs['valid_min'], tempvar.attrs['valid_max']]
             units = tempvar.attrs['units']
             longname = tempvar.attrs['long_name']
-    
+
             time = f['/Data_1HZ/Time/d_UTCTime_1'][:]
-    
+
     # Apply attribute restrictions.
     latitude[latitude < lat_vr[0]] = np.nan
     latitude[latitude > lat_vr[1]] = np.nan
@@ -85,13 +97,15 @@ def run(FILE_NAME):
     idx = slice(0, 600)
 
     # Make a split window plot.  First plot is time vs. temperature.
-    fig = plt.figure(figsize = (15, 6))
+    fig = plt.figure(figsize=(15, 6))
     ax1 = plt.subplot(1, 2, 1)
     elapsed_time = (time - time[0])/60
     ax1.plot(elapsed_time[idx], temp[idx], 'b-')
-    ax1.set_xlabel('Time (minutes)')
+    ax1.set_xlabel('Elapsed Time (minutes)')
     ax1.set_ylabel(units)
-    ax1.set_title(longname)
+
+    basename = os.path.basename(FILE_NAME)
+    ax1.set_title('{0}\n{1}'.format(basename, longname))
 
     # The 2nd plot is the trajectory.
     # Use a north polar azimuthal equal area projection.
@@ -106,21 +120,10 @@ def run(FILE_NAME):
     plt.title('Trajectory of Flight Path')
 
     fig = plt.gcf()
-    plt.show()
-
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'ColumnAmountO3')
+    # plt.show()
+    pngfile = "{0}.a.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'GLAH13_633_2103_001_1317_0_01_0001.h5'
-
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
 
     run(hdffile)

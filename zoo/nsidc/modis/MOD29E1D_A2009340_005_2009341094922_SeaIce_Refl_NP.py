@@ -31,8 +31,14 @@ import mpl_toolkits.basemap.pyproj as pyproj
 from netCDF4 import Dataset
 import numpy as np
 
-def run(FILE_NAME):
+def run():
     
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD29E1D.A2000055.005.2006268025009.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance_NP'
     nc = Dataset(FILE_NAME)
     ncvar = nc.variables[DATAFIELD_NAME]
@@ -117,7 +123,7 @@ def run(FILE_NAME):
     plt.title(DATAFIELD_NAME.replace('_',' '))
 
     fig = plt.gcf()
-    plt.show()
+    #plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
@@ -125,14 +131,5 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD29E1D.A2000055.005.2006268025009.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()
     

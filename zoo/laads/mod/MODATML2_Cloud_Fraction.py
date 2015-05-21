@@ -1,4 +1,7 @@
 """
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a LAADS MODIS swath
 file in Python.
 
@@ -24,60 +27,111 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
 
-def run(FILE_NAME):
+USE_NETCDF4 = False
+
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MODATML2.A2000055.0000.005.2006253045900.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'Cloud_Fraction'
-    
-    nc = Dataset(FILE_NAME)
-    var = nc.variables[DATAFIELD_NAME]
 
-    # Have to be very careful of the scaling equation here.
-    # We'll turn autoscaling off in order to correctly scale the data.
-    var.set_auto_maskandscale(False)
-    data = var[:].astype(np.double)
-    invalid = np.logical_or(data < var.valid_range[0],
-                            data > var.valid_range[1])
-    invalid = np.logical_or(invalid, data == var._FillValue)
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
+
+        nc = Dataset(FILE_NAME)
+        var = nc.variables[DATAFIELD_NAME]
+
+        # Have to be very careful of the scaling equation here.
+        # We'll turn autoscaling off in order to correctly scale the data.
+        var.set_auto_maskandscale(False)
+        data = var[:].astype(np.double)
+
+        # Retrieve the geolocation data.
+        longitude = nc.variables['Longitude'][:]
+        latitude = nc.variables['Latitude'][:]
+
+        # Retrieve attributes.
+        scale_factor = var.scale_factor
+        add_offset = var.add_offset
+        _FillValue = var._FillValue
+        valid_min = var.valid_range[0]
+        valid_max = var.valid_range[1]
+        long_name = var.long_name
+        units = var.units
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:].astype(np.double)
+
+        # Read geolocation dataset.
+        lat = hdf.select('Latitude')
+        latitude = lat[:, :]
+        lon = hdf.select('Longitude')
+        longitude = lon[:, :]
+
+        # Retrieve attributes.
+        attrs = data2D.attributes(full=1)
+        long_name = attrs["long_name"][0]
+        add_offset = attrs["add_offset"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        valid_min = attrs["valid_range"][0][0]
+        valid_max = attrs["valid_range"][0][1]
+        units = attrs["units"][0]
+
+        # Retrieve attributes for lat/lon.
+        attrs = lat.attributes(full=1)
+        lat_add_offset = attrs["add_offset"][0]
+        lat_scale_factor = attrs["scale_factor"][0]
+
+        attrs = lon.attributes(full=1)
+        lon_add_offset = attrs["add_offset"][0]
+        lon_scale_factor = attrs["scale_factor"][0]
+
+        # NetCDF does the following automatically but PyHDF doesn't
+        latitude = (latitude - lat_add_offset) * lat_scale_factor
+        longitude = (longitude - lon_add_offset) * lon_scale_factor
+
+    invalid = np.logical_or(data > valid_max,
+                            data < valid_min)
+    invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = (data - var.add_offset) * var.scale_factor 
-    datam = np.ma.masked_array(data, np.isnan(data))
-    
-    # Retrieve the geolocation data.
-    longitude = nc.variables['Longitude'][:]
-    latitude = nc.variables['Latitude'][:]
-    
+    data = (data - add_offset) * scale_factor
+    data = np.ma.masked_array(data, np.isnan(data))
+
     # Render the plot in a lambert equal area projection.
     m = Basemap(projection='laea', resolution='l', lat_ts=63,
                 lat_0=63, lon_0=-45,
-                width=1500000,height=1000000)
+                width=1500000, height=1000000)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(50., 90., 10), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-55, -25., 10), labels=[0, 0, 0, 1])
-    m.pcolormesh(longitude, latitude, datam, latlon=True)
-    m.colorbar()
-    titlestr = '{0}'.format(var.long_name)
-    plt.title(titlestr)
+    m.pcolormesh(longitude, latitude, data, latlon=True)
 
+    cb = m.colorbar()
+    cb.set_label(units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}\n'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MODATML2.A2000055.0000.005.2006253045900.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()
