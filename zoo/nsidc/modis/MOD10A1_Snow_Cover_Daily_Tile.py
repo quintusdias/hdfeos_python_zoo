@@ -27,8 +27,15 @@ from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-def run(FILE_NAME):
+
+def run():
     
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD10A1.A2000065.h00v08.005.2008237034422.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
     GRID_NAME = 'MOD_Grid_Snow_500m'
     DATAFIELD_NAME = 'Snow_Cover_Daily_Tile'
@@ -85,7 +92,7 @@ def run(FILE_NAME):
     plt.title('Snow Cover Tile')
 
     fig = plt.gcf()
-    plt.show()
+    #plt.show()
     
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
@@ -95,14 +102,5 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD10A1.A2000065.h00v08.005.2008237034422.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()
     

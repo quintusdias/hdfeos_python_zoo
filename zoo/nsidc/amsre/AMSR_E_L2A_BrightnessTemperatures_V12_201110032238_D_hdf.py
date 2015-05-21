@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize an NSIDC AMSR_E 
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize an NSIDC AMSR_E
 version 3 L2A HDF-EOS2 swath file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -25,28 +28,66 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
+
 import numpy as np
 
-def run(FILE_NAME):
+USE_NETCDF4 = False
+
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = '89.0V_Res.5B_TB_(not-resampled)'
-    
-    nc = Dataset(FILE_NAME)
-    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
-    
-    # Replace the filled value with NaN, replace with a masked array.
-    # Apply the scaling equation.  These attributes are named in a VERY
-    # non-standard manner.
-    scale_factor = getattr(nc.variables[DATAFIELD_NAME], 'SCALE FACTOR')
-    add_offset = nc.variables[DATAFIELD_NAME].OFFSET
+
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
+
+        nc = Dataset(FILE_NAME)
+
+        data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
+
+        # Replace the filled value with NaN, replace with a masked array.
+        # Apply the scaling equation.  These attributes are named in a VERY
+        # non-standard manner.
+        scale_factor = getattr(nc.variables[DATAFIELD_NAME], 'SCALE FACTOR')
+        add_offset = nc.variables[DATAFIELD_NAME].OFFSET
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:].astype(np.float64)
+
+        # Read geolocation dataset.
+        # This product has multiple 'Latitude' and 'Longitude' pair under
+        # different groups.  Use HDFView to get the reference numbers.
+        latitude = hdf.select(hdf.reftoindex(192))[:]
+        longitude = hdf.select(hdf.reftoindex(194))[:]
+
+        # Retrieve attributes.
+        attrs = data2D.attributes(full=1)
+        scale_factor = attrs["SCALE FACTOR"][0]
+        add_offset = attrs["OFFSET"][0]
+
     data[data == -32768] = np.nan
     data = data * scale_factor + add_offset
     datam = np.ma.masked_array(data, np.isnan(data))
 
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
-    
+    units = "degrees K"
+    long_name = DATAFIELD_NAME
+
     # Since the swath starts near the south pole, but also extends over the
     # north pole, the equidistant cylindrical becomes a possibly poor choice
     # for a projection.  We show the full global map plus a limited polar map.
@@ -69,27 +110,16 @@ def run(FILE_NAME):
     m.pcolormesh(longitude, latitude, datam, latlon=True)
 
     cax = plt.axes([0.92, 0.1, 0.03, 0.8])
-    plt.colorbar(cax=cax)
-    
-    fig.suptitle('{0} (degrees K)'.format(DATAFIELD_NAME))
+    cb = plt.colorbar(cax=cax)
+    cb.set_label(units)
 
+    basename = os.path.basename(FILE_NAME)
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.png".format(basename)
+    fig.suptitle('{0}\n{1}'.format(basename, long_name))
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

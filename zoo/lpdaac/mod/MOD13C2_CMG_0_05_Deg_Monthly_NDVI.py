@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize an LP DAAC Modis
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize an LP DAAC MOD13C2
 grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -20,46 +23,80 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 import os
 import re
 
-import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-def run(FILE_NAME):
-    
+USE_GDAL = False
+
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD13C2.A2007001.005.2007108072029.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
-    GRID_NAME = 'MOD_Grid_monthly_CMG_VI'
     DATAFIELD_NAME = 'CMG 0.05 Deg Monthly NDVI'
-    
-    gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
-                                                     GRID_NAME,
-                                                     DATAFIELD_NAME)
 
-    gdset = gdal.Open(gname)
-    data = gdset.ReadAsArray().astype(np.float64)
+    if USE_GDAL:
 
-    # Apply the attributes.
-    meta = gdset.GetMetadata()
-    fillvalue = np.float(meta['_FillValue'])
-    scale = np.float(meta['scale_factor'])
-    offset = np.float(meta['add_offset'])
-    units = meta['units']
+        import gdal
+
+        GRID_NAME = 'MOD_Grid_monthly_CMG_VI'
+        gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
+                                                         GRID_NAME,
+                                                         DATAFIELD_NAME)
+
+        gdset = gdal.Open(gname)
+        data = gdset.ReadAsArray().astype(np.float64)
+
+        # Read the attributes.
+        meta = gdset.GetMetadata()
+        long_name = meta['long_name']
+        units = meta['units']
+        _FillValue = np.float(meta['_FillValue'])
+        scale_factor = np.float(meta['scale_factor'])
+        add_offset = np.float(meta['add_offset'])
+        valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:].astype(np.double)
+
+        # Read attributes.
+        attrs = data2D.attributes(full=1)
+        long_name = attrs["long_name"][0]
+        valid_range = attrs["valid_range"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        add_offset = attrs["add_offset"][0]
+        units = attrs["units"][0]
 
     # Have to be careful of the scaling equation here.
-    data[data == fillvalue] = np.nan
-    data = (data - offset) / scale;
-
+    invalid = data == _FillValue
+    invalid = np.logical_or(invalid, data < valid_range[0])
+    invalid = np.logical_or(invalid, data > valid_range[1])
+    data[invalid] = np.nan
+    data = (data - add_offset) / scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
 
-    # Normally we would use the following code to reconstruct the grid, but
+    # Normally we would use the HDF-EOS metadata to reconstruct the grid, but
     # the grid metadata is incorrect in this case, specifically the upper left
     # and lower right coordinates of the grid.  We'll construct the grid
-    # manually, taking into account the fact that we're going to subset the
-    # data by a factor of 10 (the grid size is 3600 x 7200).
-    x = np.linspace(-180, 180, 720)
-    y = np.linspace(90, -90, 360)
+    # manually.
+    x = np.linspace(-180, 180, data.shape[1])
+    y = np.linspace(90, -90, data.shape[0])
     lon, lat = np.meshgrid(x, y)
 
     m = Basemap(projection='cyl', resolution='l',
@@ -68,30 +105,17 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, 90, 45), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
-    m.pcolormesh(lon, lat, data[::10,::10])
-    m.colorbar()
-    title = "{0} ({1})".format(DATAFIELD_NAME.replace('_', ' '), units)
-    plt.title(title)
+    m.pcolormesh(lon, lat, data)
+    cb = m.colorbar()
+    cb.set_label(units)
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-
-    del gdset
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD13C2.A2007001.005.2007108072029.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

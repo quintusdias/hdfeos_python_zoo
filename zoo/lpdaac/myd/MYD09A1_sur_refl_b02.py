@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize an LP_DAAC MYD
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize an LP_DAAC MYD09A1
 grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -23,20 +26,27 @@ with HDF4 support.  Please see the README for details.
 import os
 import re
 
-import gdal
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-USE_NETCDF = True
+USE_NETCDF4 = False
+USE_GDAL = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MYD09A1.A2007273.h03v07.005.2007285103507.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'sur_refl_b02'
 
-    if USE_NETCDF:
+    if USE_NETCDF4:
 
         from netCDF4 import Dataset
 
@@ -47,9 +57,9 @@ def run(FILE_NAME):
         data = ncvar[:].astype(np.float64)
 
         # Get any needed attributes.
-        scale = ncvar.scale_factor
-        offset = ncvar.add_offset
-        fillvalue = ncvar._FillValue
+        scale_factor = ncvar.scale_factor
+        add_offset = ncvar.add_offset
+        _FillValue = ncvar._FillValue
         valid_range = ncvar.valid_range
         units = ncvar.units
         long_name = ncvar.long_name
@@ -75,14 +85,20 @@ def run(FILE_NAME):
         match = lr_regex.search(gridmeta)
         x1 = np.float(match.group('lower_right_x'))
         y1 = np.float(match.group('lower_right_y'))
-        
+
         nx, ny = data.shape
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
         xv, yv = np.meshgrid(x, y)
-    
-    else:
-        # Gdal
+
+        # In basemap, the sinusoidal projection is global, so we won't use it.
+        # Instead we'll convert the grid back to lat/lons.
+        sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
+        wgs84 = pyproj.Proj("+init=EPSG:4326")
+        lon, lat = pyproj.transform(sinu, wgs84, xv, yv)
+
+    elif USE_GDAL:
+
         import gdal
 
         GRID_NAME = 'MOD_Grid_500m_Surface_Reflectance'
@@ -91,16 +107,16 @@ def run(FILE_NAME):
                                                          DATAFIELD_NAME)
         gdset = gdal.Open(gname)
         data = gdset.ReadAsArray().astype(np.float64)
-    
+
         # Get any needed attributes.
         meta = gdset.GetMetadata()
-        scale = np.float(meta['scale_factor'])
-        offset = np.float(meta['add_offset'])
-        fillvalue = np.float(meta['_FillValue'])
+        scale_factor = np.float(meta['scale_factor'])
+        add_offset = np.float(meta['add_offset'])
+        _FillValue = np.float(meta['_FillValue'])
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
         units = meta['units']
         long_name = meta['long_name']
-    
+
         # Construct the grid.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
@@ -108,49 +124,70 @@ def run(FILE_NAME):
         y = np.linspace(y0, y0 + yinc*ny, ny)
         xv, yv = np.meshgrid(x, y)
 
+        # In basemap, the sinusoidal projection is global, so we won't use it.
+        # Instead we'll convert the grid back to lat/lons.
+        sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
+        wgs84 = pyproj.Proj("+init=EPSG:4326")
+        lon, lat = pyproj.transform(sinu, wgs84, xv, yv)
+
         del gdset
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read dataset.
+        data2D = hdf.select(DATAFIELD_NAME)
+        data = data2D[:].astype(np.double)
+
+        # Read geolocation dataset from HDF-EOS2 dumper output.
+        GEO_FILE_NAME = 'lat_MYD09A1.A2007273.h03v07.005.2007285103507.output'
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+                                     GEO_FILE_NAME)
+        lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        lat = lat.reshape(data.shape)
+
+        GEO_FILE_NAME = 'lon_MYD09A1.A2007273.h03v07.005.2007285103507.output'
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+                                     GEO_FILE_NAME)
+        lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        lon = lon.reshape(data.shape)
+
+        # Read attributes.
+        attrs = data2D.attributes(full=1)
+        long_name = attrs["long_name"][0]
+        valid_range = attrs["valid_range"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        add_offset = attrs["add_offset"][0]
+        units = attrs["units"][0]
 
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
-    invalid = np.logical_or(invalid, data == fillvalue)
+    invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = (data - offset) * scale
+    data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
-    
-    # In basemap, the sinusoidal projection is global, so we won't use it.
-    # Instead we'll convert the grid back to lat/lons.
-    sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(sinu, wgs84, xv, yv)
 
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=7.5, urcrnrlat=22.5,
-                llcrnrlon=-162.5, urcrnrlon = -137.5)
+                llcrnrlon=-162.5, urcrnrlon=-137.5)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(5, 25, 5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-170, -130, 10), labels=[0, 0, 0, 1])
-    m.pcolormesh(lon[::2], lat[::2], data[::2], latlon=True)
-    m.colorbar()
-    title = "{0}".format(long_name.replace('_', ' '))
-    plt.title(title)
+    m.pcolormesh(lon, lat, data, latlon=True)
+    cb = m.colorbar()
+    cb.set_label(units)
 
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    # plt.show()
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MYD09A1.A2007273.h03v07.005.2007285103507.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

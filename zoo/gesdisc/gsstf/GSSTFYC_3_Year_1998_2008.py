@@ -1,5 +1,8 @@
 """
-This example code illustrates how to access and visualize a GESDISC MEaSURES
+Copyright (C) 2014 The HDF Group
+Copyright (C) 2014 John Evans
+
+This example code illustrates how to access and visualize a GESDISC MEaSUREs
 GSSTF HDF-EOS5 grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -27,8 +30,15 @@ import numpy as np
 
 USE_NETCDF4 = True
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'GSSTFYC.3.Year.1988_2008.he5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
@@ -42,7 +52,7 @@ def run(FILE_NAME):
         data_units = data_var.units
 
     else:
-        
+
         import h5py
 
         with h5py.File(FILE_NAME, mode='r') as f:
@@ -69,34 +79,27 @@ def run(FILE_NAME):
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-180, urcrnrlon = 180)
-    
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
+
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
-    
+
     # Render the image in the projected coordinate system.
     x, y = m(longitude, latitude)
     m.pcolormesh(x, y, data)
-    m.colorbar()
-    plt.title('{0} ({1})'.format(data_longname, data_units))
+    cb = m.colorbar()
+    cb.set_label(data_units)
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, data_longname))
 
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'sst')
+    # plt.show()
+
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'GSSTFYC.3.Year.1988_2008.he5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()
