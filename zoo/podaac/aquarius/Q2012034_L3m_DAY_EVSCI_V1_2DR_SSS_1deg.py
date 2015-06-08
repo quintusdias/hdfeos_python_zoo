@@ -1,4 +1,7 @@
 """
+Copyright (C) 2015 The HDF Group
+Copyright (C) 2014 John Evans
+
 This example code illustrates how to access and visualize a PO.DAAC AQUARIUS
 SSS L3 grid file in Python.
 
@@ -15,6 +18,8 @@ Usage:  save this script and run
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
+
+Last Update: 2015/06/08
 """
 
 import os
@@ -32,7 +37,7 @@ def run(FILE_NAME):
         datavar = f['l3m_data']
         data = datavar[:]
         units = f.attrs['Units'].decode()
-        longname = f.attrs['Parameter'].decode()
+        long_name = f.attrs['Parameter'].decode()
 
         # Clamp the data by inspection.
         invalid = np.logical_or(data < 32, data > 38)
@@ -50,14 +55,14 @@ def run(FILE_NAME):
     m.drawmeridians(np.arange(-180, 180, 45), labels=[True,False,False,True])
     sc = m.scatter(longitude, latitude, c=data, s=1, cmap=plt.cm.jet,
                    edgecolors=None, linewidth=0)
-    m.colorbar()
-    plt.title('{0} ({1})\n'.format(longname, units))
-    
+
+    cb = m.colorbar()
+    cb.set_label(units)    
+
+    basename = os.path.basename(FILE_NAME)
+    plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    plt.show()
-    
-    basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, 'ColumnAmountO3')
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
