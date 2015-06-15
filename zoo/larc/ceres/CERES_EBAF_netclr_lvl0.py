@@ -26,60 +26,41 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
+from netCDF4 import Dataset
 
-USE_NETCDF4 = False
 
-def run(FILE_NAME):
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'CERES_EBAF_TOA_Terra_Edition1A_200003-200510.nc.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'netclr'
 
-    if USE_NETCDF4:
-        from netCDF4 import Dataset
-        nc = Dataset(FILE_NAME)
-    
-        # Subset the data to match the size of the swath geolocation fields.
-        # Turn off autoscaling, we'll handle that ourselves due to presence of
-        # a valid range.
-        var = nc.variables[DATAFIELD_NAME]
-        data = var[0,:,:].astype(np.float64)
-        latitude = nc.variables['lat'][:]
-        longitude = nc.variables['lon'][:]
+    nc = Dataset(FILE_NAME)
 
-        # Read attributes.
-        valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
-        units = ncvar.units
-        long_name = ncvar.long_name
+    # Subset the data to match the size of the swath geolocation fields.
+    # Turn off autoscaling, we'll handle that ourselves due to presence of
+    # a valid range.
+    var = nc.variables[DATAFIELD_NAME]
+    data = var[0, :, :].astype(np.float64)
+    latitude = nc.variables['lat'][:]
+    longitude = nc.variables['lon'][:]
 
-    else:
-        from pyhdf.SD import SD, SDC
-        hdf = SD(FILE_NAME, SDC.READ)
-        
-        # Read dataset.
-        data3D = hdf.select(DATAFIELD_NAME)
-        data = data3D[0,:,:]
-
-        # Read geolocation datasets.
-        lat = hdf.select('lat')
-        latitude = lat[:]
-        lon = hdf.select('lon')
-        longitude = lon[:]
-
-        # Read attributes.
-        attrs = data3D.attributes(full=1)
-        ua=attrs["units"]
-        units = ua[0]
-        vra=attrs["valid_range"]
-        valid_range = vra[0]
-        lna=attrs["long_name"]
-        long_name = lna[0]    
+    # Read attributes.
+    valid_range = var.valid_range
+    units = var.units
+    long_name = var.long_name
 
     # Apply the valid_range attribute.
     invalid = np.logical_or(data < valid_range[0],
                             data > valid_range[1])
     data[invalid] = np.nan
     datam = np.ma.masked_array(data, mask=np.isnan(data))
-    
+
     # The data is global, so render in a global projection.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat=90,
@@ -97,15 +78,6 @@ def run(FILE_NAME):
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-    
+
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    ncfile = 'CERES_EBAF_TOA_Terra_Edition1A_200003-200510.nc.hdf'
-    try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], ncfile)
-    except KeyError:
-        fname = hdffile
-
-    run(fname)
+    run()

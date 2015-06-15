@@ -30,14 +30,22 @@ import numpy as np
 
 USE_GDAL = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AMSR_E_L3_MonthlyOcean_V03_200206.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Med_res_vapor'
 
-    if USE_GDAL:    
+    if USE_GDAL:
+
         import gdal
-        import mpl_toolkits.basemap.pyproj as pyproj    
+        import mpl_toolkits.basemap.pyproj as pyproj
 
         GRID_NAME = 'GlobalGrid'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
@@ -50,7 +58,7 @@ def run(FILE_NAME):
         units = meta['Unit']
         scale_factor = float(meta['Scale'])
 
-        # Construct the grid.  The projection is GEO, so this immediately 
+        # Construct the grid.  The projection is GEO, so this immediately
         # gives us latitude and longitude.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
@@ -60,24 +68,23 @@ def run(FILE_NAME):
         del gdset
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
+
         # Retrieve attributes.
         attrs = data2D.attributes(full=1)
-        sfa=attrs["Scale"]
-        scale_factor = sfa[0]        
-        ua=attrs["Unit"]
-        units = ua[0]
+        scale_factor = attrs["Scale"][0]
+        units = attrs["Unit"][0]
 
         # Read global attribute.
-        fattrs = hdf.attributes(full=1)
-        ga = fattrs["StructMetadata.0"]
-        gridmeta = ga[0]
-            
+        gridmeta = hdf.attributes(full=1)["StructMetadata.0"][0]
+
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
         # extents of the grid.  In addition, the grid is in packed decimal
@@ -100,7 +107,7 @@ def run(FILE_NAME):
         match = lr_regex.search(gridmeta)
         x1 = np.float(match.group('lower_right_x')) / 1e6
         y1 = np.float(match.group('lower_right_y')) / 1e6
-        
+
         ny, nx = data.shape
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
@@ -114,15 +121,15 @@ def run(FILE_NAME):
     long_name = DATAFIELD_NAME.replace('_', ' ')
 
     m = Basemap(projection='cyl', resolution='l', lon_0=0,
-                llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-180, urcrnrlon = 180)
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, 91, 45), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
     cb = m.colorbar()
     cb.set_label(units)
-    
+
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
@@ -132,14 +139,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AMSR_E_L3_MonthlyOcean_V03_200206.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

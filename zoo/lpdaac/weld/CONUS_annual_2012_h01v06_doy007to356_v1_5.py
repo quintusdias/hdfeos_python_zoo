@@ -31,14 +31,21 @@ import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
 USE_GDAL = False
-USE_NETCDF = False
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'NDVI_TOA'
-    if USE_GDAL:    
 
-        # Gdal
+    if USE_GDAL:
+
         import gdal
 
         GRID_NAME = 'WELD_GRID'
@@ -50,14 +57,14 @@ def run(FILE_NAME):
         # can handle it.
         gdset = gdal.Open(gname)
         data = gdset.ReadAsArray().astype(np.float64)[::5, ::5]
-    
+
         # Get any needed attributes.
         meta = gdset.GetMetadata()
         scale = np.float(meta['scale_factor'])
         fillvalue = np.float(meta['_FillValue'])
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
         units = meta['units']
-    
+
         # Construct the grid.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         ny, nx = (gdset.RasterYSize / 5, gdset.RasterXSize / 5)
@@ -65,10 +72,9 @@ def run(FILE_NAME):
         y = np.linspace(y0, y0 + yinc*5*ny, ny)
         xv, yv = np.meshgrid(x, y)
 
-        del gdset
-
     else:
-        if USE_NETCDF:
+
+        if USE_NETCDF4:
 
             from netCDF4 import Dataset
 
@@ -85,36 +91,33 @@ def run(FILE_NAME):
             valid_range = ncvar.valid_range
             units = ncvar.units
             gridmeta = getattr(nc, 'StructMetadata.0')
+
         else:
+
             from pyhdf.SD import SD, SDC
+
             hdf = SD(FILE_NAME, SDC.READ)
 
             # Read dataset.
             data2D = hdf.select(DATAFIELD_NAME)
-            data = data2D[:,:].astype(np.double)
+            data = data2D[:].astype(np.double)
 
             # Scale down the data by a factor of 6 so that low-memory machines
             # can handle it.
             data = data[::6, ::6]
 
-        
             # Read attributes.
             attrs = data2D.attributes(full=1)
-            vra=attrs["valid_range"]
-            valid_range = vra[0]
-            fva=attrs["_FillValue"]
-            fillvalue = fva[0]
-            sfa=attrs["scale_factor"]
-            scale = sfa[0]        
-            ua=attrs["units"]
-            units = ua[0]
+            valid_range = attrs["valid_range"][0]
+            fillvalue = attrs["_FillValue"][0]
+            scale = attrs["scale_factor"][0]
+            units = attrs["units"][0]
             fattrs = hdf.attributes(full=1)
-            ga = fattrs["StructMetadata.0"]
-            gridmeta = ga[0]
+            gridmeta = fattrs["StructMetadata.0"][0]
+
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
-        # extents of the grid.  
-
+        # extents of the grid.
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                                   (?P<upper_left_x>[+-]?\d+\.\d+)
                                   ,
@@ -132,7 +135,7 @@ def run(FILE_NAME):
         match = lr_regex.search(gridmeta)
         x1 = np.float(match.group('lower_right_x'))
         y1 = np.float(match.group('lower_right_y'))
-        
+
         ny, nx = data.shape
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
@@ -144,11 +147,11 @@ def run(FILE_NAME):
     data[invalid] = np.nan
     data = data * scale
     data = np.ma.masked_array(data, np.isnan(data))
-    
+
     # Convert the grid back to lat/lon.  The 1st and 2nd standard parallels,
     # the center meridian, and the latitude of projected origin are in the
     # projection parameters contained in the "StructMetadata.0" global
-    # attribute.  The following regular expression could have been used to 
+    # attribute.  The following regular expression could have been used to
     # retrieve them.
     #
     # Ref:  HDF-EOS Library User's Guide for the EOSDIS Evolution and
@@ -164,13 +167,13 @@ def run(FILE_NAME):
     #                            ,0{7}\)''', re.VERBOSE)
     #
     aea = pyproj.Proj("+proj=aea +lat_1=29.5 +lat2=45.5 +lon_0=-96 +lat_0=23")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(aea, wgs84, xv, yv)
+    wgs84 = pyproj.Proj("+init=EPSG:4326")
+    lon, lat = pyproj.transform(aea, wgs84, xv, yv)
 
     m = Basemap(projection='aea', resolution='i',
                 lat_1=29.5, lat_2=45.5, lon_0=-96, lat_0=23,
-                llcrnrlat=37.5, urcrnrlat = 42.5,
-                llcrnrlon=-127.5, urcrnrlon = -122.5)
+                llcrnrlat=37.5, urcrnrlat=42.5,
+                llcrnrlon=-127.5, urcrnrlon=-122.5)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(35, 45, 1), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-130, -120, 1), labels=[0, 0, 0, 1])
@@ -188,13 +191,4 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'CONUS.annual.2012.h01v06.doy007to356.v1.5.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()

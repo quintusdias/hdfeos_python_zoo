@@ -29,9 +29,17 @@ import numpy as np
 
 USE_NETCDF4 = True
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'CloudFraction'
-    
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
@@ -39,7 +47,7 @@ def run(FILE_NAME):
         nc = Dataset(FILE_NAME)
         grp = nc.groups['HDFEOS'].groups['SWATHS'].groups['ColumnAmountNO2']
         var = grp.groups['Data Fields'].variables[DATAFIELD_NAME]
-        
+
         # netCDF4 doesn't quite handle the scaling correctly in this case since
         # the attributes are "ScaleFactor" and "AddOffset" instead of
         # "scale_factor" and "add_offset".  We'll do the scaling and conversion
@@ -47,7 +55,7 @@ def run(FILE_NAME):
         var.set_auto_maskandscale(False)
 
         data = var[:].astype(np.float64)
-    
+
         # Retrieve any attributes that may be needed later.
         scale = var.ScaleFactor
         offset = var.Offset
@@ -61,14 +69,16 @@ def run(FILE_NAME):
         longitude = grp.groups['Geolocation Fields'].variables['Longitude'][:]
 
     else:
-        
+
         import h5py
 
         path = '/HDFEOS/SWATHS/ColumnAmountNO2/Data Fields/'
         DATAFIELD_NAME = path + 'CloudFraction'
+
         with h5py.File(FILE_NAME, mode='r') as f:
+
             dset = f[DATAFIELD_NAME]
-            data =dset[:].astype(np.float64)
+            data = dset[:].astype(np.float64)
 
             # Retrieve any attributes that may be needed later.
             # String attributes actually come in as the bytes type and should
@@ -93,8 +103,8 @@ def run(FILE_NAME):
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-180, urcrnrlon = 180)
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45.), labels=[0, 0, 0, 1])
@@ -102,24 +112,14 @@ def run(FILE_NAME):
     cb = m.colorbar()
     cb.set_label(units)
 
-
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}'.format(basename, title), fontsize=12)
 
     fig = plt.gcf()
     # plt.show()
-    
+
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'OMI-Aura_L2-OMNO2_2008m0720t2016-o21357_v003-2008m0721t101450.he5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()

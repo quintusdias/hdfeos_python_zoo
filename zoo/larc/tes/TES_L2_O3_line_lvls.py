@@ -2,7 +2,7 @@
 Copyright (C) 2014 The HDF Group
 Copyright (C) 2014 John Evans
 
-This example code illustrates how to access and visualize a MOPITT HDF-EOS2 
+This example code illustrates how to access and visualize a MOPITT HDF-EOS2
 swath file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -19,7 +19,7 @@ Usage:  save this script and run
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
 
-References 
+References
 [1] http://tes.jpl.nasa.gov/uploadedfiles/TES_DPS_V11.8.pdf
 """
 
@@ -32,8 +32,15 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'TES-Aura_L2-O3-Nadir_r0000011015_F05_07.he5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     with h5py.File(FILE_NAME, mode='r') as f:
 
         group = '/HDFEOS/SWATHS/O3NadirSwath/Data Fields'
@@ -73,62 +80,54 @@ def run(FILE_NAME):
     ylabel = "{0} ({1})".format(pressure_longname, pressure_units)
 
     ax1 = plt.subplot(2, 2, 1)
-    ax1.semilogy(o3_data[55,:], pressure_data[55,:])
+    ax1.semilogy(o3_data[55, :], pressure_data[55, :])
     ax1.set_ylabel(ylabel, fontsize=8)
-    delta =  datetime.timedelta(days=time_data[55]/86400.0)
+    delta = datetime.timedelta(days=time_data[55] / 86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax1.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
+    title = "{0}\n{1} at {2}".format(basename, o3_longname, timedatum)
+    ax1.set_title(title, fontsize=8)
     ax1.set_xticks(np.arange(0e-6, 9e-6, 2e-6))
     ax1.xaxis.set_major_formatter(formatter)
     plt.tick_params(axis='both', labelsize=8)
 
     ax2 = plt.subplot(2, 2, 3)
-    ax2.semilogy(o3_data[155,:], pressure_data[155,:])
+    ax2.semilogy(o3_data[155, :], pressure_data[155, :])
     ax2.set_xlabel(xlabel, fontsize=8)
     ax2.set_ylabel(ylabel, fontsize=8)
-    delta =  datetime.timedelta(days=time_data[155]/86400.0)
+    delta = datetime.timedelta(days=time_data[155] / 86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax2.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
+    title = "{0}\n{1} at {2}".format(basename, o3_longname, timedatum)
+    ax2.set_title(title, fontsize=8)
     ax2.xaxis.set_major_formatter(formatter)
     plt.tick_params(axis='both', labelsize=8)
 
     ax3 = plt.subplot(2, 2, 2)
-    ax3.semilogy(o3_data[955,:], pressure_data[955,:])
+    ax3.semilogy(o3_data[955, :], pressure_data[955, :])
     #    ax3.set_ylabel(ylabel, fontsize=8)
-    delta =  datetime.timedelta(days=time_data[955]/86400.0)
+    delta = datetime.timedelta(days=time_data[955] / 86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax3.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
+    title = "{0}\n{1} at {2}".format(basename, o3_longname, timedatum)
+    ax3.set_title(title, fontsize=8)
     ax3.set_xticks(np.arange(0e-6, 9e-6, 2e-6))
     ax3.xaxis.set_major_formatter(formatter)
     plt.tick_params(axis='both', labelsize=8)
 
     ax4 = plt.subplot(2, 2, 4)
-    ax4.semilogy(o3_data[1555,:], pressure_data[1555,:])
+    ax4.semilogy(o3_data[1555, :], pressure_data[1555, :])
     ax4.set_xlabel(xlabel, fontsize=8)
     #   ax4.set_ylabel(ylabel, fontsize=8)
-    delta =  datetime.timedelta(days=time_data[1555]/86400.0)
+    delta = datetime.timedelta(days=time_data[1555] / 86400.0)
     timedatum = (timebase + delta).strftime('%d %a %Y %H:%M:%S')
-    ax4.set_title("{0}\n{1} at {2}".format(basename, o3_longname, timedatum), fontsize=8)
+    title = "{0}\n{1} at {2}".format(basename, o3_longname, timedatum)
+    ax4.set_title(title, fontsize=8)
     ax4.xaxis.set_major_formatter(formatter)
     plt.tick_params(axis='both', labelsize=8)
 
     fig = plt.gcf()
     # plt.show()
-    
 
     pngfile = "{0}.py.l.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'TES-Aura_L2-O3-Nadir_r0000011015_F05_07.he5'
-
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-
+    run()

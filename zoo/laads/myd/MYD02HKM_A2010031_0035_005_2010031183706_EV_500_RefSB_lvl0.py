@@ -32,13 +32,21 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # files, otherwise look in the current directory.
+    FILE_NAME = 'MYD02HKM.A2010031.0035.005.2010031183706.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'EV_500_RefSB'
 
-    if USE_NETCDF4:    
-        
-        from netCDF4 import Dataset    
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
 
         # The following method doesn't rely on HDF-EOS2 dumper outputs and
@@ -46,32 +54,32 @@ def run(FILE_NAME):
         #
         # Just read the first level, and subset the data to match the lat/lon
         # resolution.
-        # data = nc.variables[DATAFIELD_NAME][0,::2,::2].astype(np.float64)
+        data = nc.variables[DATAFIELD_NAME][0, ::2, ::2].astype(np.float64)
+
         # Retrieve geo-location datasets.
-        # latitude = nc.variables['Latitude'][:]
-        # longitude = nc.variables['Longitude'][:]
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
 
-
-        data = nc.variables[DATAFIELD_NAME][0,:,:].astype(np.float64)
+        data = nc.variables[DATAFIELD_NAME][0, :, :].astype(np.float64)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
-        GEO_FILE_NAME = 'lat_MYD02HKM.A2010031.0035.005.2010031183706.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                     GEO_FILE_NAME)
-        latitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
-        latitude = latitude.reshape(data.shape)
+        # GEO_FILE_NAME = 'lat_MYD02HKM.A2010031.0035.005.2010031183706.output'
+        # GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+        #                              GEO_FILE_NAME)
+        # latitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        # latitude = latitude.reshape(data.shape)
 
-        GEO_FILE_NAME = 'lon_MYD02HKM.A2010031.0035.005.2010031183706.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                     GEO_FILE_NAME)
-        longitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
-        longitude = longitude.reshape(data.shape)
+        # GEO_FILE_NAME = 'lon_MYD02HKM.A2010031.0035.005.2010031183706.output'
+        # GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+        #                              GEO_FILE_NAME)
+        # longitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        # longitude = longitude.reshape(data.shape)
 
         units = nc.variables[DATAFIELD_NAME].reflectance_units
         long_name = nc.variables[DATAFIELD_NAME].long_name
 
-        # The scale and offset attributes do not have standard names in this 
-        # case, so we have to apply the scaling equation ourselves.  
+        # The scale and offset attributes do not have standard names in this
+        # case, so we have to apply the scaling equation ourselves.
         # Fill value is already applied, though.
         scale_factor = nc.variables[DATAFIELD_NAME].reflectance_scales[0]
         add_offset = nc.variables[DATAFIELD_NAME].reflectance_offsets[1]
@@ -82,8 +90,11 @@ def run(FILE_NAME):
 
         # Retrieve dimension name.
         dimname = nc.variables[DATAFIELD_NAME].dimensions[0]
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
@@ -94,52 +105,42 @@ def run(FILE_NAME):
         #
         # Just read the first level, and subset the data to match the lat/lon
         # resolution.
-        # data = data3D[0,::2,::2].astype(np.double)
-        # lat = hdf.select('Latitude')
-        # latitude = lat[:,:]
-        # lon = hdf.select('Longitude')
-        # longitude = lon[:,:]
+        data = data3D[0, ::2, ::2].astype(np.double)
+        lat = hdf.select('Latitude')
+        latitude = lat[:]
+        lon = hdf.select('Longitude')
+        longitude = lon[:]
 
-
-        data = data3D[0,:,:].astype(np.double)
+        # data = data3D[0, :, :].astype(np.double)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
-        GEO_FILE_NAME = 'lat_MYD02HKM.A2010031.0035.005.2010031183706.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                     GEO_FILE_NAME)
-        latitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
-        latitude = latitude.reshape(data.shape)
+        # GEO_FILE_NAME = 'lat_MYD02HKM.A2010031.0035.005.2010031183706.output'
+        # GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+        #                              GEO_FILE_NAME)
+        # latitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        # latitude = latitude.reshape(data.shape)
 
-        GEO_FILE_NAME = 'lon_MYD02HKM.A2010031.0035.005.2010031183706.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                      GEO_FILE_NAME)
-        longitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
-        longitude = longitude.reshape(data.shape)
-
+        # GEO_FILE_NAME = 'lon_MYD02HKM.A2010031.0035.005.2010031183706.output'
+        # GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+        #                              GEO_FILE_NAME)
+        # longitude = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        # longitude = longitude.reshape(data.shape)
 
         # Retrieve attributes.
         attrs = data3D.attributes(full=1)
-        lna=attrs["long_name"]
-        long_name = lna[0]
-        aoa=attrs["reflectance_offsets"]
-        add_offset = aoa[0][1]
-        fva=attrs["_FillValue"]
-        _FillValue = fva[0]
-        sfa=attrs["reflectance_scales"]
-        scale_factor = sfa[0][1]
-        vra=attrs["valid_range"]
-        valid_min = vra[0][0]        
-        valid_max = vra[0][1]        
-        ua=attrs["reflectance_units"]
-        units = ua[0]
+        long_name = attrs["long_name"][0]
+        add_offset = attrs["reflectance_offsets"][0][1]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["reflectance_scales"][0][1]
+        valid_min = attrs["valid_range"][0][0]
+        valid_max = attrs["valid_range"][0][1]
+        units = attrs["reflectance_units"][0]
 
         # Retrieve dimension name.
         dim = data3D.dim(0)
         dimname = dim.info()[0]
 
-
-    invalid = np.logical_or(data > valid_max,
-                            data < valid_min)
+    invalid = np.logical_or(data > valid_max, data < valid_min)
     invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
     data = scale_factor * (data - add_offset)
@@ -151,20 +152,23 @@ def run(FILE_NAME):
     data = data[::2, ::2]
     latitude = latitude[::2, ::2]
     longitude = longitude[::2, ::2]
-    
+
     # Use a hemispherical projection for the southern hemisphere since the
     # swath is over Antarctica.
-    m = Basemap(projection='splaea', resolution='h', 
+    m = Basemap(projection='splaea', resolution='h',
                 boundinglat=-65, lon_0=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, -50, 10), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 180., 45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
-    cb=m.colorbar()
+    cb = m.colorbar()
     cb.set_label(units)
 
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n{1}\nat {2}=0'.format(basename, 'Reflectance derived from ' + long_name, dimname), fontsize=10)
+    title = '{0}\n{1}\nat {2}=0'
+    title = title.format(basename,
+                         'Reflectance derived from ' + long_name, dimname)
+    plt.title(title, fontsize=10)
     fig = plt.gcf()
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
@@ -172,14 +176,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MYD02HKM.A2010031.0035.005.2010031183706.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

@@ -20,7 +20,7 @@ The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.
 """
 
-import datetime
+import datetime as dt
 import os
 
 import matplotlib as mpl
@@ -30,8 +30,15 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'SBUV2-NOAA17_L2-SBUV2N17L2_2011m1231_v01-01-2012m0905t152911.h5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
@@ -60,7 +67,7 @@ def run(FILE_NAME):
         lev_longname = lev_var.long_name
 
     else:
-        
+
         import h5py
 
         with h5py.File(FILE_NAME, mode='r') as f:
@@ -71,7 +78,7 @@ def run(FILE_NAME):
             dset_time = f['nTimes']
 
             # Read the data.
-            data = dset_var[:,:]
+            data = dset_var[:, :]
             lat = dset_lat[:]
             lev = dset_lev[:]
             time = dset_time[:]
@@ -101,37 +108,27 @@ def run(FILE_NAME):
 
     # The time is stored as seconds since 1993-01-01
     # a string.
-    start_time = datetime.datetime(1993,1,1) + datetime.timedelta(seconds=time[0])
-    end_time = datetime.datetime(1993,1,1) + datetime.timedelta(seconds=time[70])
+    start_time = dt.datetime(1993, 1, 1) + dt.timedelta(seconds=time[0])
+    end_time = dt.datetime(1993, 1, 1) + dt.timedelta(seconds=time[70])
 
     # Apply log scale along the y-axis to get a better image.
     lev = np.log10(lev)
-    plt.contourf(lat[idx], lev, data[idx,:].T, levels=np.arange(0,60,5))
+    plt.contourf(lat[idx], lev, data[idx, :].T, levels=np.arange(0, 60, 5))
     cb = plt.colorbar()
     cb.set_label('Unit:'+data_units)
 
     plt.xlabel('{0} ({1})'.format(lat_longname, lat_units))
     plt.ylabel('{0} ({1})\nin log10 scale'.format(lev_longname, lev_units))
-    basename = os.path.basename(FILE_NAME)         
+    basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}'.format(basename, data_longname), fontsize=12)
-    plt.text(45.0, -1.2, '{0}\n{1}'.format(start_time, end_time), 
+    plt.text(45.0, -1.2, '{0}\n{1}'.format(start_time, end_time),
              fontsize=8, bbox=dict(facecolor='red', alpha=0.5))
-
 
     fig = plt.gcf()
     # plt.show()
-    
+
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'SBUV2-NOAA17_L2-SBUV2N17L2_2011m1231_v01-01-2012m0905t152911.h5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()

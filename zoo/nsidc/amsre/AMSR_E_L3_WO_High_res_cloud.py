@@ -34,14 +34,20 @@ import numpy as np
 
 USE_GDAL = False
 
-def run(FILE_NAME):
-    
-    # Identify the data field.
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AMSR_E_L3_WeeklyOcean_V03_20020616.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'High_res_cloud'
 
-    if USE_GDAL:    
+    if USE_GDAL:
         import gdal
-        GRID_NAME = 'GlobalGrid'    
+        GRID_NAME = 'GlobalGrid'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
@@ -57,27 +63,31 @@ def run(FILE_NAME):
         units = meta['Unit']
         scale_factor = float(meta['Scale'])
 
-        # Construct the grid.  The projection is GEO, so this immediately 
+        # Construct the grid.  The projection is GEO, so this immediately
         # gives us latitude and longitude.
         x = np.linspace(x0, x0 + xinc*nx, nx)
         y = np.linspace(y0, y0 + yinc*ny, ny)
         del gdset
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
 
-        # Read global attribute.
-        fattrs = hdf.attributes(full=1)
-        ga = fattrs["StructMetadata.0"]
-        gridmeta = ga[0]
-            
+        # Retrieve attributes.
+        attrs = data2D.attributes(full=1)
+        scale_factor = attrs["Scale"][0]
+        units = attrs["Unit"][0]
+
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
-        # extents of the grid. 
+        # extents of the grid.
+        gridmeta = hdf.attributes(full=1)["StructMetadata.0"][0]
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                                   (?P<upper_left_x>[+-]?\d+\.\d+)
                                   ,
@@ -99,14 +109,6 @@ def run(FILE_NAME):
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
 
-
-        # Retrieve attributes.
-        attrs = data2D.attributes(full=1)
-        sfa=attrs["Scale"]
-        scale_factor = sfa[0]        
-        ua=attrs["Unit"]
-        units = ua[0]
-
     # Apply the attributes information.
     data[data == -9999] = np.nan
     data = data * scale_factor
@@ -116,8 +118,8 @@ def run(FILE_NAME):
     longitude, latitude = np.meshgrid(x, y)
 
     m = Basemap(projection='cyl', resolution='l', lon_0=0,
-                llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-180, urcrnrlon = 180)
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, 91, 45), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
@@ -134,17 +136,5 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 
-
-
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AMSR_E_L3_WeeklyOcean_V03_20020616.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

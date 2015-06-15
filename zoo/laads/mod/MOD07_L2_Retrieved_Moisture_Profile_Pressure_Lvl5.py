@@ -31,29 +31,38 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD07_L2.A2010001.0000.005.2010004001518.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'Retrieved_Moisture_Profile'
 
-    if USE_NETCDF4:        
+    if USE_NETCDF4:
+
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
 
-        # The scaling equation to be used here is not 
+        # The scaling equation to be used here is not
         #
         #     data = data * scale + offset
         #
         # We'll turn autoscaling off in order to correctly scale the data.
         var.set_auto_maskandscale(False)
-        data = var[5,:,:].astype(np.double)
-    
+        data = var[5, :, :].astype(np.double)
+
         # Retrieve the geolocation data.
         longitude = nc.variables['Longitude'][:]
         latitude = nc.variables['Latitude'][:]
 
         # Retrieve attributes.
-        scale_factor = var.scale_factor 
+        scale_factor = var.scale_factor
         add_offset = var.add_offset
         _FillValue = var._FillValue
         long_name = var.long_name
@@ -63,42 +72,37 @@ def run(FILE_NAME):
         dimname = var.dimensions[0]
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data3D = hdf.select(DATAFIELD_NAME)
-        data = data3D[5,:,:].astype(np.double)
+        data = data3D[5, :, :].astype(np.double)
 
         # Read geolocation dataset.
         lat = hdf.select('Latitude')
-        latitude = lat[:,:]
+        latitude = lat[:]
         lon = hdf.select('Longitude')
-        longitude = lon[:,:]
+        longitude = lon[:]
 
         # Retrieve attributes.
         attrs = data3D.attributes(full=1)
-        lna=attrs["long_name"]
-        long_name = lna[0]
-        aoa=attrs["add_offset"]
-        add_offset = aoa[0]
-        fva=attrs["_FillValue"]
-        _FillValue = fva[0]
-        sfa=attrs["scale_factor"]
-        scale_factor = sfa[0]        
-        ua=attrs["units"]
-        units = ua[0]
+        long_name = attrs["long_name"][0]
+        add_offset = attrs["add_offset"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        units = attrs["units"][0]
 
         # Retrieve dimension name.
         dim = data3D.dim(0)
         dimname = dim.info()[0]
 
-
-
     data[data == _FillValue] = np.nan
-    data = (data - add_offset) * scale_factor 
+    data = (data - add_offset) * scale_factor
     datam = np.ma.masked_array(data, np.isnan(data))
-    
+
     # Render the plot in a south plar stereographic projection.
     m = Basemap(projection='spstere', resolution='l',
                 boundinglat=-60, lon_0=180)
@@ -118,14 +122,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD07_L2.A2010001.0000.005.2010004001518.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

@@ -31,13 +31,21 @@ import numpy as np
 
 USE_GDAL = False
 
-def run(FILE_NAME):
+def run():
     
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MYD29P1D.A2010133.h09v07.005.2010135182659.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance'
 
     if USE_GDAL:
+
         import gdal
+
         GRID_NAME = 'MOD_Grid_Seaice_1km'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
@@ -48,10 +56,11 @@ def run(FILE_NAME):
         meta = gdset.GetMetadata()
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
-        del gdset
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
@@ -148,17 +157,5 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 
-
-
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MYD29P1D.A2010133.h09v07.005.2010135182659.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

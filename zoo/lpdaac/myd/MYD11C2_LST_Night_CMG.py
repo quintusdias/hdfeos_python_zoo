@@ -33,14 +33,21 @@ import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
 USE_GDAL = False
-USE_NETCDF = False
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MYD11C2.A2006337.004.2006348062459.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'LST_Night_CMG'
 
     if USE_GDAL:
-        # GDAL
+
         import gdal
 
         GRID_NAME = 'MODIS_8DAY_0.05DEG_CMG_LST'
@@ -48,8 +55,8 @@ def run(FILE_NAME):
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
         gdset = gdal.Open(gname)
-        # data = gdset.ReadAsArray().astype(np.float64)[::4, ::4]
-        data = gdset.ReadAsArray().astype(np.float64)[:,:]
+        data = gdset.ReadAsArray().astype(np.float64)[:]
+
         # Get any needed attributes.
         meta = gdset.GetMetadata()
         scale_factor = np.float(meta['scale_factor'])
@@ -58,22 +65,19 @@ def run(FILE_NAME):
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
         units = meta['units']
         long_name = meta['long_name']
-    
+
         # Construct the grid.  Subset by a factor of 4.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
-        # nx, ny = (gdset.RasterXSize / 4, gdset.RasterYSize / 4)
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
-        # x = np.linspace(x0, x0 + xinc*4*nx, nx)
-        # y = np.linspace(y0, y0 + yinc*4*ny, ny)
-        x = np.linspace(x0, x0 + xinc*nx, nx)
-        y = np.linspace(y0, y0 + yinc*ny, ny)
+        x = np.linspace(x0, x0 + xinc * nx, nx)
+        y = np.linspace(y0, y0 + yinc * ny, ny)
         lon, lat = np.meshgrid(x, y)
 
         del gdset
 
-    
     else:
-        if USE_NETCDF:
+
+        if USE_NETCDF4:
 
             from netCDF4 import Dataset
 
@@ -92,33 +96,26 @@ def run(FILE_NAME):
             long_name = ncvar.long_name
             gridmeta = getattr(nc, 'StructMetadata.0')
 
-
         else:
+
             from pyhdf.SD import SD, SDC
+
             hdf = SD(FILE_NAME, SDC.READ)
 
             # Read dataset.
             data2D = hdf.select(DATAFIELD_NAME)
-            data = data2D[:,:].astype(np.double)
+            data = data2D[:].astype(np.double)
 
-        
             # Read attributes.
             attrs = data2D.attributes(full=1)
-            lna=attrs["long_name"]
-            long_name = lna[0]
-            vra=attrs["valid_range"]
-            valid_range = vra[0]
-            aoa=attrs["add_offset"]
-            add_offset = aoa[0]
-            fva=attrs["_FillValue"]
-            _FillValue = fva[0]
-            sfa=attrs["scale_factor"]
-            scale_factor = sfa[0]        
-            ua=attrs["units"]
-            units = ua[0]
+            long_name = attrs["long_name"][0]
+            valid_range = attrs["valid_range"][0]
+            _FillValue = attrs["_FillValue"][0]
+            scale_factor = attrs["scale_factor"][0]
+            add_offset = attrs["add_offset"][0]
+            units = attrs["units"][0]
             fattrs = hdf.attributes(full=1)
-            ga = fattrs["StructMetadata.0"]
-            gridmeta = ga[0]
+            gridmeta = fattrs["StructMetadata.0"][0]
 
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
@@ -141,23 +138,22 @@ def run(FILE_NAME):
         match = lr_regex.search(gridmeta)
         x1 = np.float(match.group('lower_right_x')) / 1e6
         y1 = np.float(match.group('lower_right_y')) / 1e6
-        
+
         ny, nx = data.shape
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
         lon, lat = np.meshgrid(x, y)
 
-
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
-    invalid = np.logical_or(invalid, data ==_FillValue)
+    invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
     data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
-    
+
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat=90,
-                llcrnrlon=-180, urcrnrlon = 180)
+                llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, 91, 30), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
@@ -175,15 +171,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MYD11C2.A2006337.004.2006348062459.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
-
+    run()

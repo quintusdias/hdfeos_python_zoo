@@ -32,13 +32,20 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD29.A2013196.1250.005.2013196195940.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Ice_Surface_Temperature'
 
     if USE_NETCDF4:
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
     
         # Subset the data to match the size of the swath geolocation fields.
@@ -58,12 +65,14 @@ def run(FILE_NAME):
         valid_range = var.valid_range
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
 
         # Retrieve attributes.
         attrs = data2D.attributes(full=1)
@@ -85,9 +94,9 @@ def run(FILE_NAME):
 
         # Read geolocation dataset from MOD03 product.
         lat = hdf_geo.select('Latitude')
-        latitude = lat[:,:]
+        latitude = lat[:]
         lon = hdf_geo.select('Longitude')
-        longitude = lon[:,:]
+        longitude = lon[:]
         
     # Apply the attributes.
     invalid = np.logical_or(data < valid_range[0],
@@ -118,13 +127,4 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
     
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD29.A2013196.1250.005.2013196195940.hdf'
-    try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        fname = hdffile
-
-    run(fname)
+    run()

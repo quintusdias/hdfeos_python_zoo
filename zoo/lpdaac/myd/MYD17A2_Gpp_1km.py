@@ -33,12 +33,21 @@ import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
 USE_GDAL = False
-USE_NETCDF = False
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MYD17A2.A2007073.h09v08.005.2007096132046.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'Gpp_1km'
+
     if USE_GDAL:
+
         import gdal
 
         GRID_NAME = 'MOD_Grid_MOD17A2'
@@ -47,7 +56,7 @@ def run(FILE_NAME):
                                                          DATAFIELD_NAME)
         gdset = gdal.Open(gname)
         data = gdset.ReadAsArray().astype(np.float64)
-    
+
         # Get any needed attributes.
         meta = gdset.GetMetadata()
         scale_factor = np.float(meta['scale_factor'])
@@ -56,7 +65,7 @@ def run(FILE_NAME):
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
         units = meta['units']
         long_name = meta['long_name']
-    
+
         # Construct the grid.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
@@ -64,17 +73,16 @@ def run(FILE_NAME):
         y = np.linspace(y0, y0 + yinc*ny, ny)
         xv, yv = np.meshgrid(x, y)
 
-        del gdset
-        
     else:
-        if USE_NETCDF:
+
+        if USE_NETCDF4:
 
             from netCDF4 import Dataset
 
             nc = Dataset(FILE_NAME)
             ncvar = nc.variables[DATAFIELD_NAME]
 
-            # The scaling equation isn't "scale * data + offset", 
+            # The scaling equation isn't "scale * data + offset",
             # so turn automatic scaling off.
             ncvar.set_auto_maskandscale(False)
             data = ncvar[:].astype(np.float64)
@@ -88,41 +96,33 @@ def run(FILE_NAME):
             long_name = ncvar.long_name
             gridmeta = getattr(nc, 'StructMetadata.0')
 
-        else: 
+        else:
+
             from pyhdf.SD import SD, SDC
+
             hdf = SD(FILE_NAME, SDC.READ)
 
             # Read dataset.
             data2D = hdf.select(DATAFIELD_NAME)
-            data = data2D[:,:].astype(np.double)
+            data = data2D[:].astype(np.double)
 
-        
             # Read attributes.
             attrs = data2D.attributes(full=1)
-            lna=attrs["long_name"]
-            long_name = lna[0]
-            vra=attrs["valid_range"]
-            valid_range = vra[0]
-            aoa=attrs["add_offset"]
-            add_offset = aoa[0]
-            fva=attrs["_FillValue"]
-            _FillValue = fva[0]
-            sfa=attrs["scale_factor"]
-            scale_factor = sfa[0]        
-            ua=attrs["units"]
-            units = ua[0]
+            long_name = attrs["long_name"][0]
+            valid_range = attrs["valid_range"][0]
+            _FillValue = attrs["_FillValue"][0]
+            scale_factor = attrs["scale_factor"][0]
+            add_offset = attrs["add_offset"][0]
+            units = attrs["units"][0]
+
             fattrs = hdf.attributes(full=1)
             ga = fattrs["StructMetadata.0"]
             gridmeta = ga[0]
-
 
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
         # extents of the grid.  In addition, the grid is in packed decimal
         # degrees, so we need to normalize to degrees.
-        
-
-        
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                                   (?P<upper_left_x>[+-]?\d+\.\d+)
                                   ,
@@ -140,30 +140,29 @@ def run(FILE_NAME):
         match = lr_regex.search(gridmeta)
         x1 = np.float(match.group('lower_right_x'))
         y1 = np.float(match.group('lower_right_y'))
-        
+
         ny, nx = data.shape
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
         xv, yv = np.meshgrid(x, y)
-    
+
     # In basemap, the sinusoidal projection is global, so we won't use it.
-    # Instead we'll convert the grid back to lat/lons so we can use a local 
+    # Instead we'll convert the grid back to lat/lons so we can use a local
     # projection.
     sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(sinu, wgs84, xv, yv)
+    wgs84 = pyproj.Proj("+init=EPSG:4326")
+    lon, lat = pyproj.transform(sinu, wgs84, xv, yv)
 
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
-    invalid = np.logical_or(invalid, data ==_FillValue)
+    invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
     data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
 
-    
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=2.5, urcrnrlat=12.5,
-                llcrnrlon=-87.5, urcrnrlon = -77.5)
+                llcrnrlon=-87.5, urcrnrlon=-77.5)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(0, 15, 5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-90, 75, 5), labels=[0, 0, 0, 1])
@@ -181,15 +180,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MYD17A2.A2007073.h09v08.005.2007096132046.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
-
+    run()

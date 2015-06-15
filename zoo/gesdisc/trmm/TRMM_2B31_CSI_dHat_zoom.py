@@ -31,12 +31,21 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = '2B31_CSI.990911.10296.KORA.6.HDF'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'dHat'
 
     if USE_NETCDF4:
-        from netCDF4 import Dataset    
+
+        from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
         # This datafield has scale factor and add offset attributes, but no
@@ -47,36 +56,37 @@ def run(FILE_NAME):
         # Retrieve scale/offset attributes.
         scale_factor = var.scale_factor
         add_offset = var.add_offset
-    
+
         # Retrieve the geolocation data.
-        latitude = nc.variables['geolocation'][:,:,0]
-        longitude = nc.variables['geolocation'][:,:,1]
+        latitude = nc.variables['geolocation'][:, :, 0]
+        longitude = nc.variables['geolocation'][:, :, 1]
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
-        
+
         ds = hdf.select(DATAFIELD_NAME)
-        data = ds[:,:].astype(np.double)
+        data = ds[:].astype(np.double)
 
         # Handle scale/osffset attributes.
         attrs = ds.attributes(full=1)
-        sfa=attrs["scale_factor"]
-        scale_factor = sfa[0]
-        aoa=attrs["add_offset"]
-        add_offset = aoa[0]
+        scale_factor = attrs["scale_factor"][0]
+        add_offset = attrs["add_offset"][0]
 
-        # Retrieve the geolocation data.        
+        # Retrieve the geolocation data.
         geo = hdf.select('geolocation')
-        latitude = geo[:,:,0]
-        longitude = geo[:,:,1]
+        latitude = geo[:, :, 0]
+        longitude = geo[:, :, 1]
 
     data = data / scale_factor + add_offset
-    
+
     # Draw an equidistant cylindrical projection using the high resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='h',
-                llcrnrlat=30, urcrnrlat = 36,
-                llcrnrlon=121, urcrnrlon = 133)
+                llcrnrlat=30, urcrnrlat=36,
+                llcrnrlon=121, urcrnrlon=133)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(30, 37), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(121, 133, 2), labels=[0, 0, 0, 1])
@@ -88,20 +98,10 @@ def run(FILE_NAME):
     plt.title('{0}\n{1}'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
     # plt.show()
-    
+
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = '2B31_CSI.990911.10296.KORA.6.HDF'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

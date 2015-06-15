@@ -37,22 +37,33 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
-    # Identify the data field.
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'CER_ES4_TRMM-PFM_Edition1_009001.199808.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'Longwave Flux (2.5R)'
 
     if USE_NETCDF4:
+
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
-        
+
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:]
-
+        data = data2D[:]
 
     # Set fillvalue and units.
     # See "CERES Data Management System ES-4 Collection Guide" [1] and a sample
@@ -61,7 +72,7 @@ def run(FILE_NAME):
     fillvalue = np.max(data)
     data[data == fillvalue] = np.nan
     datam = np.ma.masked_array(data, mask=np.isnan(data))
-    
+
     # Set fillvalue and units.
     # See "CERES Data Management System ES-4 Collection Guide" [1] and a
     # sample image by NASA [2] for details.
@@ -74,17 +85,18 @@ def run(FILE_NAME):
     y0, y1 = (-90, 90)
     longitude = np.linspace(x0 + xinc/2, x1 - xinc/2, xsize)
     latitude = np.linspace(y0 + yinc/2, y1 - yinc/2, ysize)
-    
+
     # Flip the latitude to run from 90 to -90
     latitude = latitude[::-1]
-    
+
     # The data is global, so render in a global projection.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat=90,
                 llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90.,90,45))
-    m.drawmeridians(np.arange(-180.,180,45), labels=[True,False,False,True])
+    m.drawparallels(np.arange(-90., 90, 45))
+    m.drawmeridians(np.arange(-180., 180, 45),
+                    labels=[True, False, False, True])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
     cb = m.colorbar()
 
@@ -96,18 +108,9 @@ def run(FILE_NAME):
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-    
+
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    ncfile = 'CER_ES4_TRMM-PFM_Edition1_009001.199808.hdf'
-    try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], ncfile)
-    except KeyError:
-        fname = hdffile
-
-    run(fname)
+    run()
 
 # References
 # [1] http://ceres.larc.nasa.gov/documents/collect_guide/pdf/ES4_CG_R1V1.pdf

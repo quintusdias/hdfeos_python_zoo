@@ -31,13 +31,22 @@ import numpy as np
 
 USE_GDAL = False
 
-def run(FILE_NAME):
+
+def run():
     
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD10C1.A2005018.005.2007349093349.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
     DATAFIELD_NAME = 'Day_CMG_Snow_Cover'
 
     if USE_GDAL:    
+
         import gdal
+
         GRID_NAME = 'MOD_CMG_Snow_5km'    
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
@@ -143,15 +152,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD10C1.A2005018.005.2007349093349.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
-
+    run()

@@ -34,8 +34,14 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+def run():
     
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD29E1D.A2009340.005.2009341094922.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance_SP'
 
     if USE_NETCDF4:
@@ -146,14 +152,5 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD29E1D.A2009340.005.2009341094922.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
     run(hdffile)
     

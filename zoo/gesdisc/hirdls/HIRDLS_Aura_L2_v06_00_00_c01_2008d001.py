@@ -30,8 +30,15 @@ import numpy as np
 
 USE_NETCDF4 = True
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'HIRDLS-Aura_L2_v06-00-00-c01_2008d001.he5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
@@ -43,7 +50,7 @@ def run(FILE_NAME):
         time_var = grp.groups['Geolocation Fields'].variables['Time']
 
         # Read the data.
-        data = data_var[0,:]
+        data = data_var[0, :]
         pressure = pres_var[:]
         time = time_var[0]
 
@@ -55,7 +62,7 @@ def run(FILE_NAME):
         pres_title = pres_var.Title
 
     else:
-        
+
         import h5py
 
         with h5py.File(FILE_NAME, mode='r') as f:
@@ -65,7 +72,7 @@ def run(FILE_NAME):
             dset_time = f['/HDFEOS/SWATHS/HIRDLS/Geolocation Fields/Time']
 
             # Read the data.
-            data = dset_var[0,:]
+            data = dset_var[0, :]
             pressure = dset_pres[:]
             time = dset_time[0]
 
@@ -83,7 +90,7 @@ def run(FILE_NAME):
 
     # The date is stored as a six-digit number, YYYYMM.  Convert it into
     # a string.
-    datestr = datetime.datetime(1993,1,1) + datetime.timedelta(seconds=time)
+    datestr = datetime.datetime(1993, 1, 1) + datetime.timedelta(seconds=time)
 
     # Apply log scale along the y-axis to get a better image.
     pressure = np.log10(pressure)
@@ -100,23 +107,13 @@ def run(FILE_NAME):
 
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1} at {2}'.format(basename, data_title,
-        datestr.strftime('%Y-%m-%d %H:%M:%S')))
+              datestr.strftime('%Y-%m-%d %H:%M:%S')))
 
     fig = plt.gcf()
     # plt.show()
-    
-    pngfile = "{0}.py.png".format(basename)    
+
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'HIRDLS-Aura_L2_v06-00-00-c01_2008d001.he5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-
+    run()

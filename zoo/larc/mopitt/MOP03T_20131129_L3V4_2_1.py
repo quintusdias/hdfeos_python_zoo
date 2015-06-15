@@ -2,7 +2,7 @@
 Copyright (C) 2014 The HDF Group
 Copyright (C) 2014 John Evans
 
-This example code illustrates how to access and visualize a MOPITT ASDC MOP03 
+This example code illustrates how to access and visualize a MOPITT ASDC MOP03
 version 6 HDF-EOS5 grid file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -29,8 +29,15 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOP03T-20131129-L3V4.2.1.he5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     with h5py.File(FILE_NAME, mode='r') as f:
 
         group = f['/HDFEOS/GRIDS/MOP03/Data Fields']
@@ -55,7 +62,8 @@ def run(FILE_NAME):
                 llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, 91, 45))
-    m.drawmeridians(np.arange(-180, 180, 45), labels=[True,False,False,True])
+    m.drawmeridians(np.arange(-180, 180, 45),
+                    labels=[True, False, False, True])
     sc = m.scatter(longitude, latitude, c=data, s=1, cmap=plt.cm.jet,
                    edgecolors=None, linewidth=0)
     cb = m.colorbar()
@@ -70,15 +78,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOP03T-20131129-L3V4.2.1.he5'
-
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-
+    run()

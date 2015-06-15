@@ -32,7 +32,13 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AGNS100.v003.64.-089.0001.h5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     if USE_NETCDF4:
 
@@ -42,7 +48,7 @@ def run(FILE_NAME):
         var = nc.groups['Emissivity'].variables['Mean']
 
         # Subset for Band 10.
-        data = var[1,:,:].astype(np.float64)
+        data = var[1, :, :].astype(np.float64)
 
         # Retrieve the geolocation data.
         latitude = nc.groups['Geolocation'].variables['Latitude'][:]
@@ -52,13 +58,13 @@ def run(FILE_NAME):
         description = var.Description
 
     else:
-        
+
         import h5py
 
         with h5py.File(FILE_NAME, mode='r') as f:
 
             dset = f['/Emissivity/Mean']
-            data =dset[1,:,:].astype(np.float64)
+            data = dset[1, :, :].astype(np.float64)
 
             # Retrieve the geolocation data.
             latitude = f['/Geolocation/Latitude'][:]
@@ -66,7 +72,6 @@ def run(FILE_NAME):
 
             # Retrieve attribute
             description = dset.attrs['Description'][0]
-
 
     # Apply the fillvalue and scaling (see [1])
     data[data == -9999] = np.nan
@@ -98,14 +103,4 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AGNS100.v003.64.-089.0001.h5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-
+    run()

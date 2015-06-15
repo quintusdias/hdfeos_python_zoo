@@ -28,7 +28,7 @@ References
 [1] ftp://aurapar1u.ecs.nasa.gov/ftp/data/s4pa/GOSAT_TANSO_Level2/ACOS_L2S.002/doc/README.ACOS_L2S_v2.8.pdf
 """
 
-import datetime
+import datetime as dt
 import os
 
 import matplotlib as mpl
@@ -38,18 +38,31 @@ import numpy as np
 
 USE_NETCDF4 = True
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
 
         nc = Dataset(FILE_NAME)
         data_var = nc.groups['RetrievalResults'].variables['xco2']
-        lat_var = nc.groups['SoundingGeometry'].variables['sounding_latitude_geoid']
-        lon_var = nc.groups['SoundingGeometry'].variables['sounding_longitude_geoid']
-        lev_var = nc.groups['SoundingGeometry'].variables['sounding_altitude']
-        time_var = nc.groups['SoundingHeader'].variables['sounding_time_tai93']
+
+        grp = nc.groups['SoundingGeometry']
+        lat_var = grp.variables['sounding_latitude_geoid']
+        lon_var = grp.variables['sounding_longitude_geoid']
+
+        grp = nc.groups['SoundingGeometry']
+        lev_var = grp.variables['sounding_altitude']
+
+        grp = nc.groups['SoundingHeader']
+        time_var = grp.variables['sounding_time_tai93']
 
         # Read the data.
         data = data_var[:]
@@ -63,7 +76,7 @@ def run(FILE_NAME):
         lev_units = lev_var.Units
 
     else:
-        
+
         import h5py
 
         with h5py.File(FILE_NAME, mode='r') as f:
@@ -89,7 +102,7 @@ def run(FILE_NAME):
     # coastline database.  Plot the trajectory.
     fig = plt.figure(figsize=(15, 6))
     plt.subplot(1, 2, 1)
-    m = Basemap(projection='ortho', resolution='l', lat_0=-55, lon_0 = 120)
+    m = Basemap(projection='ortho', resolution='l', lat_0=-55, lon_0=120)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-80., -0., 20.))
     m.drawmeridians(np.arange(-180., 181., 20.))
@@ -105,13 +118,14 @@ def run(FILE_NAME):
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\nGOSAT Trajectory'.format(basename), fontsize=12)
 
-
     # Second subplot will be time vs. CO2
     ax1 = plt.subplot(1, 2, 2)
     elapsed_time = time - time[0]
     ax1.plot(elapsed_time, data, '-', color='black')
     ax1.set_xlabel('Elapsed Time (seconds)')
-    ax1.set_ylabel('CO2 column averaged dry air mole fraction\n({0})'.format(data_units))
+
+    ylabel = 'CO2 column averaged dry air mole fraction\n({0})'
+    ax1.set_ylabel(ylabel.format(data_units))
 
     # Save some screen space by using scientific notation for the tick labels.
     formatter = plt.ScalarFormatter(useMathText=True)
@@ -127,8 +141,8 @@ def run(FILE_NAME):
     for tick in ax2.get_yticklabels():
         tick.set_color('blue')
 
-    start_time = datetime.datetime(1993,1,1) + datetime.timedelta(seconds=time[0])
-    end_time = datetime.datetime(1993,1,1) + datetime.timedelta(seconds=time[-1])
+    start_time = dt.datetime(1993, 1, 1) + dt.timedelta(seconds=time[0])
+    end_time = dt.datetime(1993, 1, 1) + dt.timedelta(seconds=time[-1])
     titlestr = 'CO2 column averaged dry air mole fraction and Altitude\n'
     titlestr += '{0} - {1}'.format(start_time.strftime('%Y-%m-%d %H:%M:%S'),
                                    end_time.strftime('%Y-%m-%d %H:%M:%S'))
@@ -141,17 +155,8 @@ def run(FILE_NAME):
              transform=ax2.transAxes)
 
     # plt.show()
-    pngfile = "{0}.py.png".format(basename)    
+    pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'acos_L2s_110101_02_Production_v110110_L2s2800_r01_PolB_110124184213.h5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()

@@ -31,12 +31,21 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = '2A12.100402.70512.6.HDF'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'cldWater'
 
-    if USE_NETCDF4:    
-        from netCDF4 import Dataset    
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
 
@@ -44,54 +53,54 @@ def run(FILE_NAME):
         # CF conventions scale/offset rule.
         var.set_auto_maskandscale(False)
 
-        data = var[:,:,9].astype(np.double)
+        data = var[:, :, 9].astype(np.double)
         scale_factor = var.scale_factor
         add_offset = var.add_offset
 
         # Retrieve the geolocation data.
-        latitude = nc.variables['geolocation'][:,:,0]
-        longitude = nc.variables['geolocation'][:,:,1]
+        latitude = nc.variables['geolocation'][:, :, 0]
+        longitude = nc.variables['geolocation'][:, :, 1]
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
-        
+
         ds = hdf.select(DATAFIELD_NAME)
-        data = ds[:,:,9].astype(np.double)
+        data = ds[:, :, 9].astype(np.double)
 
         # Handle scale/osffset attributes.
         attrs = ds.attributes(full=1)
-        sfa=attrs["scale_factor"]
-        scale_factor = sfa[0]
-        aoa=attrs["add_offset"]
-        add_offset = aoa[0]
+        scale_factor = attrs["scale_factor"][0]
+        add_offset = attrs["add_offset"][0]
 
-        # Retrieve the geolocation data.        
+        # Retrieve the geolocation data.
         geo = hdf.select('geolocation')
-        latitude = geo[:,:,0]
-        longitude = geo[:,:,1]
+        latitude = geo[:, :, 0]
+        longitude = geo[:, :, 1]
 
     # The fill value is not explicitly set, but appears to be -9999.
     data[data == -9999] = np.nan
-    # cldWater has "scale_factor" and "add_offset" attributes, 
-    # but the scaling equation to be used here does not follow the CF 
+    # cldWater has "scale_factor" and "add_offset" attributes,
+    # but the scaling equation to be used here does not follow the CF
     # conventoins
     #
     #     data = data * scale + offset
     #
     data = data / scale_factor + add_offset
     datam = np.ma.masked_array(data, np.isnan(data))
-    
-    
+
     # There is a wrap-around effect to deal with.  Adjust the longitude by
     # modulus 360 to avoid the swath being smeared.
     longitude[longitude < 0] += 360
     longitude[longitude > 310] -= 360
-    
+
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-50, urcrnrlon = 310)
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-50, urcrnrlon=310)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-45, 315., 45.), labels=[0, 0, 0, 1])
@@ -108,14 +117,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = '2A12.100402.70512.6.HDF'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

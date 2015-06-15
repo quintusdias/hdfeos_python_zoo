@@ -30,13 +30,23 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD021KM.A2000055.0000.005.2010041143816.hdf'
     GEO_FILE_NAME = 'MOD03.A2000055.0000.005.2010029175839.hdf'
-    GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], GEO_FILE_NAME)
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], GEO_FILE_NAME)
+
     DATAFIELD_NAME = 'EV_Band26'
 
-    if USE_NETCDF4:    
-        from netCDF4 import Dataset    
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
 
@@ -44,7 +54,7 @@ def run(FILE_NAME):
         # We'll turn autoscaling off in order to correctly scale the data.
         # Also need to subset the data to match the lat/lon dimensions.
         var.set_auto_maskandscale(False)
-        data = var[:,:].astype(np.double)
+        data = var[:, :].astype(np.double)
 
         # Retrieve the geolocation data from MOD03 product.
         nc_geo = Dataset(GEO_FILE_NAME)
@@ -61,57 +71,54 @@ def run(FILE_NAME):
         units = var.radiance_units
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.double)
+        data = data2D[:].astype(np.double)
 
         hdf_geo = SD(GEO_FILE_NAME, SDC.READ)
 
         # Read geolocation dataset from MOD03 product.
         lat = hdf_geo.select('Latitude')
-        latitude = lat[:,:]
+        latitude = lat[:]
         lon = hdf_geo.select('Longitude')
-        longitude = lon[:,:]
-        
+        longitude = lon[:]
+
         # Retrieve attributes.
         attrs = data2D.attributes(full=1)
-        lna=attrs["long_name"]
-        long_name = lna[0]
-        aoa=attrs["radiance_offsets"]
-        add_offset = aoa[0]
-        fva=attrs["_FillValue"]
-        _FillValue = fva[0]
-        sfa=attrs["radiance_scales"]
-        scale_factor = sfa[0]        
-        vra=attrs["valid_range"]
-        valid_min = vra[0][0]        
-        valid_max = vra[0][1]        
-        ua=attrs["radiance_units"]
-        units = ua[0]
-        
+        long_name = attrs["long_name"][0]
+        add_offset = attrs["radiance_offsets"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["radiance_scales"][0]
+        valid_min = attrs["valid_range"][0][0]
+        valid_max = attrs["valid_range"][0][1]
+        units = attrs["units"][0]
+
     invalid = np.logical_or(data > valid_max,
                             data < valid_min)
     invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = (data - add_offset) * scale_factor 
+    data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
-    
+
     # Render the plot in a lambert equal area projection.
     m = Basemap(projection='laea', resolution='l', lat_ts=65,
                 lat_0=65, lon_0=-35,
-                width=3000000,height=2500000)
+                width=3000000, height=2500000)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(50., 91., 10.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181., 30), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
-    cb=m.colorbar()
+    cb = m.colorbar()
     cb.set_label(units, fontsize=8)
 
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n{1}'.format(basename, 'Radiance derived from ' + long_name))
+    plt.title('{0}\n{1}'.format(basename,
+                                'Radiance derived from ' + long_name))
     fig = plt.gcf()
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
@@ -119,14 +126,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD021KM.A2000055.0000.005.2010041143816.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

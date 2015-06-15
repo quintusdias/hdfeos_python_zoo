@@ -26,7 +26,6 @@ with HDF4 support.  Please see the README for details.
 import os
 import re
 
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
@@ -34,10 +33,17 @@ import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
 USE_GDAL = False
-USE_NETCDF = False
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MYD13A1.A2006321.h10v05.004.2006341182856.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = '500m 16 days NDVI'
     if USE_GDAL:
         # Gdal
@@ -48,11 +54,11 @@ def run(FILE_NAME):
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
 
-        # Subset the data by a factor of 4 so that low-memory machines can 
+        # Subset the data by a factor of 4 so that low-memory machines can
         # render it more easily.
         gdset = gdal.Open(gname)
         data = gdset.ReadAsArray().astype(np.float64)[::4, ::4]
-    
+
         # Get any needed attributes.
         meta = gdset.GetMetadata()
         scale_factor = np.float(meta['scale_factor'])
@@ -61,7 +67,7 @@ def run(FILE_NAME):
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
         units = meta['units']
         long_name = meta['long_name']
-    
+
         # Construct the grid, remembering to subset by a factor of 4.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
@@ -69,13 +75,12 @@ def run(FILE_NAME):
         y = np.linspace(y0, y0 + yinc*ny, ny)
         xv, yv = np.meshgrid(x[::4], y[::4])
 
-        del gdset
-
     else:
-        if USE_NETCDF:
+        if USE_NETCDF4:
+
             from netCDF4 import Dataset
 
-            # The scaling equation isn't "scale * data + offset", 
+            # The scaling equation isn't "scale * data + offset",
             # so turn automatic scaling off.
             nc = Dataset(FILE_NAME)
             ncvar = nc.variables[DATAFIELD_NAME]
@@ -92,37 +97,31 @@ def run(FILE_NAME):
             gridmeta = getattr(nc, 'StructMetadata.0')
 
         else:
+
             from pyhdf.SD import SD, SDC
+
             hdf = SD(FILE_NAME, SDC.READ)
 
             # Read dataset.
             data2D = hdf.select(DATAFIELD_NAME)
-            data = data2D[:,:].astype(np.double)
+            data = data2D[:].astype(np.double)
 
-        
             # Read attributes.
             attrs = data2D.attributes(full=1)
-            lna=attrs["long_name"]
-            long_name = lna[0]
-            vra=attrs["valid_range"]
-            valid_range = vra[0]
-            aoa=attrs["add_offset"]
-            add_offset = aoa[0]
-            fva=attrs["_FillValue"]
-            _FillValue = fva[0]
-            sfa=attrs["scale_factor"]
-            scale_factor = sfa[0]        
-            ua=attrs["units"]
-            units = ua[0]
+            long_name = attrs["long_name"][0]
+            valid_range = attrs["valid_range"][0]
+            _FillValue = attrs["_FillValue"][0]
+            scale_factor = attrs["scale_factor"][0]
+            add_offset = attrs["add_offset"][0]
+            units = attrs["units"][0]
+
             fattrs = hdf.attributes(full=1)
-            ga = fattrs["StructMetadata.0"]
-            gridmeta = ga[0]
+            gridmeta = fattrs["StructMetadata.0"][0]
 
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
         # extents of the grid.  In addition, the grid is in packed decimal
         # degrees, so we need to normalize to degrees.
-
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                                   (?P<upper_left_x>[+-]?\d+\.\d+)
                                   ,
@@ -140,27 +139,26 @@ def run(FILE_NAME):
         match = lr_regex.search(gridmeta)
         x1 = np.float(match.group('lower_right_x'))
         y1 = np.float(match.group('lower_right_y'))
-        
+
         ny, nx = data.shape
         x = np.linspace(x0, x1, nx)
         y = np.linspace(y0, y1, ny)
         xv, yv = np.meshgrid(x, y)
-    
 
     # In basemap, the sinusoidal projection is global, so we won't use it.
-    # Instead we'll convert the grid back to lat/lons so we can use a local 
+    # Instead we'll convert the grid back to lat/lons so we can use a local
     # projection.
     sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(sinu, wgs84, xv, yv)
+    wgs84 = pyproj.Proj("+init=EPSG:4326")
+    lon, lat = pyproj.transform(sinu, wgs84, xv, yv)
 
     # Apply the attributes to the data.
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
-    invalid = np.logical_or(invalid, data ==_FillValue)
+    invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = (data - add_offset) /  scale_factor
+    data = (data - add_offset) / scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
-    
+
     # A plain geographic projection looks a little warped at this scale and
     # latitude, so use a Lambert Azimuthal Equal Area projection instead.
     m = Basemap(projection='laea', resolution='l',
@@ -169,7 +167,7 @@ def run(FILE_NAME):
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(30, 45, 5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-105, -75, 5), labels=[0, 0, 0, 1])
-    m.pcolormesh(lon[::2,::2], lat[::2,::2], data[::2,::2], latlon=True)
+    m.pcolormesh(lon[::2, ::2], lat[::2, ::2], data[::2, ::2], latlon=True)
 
     cb = m.colorbar()
     cb.set_label(units)
@@ -183,16 +181,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MYD13A1.A2006321.h10v05.004.2006341182856.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
-
-
+    run()

@@ -31,13 +31,22 @@ import numpy as np
 
 USE_GDAL = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AMSR_E_L3_SeaIce12km_V11_20050118.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
     DATAFIELD_NAME = 'SI_12km_SH_36H_DAY'
 
-    if USE_GDAL:    
+    if USE_GDAL:
+
         import gdal
+
         GRID_NAME = 'SpPolarGrid12km'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
@@ -49,27 +58,26 @@ def run(FILE_NAME):
         meta = gdset.GetMetadata()
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
-        del gdset
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
+        data = hdf.select(DATAFIELD_NAME)[:].astype(np.float64)
 
-        # Read dataset.
-        data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
-
-        # There are multiple girds in this file.
-        # Thus, simple regular expression search for 
-        # UpperLeft/LowerRightPoint from StructMetadata.0 won't work. 
-        # 
+        # There are multiple grids in this file.
+        # Thus, simple regular expression search for
+        # UpperLeft/LowerRightPoint from StructMetadata.0 won't work.
+        #
         # Use HDFView and look for the following parameters:
         #
-	# GROUP=GRID_2
-        #       GridName="SpPolarGrid06km"
-	#	XDim=1264
-	#	YDim=1328
-	#	UpperLeftPointMtrs=(-3950000.000000,4350000.000000)
-	#	LowerRightMtrs=(3950000.000000,-3950000.000000)
+        # GROUP=GRID_2
+        #  GridName="SpPolarGrid06km"
+        #    XDim=1264
+        #    YDim=1328
+        #    UpperLeftPointMtrs=(-3950000.000000,4350000.000000)
+        #    LowerRightMtrs=(3950000.000000,-3950000.000000)
         ny, nx = data.shape
         x1 = 3950000
         x0 = -3950000
@@ -77,7 +85,6 @@ def run(FILE_NAME):
         y1 = -3950000
         xinc = (x1 - x0) / nx
         yinc = (y1 - y0) / ny
-
 
     # Apply the attributes information.
     # Ref:  http://nsidc.org/data/docs/daac/ae_si12_12km_seaice/data.html
@@ -100,19 +107,18 @@ def run(FILE_NAME):
             "+ellps=WGS84",
             "+datum=WGS84"]
     pstereo = pyproj.Proj(' '.join(args))
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(pstereo, wgs84, xv, yv)
+    wgs84 = pyproj.Proj("+init=EPSG:4326")
+    lon, lat = pyproj.transform(pstereo, wgs84, xv, yv)
 
     units = 'K'
     long_name = DATAFIELD_NAME
 
-    m = Basemap(projection='spstere', resolution='l', boundinglat=-45, lon_0 = 0)
+    m = Basemap(projection='spstere', resolution='l', boundinglat=-45, lon_0=0)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-80, 0, 20), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 30), labels=[0, 0, 0, 1])
     m.pcolormesh(lon, lat, data, latlon=True)
 
- 
     cb = m.colorbar()
     cb.set_label(units)
 
@@ -124,16 +130,5 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 
-
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AMSR_E_L3_SeaIce12km_V11_20050118.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

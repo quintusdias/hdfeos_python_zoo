@@ -29,20 +29,30 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4 = True
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MODARNSS.Abracos_Hill.A2000080.1515.005.2007164153544.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'EV_1KM_Emissive'
-    if USE_NETCDF4:    
-        from netCDF4 import Dataset    
+
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         var = nc.variables[DATAFIELD_NAME]
 
         # Have to be very careful of the scaling equation here.
         # We'll turn autoscaling off in order to correctly scale the data.
         var.set_auto_maskandscale(False)
-        data = var[0,:,:].astype(np.double)
+        data = var[0, :, :].astype(np.double)
 
         # Retrieve the geolocation data.
         longitude = nc.variables['Longitude'][:]
@@ -56,48 +66,44 @@ def run(FILE_NAME):
         valid_max = var.valid_range[1]
         long_name = var.long_name
         units = var.radiance_units
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data3D = hdf.select(DATAFIELD_NAME)
-        data = data3D[0,:,:].astype(np.double)
-        
+        data = data3D[0, :, :].astype(np.double)
+
         # Read geolocation dataset.
         lat = hdf.select('Latitude')
-        latitude = lat[:,:]
+        latitude = lat[:]
         lon = hdf.select('Longitude')
-        longitude = lon[:,:]
+        longitude = lon[:]
 
         # Retrieve attributes.
         attrs = data3D.attributes(full=1)
-        lna=attrs["long_name"]
-        long_name = lna[0]
-        aoa=attrs["radiance_offsets"]
-        add_offset = aoa[0][0]
-        fva=attrs["_FillValue"]
-        _FillValue = fva[0]
-        sfa=attrs["radiance_scales"]
-        scale_factor = sfa[0][0]       
-        vra=attrs["valid_range"]
-        valid_min = vra[0][0]        
-        valid_max = vra[0][1]        
-        ua=attrs["radiance_units"]
-        units = ua[0]
+        long_name = attrs["long_name"][0]
+        add_offset = attrs["radiance_offsets"][0][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["radiance_scales"][0][0]
+        valid_min = attrs["valid_range"][0][0]
+        valid_max = attrs["valid_range"][0][1]
+        units = attrs["radiance_units"][0]
 
     invalid = np.logical_or(data > valid_max,
                             data < valid_min)
     invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = (data - add_offset) * scale_factor 
+    data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
 
-
     # Render the plot in a cylindrical projection.
-    m = Basemap(projection='cyl', resolution='l', 
-                llcrnrlat=-12, urcrnrlat = -9,
-                llcrnrlon=-64, urcrnrlon = -61)
+    m = Basemap(projection='cyl', resolution='l',
+                llcrnrlat=-12, urcrnrlat=-9,
+                llcrnrlon=-64, urcrnrlon=-61)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-12., -8., 1.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-64, -60., 1), labels=[0, 0, 0, 1])
@@ -106,8 +112,8 @@ def run(FILE_NAME):
     cb.set_label(units)
 
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n{1}\n'.format(basename, 
-                                'Radiance derived from ' + long_name), 
+    plt.title('{0}\n{1}\n'.format(basename,
+                                 'Radiance derived from ' + long_name),
               fontsize=11)
     fig = plt.gcf()
     # plt.show()
@@ -116,14 +122,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MODARNSS.Abracos_Hill.A2000080.1515.005.2007164153544.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

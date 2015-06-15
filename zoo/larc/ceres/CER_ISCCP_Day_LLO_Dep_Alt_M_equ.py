@@ -33,38 +33,45 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'CER_ISCCP-D2like-Day_Aqua-FM3-MODIS_Beta1_023030.200612.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Liquid Log Optical Depth - Altocumulus - M'
 
-    if USE_NETCDF4:    
-    
+    if USE_NETCDF4:
+
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
         # Subset the data to match the size of the swath geolocation fields.
         # Turn off autoscaling, we'll handle that ourselves due to presence of
         # a valid range.
         var = nc.variables[DATAFIELD_NAME]
-        data = var[0,:,:].astype(np.float64)
-    
+        data = var[0, :, :].astype(np.float64)
+
         # Read the attributes.
         fillvalue = var._FillValue
         units = var.units
-        
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
         # Read dataset.
         data3D = hdf.select(DATAFIELD_NAME)
-        data = data3D[0,:,:].astype(np.float64)
+        data = data3D[0, :, :].astype(np.float64)
 
         # Read attributes.
         attrs = data3D.attributes(full=1)
-        fva=attrs["_FillValue"]
-        fillvalue = fva[0]
-        ua=attrs["units"]
-        units = ua[0]
+        fillvalue = attrs["_FillValue"][0]
+        units = attrs["units"][0]
 
     # Handle fill value.
     data[data == fillvalue] = np.nan
@@ -83,14 +90,14 @@ def run(FILE_NAME):
     # Flip the latitude to run from 90 to -90.
     lat = lat[::-1]
     longitude, latitude = np.meshgrid(lon, lat)
-    
+
     # The data is global, so render in a global projection.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat=90,
                 llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90.,90,45))
-    m.drawmeridians(np.arange(-180.,180,45))
+    m.drawparallels(np.arange(-90, 90, 45))
+    m.drawmeridians(np.arange(-180, 180, 45))
     m.pcolormesh(longitude, latitude, datam, latlon=True)
     cb = m.colorbar()
     cb.set_label(units)
@@ -101,17 +108,7 @@ def run(FILE_NAME):
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-    
-    
+
+
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'CER_ISCCP-D2like-Day_Aqua-FM3-MODIS_Beta1_023030.200612.hdf'
-    try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        fname = hdffile
-
-    run(fname)
-
+    run()

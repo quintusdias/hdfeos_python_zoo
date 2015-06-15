@@ -32,13 +32,22 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+    
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD10_L2.A2000065.0040.005.2008235221207.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Snow_Cover'
     
     if USE_NETCDF4:
+
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         # Subset the data to match the size of the swath geolocation fields.
         rows = slice(5, 4060, 10)
@@ -46,13 +55,16 @@ def run(FILE_NAME):
         data = nc.variables['Snow_Cover'][rows, cols]
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
         GEO_FILE_NAME = 'lat_MOD10_L2.A2000065.0040.005.2008235221207.output'
@@ -100,14 +112,5 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD10_L2.A2000065.0040.005.2008235221207.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()
     

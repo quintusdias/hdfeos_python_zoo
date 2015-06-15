@@ -32,36 +32,40 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
 
-    # Identify the data field.
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AMSR_E_L2_Ocean_V06_200206190029_D.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     DATAFIELD_NAME = 'High_res_cloud'
 
     if USE_NETCDF4:
+
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
         scale_factor = nc.variables[DATAFIELD_NAME].Scale
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
-        # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
 
-        # Read geolocation dataset.
-        lat = hdf.select('Latitude')
-        latitude = lat[:,:]
-        lon = hdf.select('Longitude')
-        longitude = lon[:,:]
+        data = data2D[:].astype(np.float64)
+        latitude = hdf.select('Latitude')[:]
+        longitude = hdf.select('Longitude')[:]
 
-        # Retrieve attributes.
-        attrs = data2D.attributes(full=1)
-        sfa=attrs["Scale"]
-        scale_factor = sfa[0]        
+        scale_factor = data2D.attributes(full=1)["Scale"][0]
 
     # There is a wrap-around effect to deal with, as some of the swath extends
     # eastward over the international dateline.  Adjust the longitude to avoid
@@ -83,7 +87,7 @@ def run(FILE_NAME):
                 llcrnrlon=-170, urcrnrlon=190)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, 91, 45), labels=[1, 0, 0, 0])
-    m.drawmeridians(np.arange(-180,181,45), labels=[0, 0, 0, 1])
+    m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True)
 
     cb = m.colorbar()
@@ -97,14 +101,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AMSR_E_L2_Ocean_V06_200206190029_D.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

@@ -31,13 +31,21 @@ import numpy as np
 
 USE_GDAL = False
 
-def run(FILE_NAME):
+
+def run():
     
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD10A1.A2000065.h00v08.005.2008237034422.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
     DATAFIELD_NAME = 'Snow_Cover_Daily_Tile'
 
     if USE_GDAL:    
         import gdal
+
         GRID_NAME = 'MOD_Grid_Snow_500m'
     
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
@@ -52,20 +60,20 @@ def run(FILE_NAME):
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
 
-        del gdset
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
 
         # Read global attribute.
         fattrs = hdf.attributes(full=1)
-        ga = fattrs["StructMetadata.0"]
-        gridmeta = ga[0]
+        gridmeta = fattrs["StructMetadata.0"][0]
             
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
@@ -145,14 +153,5 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD10A1.A2000065.h00v08.005.2008237034422.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()
     

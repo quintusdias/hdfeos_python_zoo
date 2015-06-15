@@ -2,7 +2,7 @@
 Copyright (C) 2014 The HDF Group
 Copyright (C) 2014 John Evans
 
-This example code illustrates how to access and visualize an NSIDC AMSR_E 
+This example code illustrates how to access and visualize an NSIDC AMSR_E
 version 3 L2A HDF-EOS2 swath file in Python.
 
 If you have any questions, suggestions, or comments on this example, please use
@@ -33,18 +33,27 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = '89.0V_Res.5B_TB_(not-resampled)'
 
     if USE_NETCDF4:
+
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
 
         data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
-    
+
         # Replace the filled value with NaN, replace with a masked array.
         # Apply the scaling equation.  These attributes are named in a VERY
         # non-standard manner.
@@ -52,27 +61,26 @@ def run(FILE_NAME):
         add_offset = nc.variables[DATAFIELD_NAME].OFFSET
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
 
         # Read geolocation dataset.
-		# This product has multiple 'Latitude' and 'Longitude' pair under different groups.
-        lat = hdf.select(hdf.reftoindex(192)) # Use HDFView to get ref number 192.
-        latitude = lat[:,:]
-        lon = hdf.select(hdf.reftoindex(194)) # Use HDFView to get ref number 194.
-        longitude = lon[:,:]
+        # This product has multiple 'Latitude' and 'Longitude' pair under
+        # different groups.  Use HDFView to get the reference numbers.
+        latitude = hdf.select(hdf.reftoindex(192))[:]
+        longitude = hdf.select(hdf.reftoindex(194))[:]
 
         # Retrieve attributes.
         attrs = data2D.attributes(full=1)
-        sfa=attrs["SCALE FACTOR"]
-        scale_factor = sfa[0]        
-        aoa=attrs["OFFSET"]
-        add_offset = aoa[0]
-        
+        scale_factor = attrs["SCALE FACTOR"][0]
+        add_offset = attrs["OFFSET"][0]
+
     data[data == -32768] = np.nan
     data = data * scale_factor + add_offset
     datam = np.ma.masked_array(data, np.isnan(data))
@@ -104,7 +112,6 @@ def run(FILE_NAME):
     cax = plt.axes([0.92, 0.1, 0.03, 0.8])
     cb = plt.colorbar(cax=cax)
     cb.set_label(units)
-    
 
     basename = os.path.basename(FILE_NAME)
     fig = plt.gcf()
@@ -115,14 +122,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AMSR_E_L2A_BrightnessTemperatures_V12_201110032238_D.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

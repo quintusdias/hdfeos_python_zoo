@@ -30,51 +30,61 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 
-USE_NETCDF4=False
+USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOP03-20000303-L3V1.0.1.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'CO Profiles Day'
 
     if USE_NETCDF4:
+
         from netCDF4 import Dataset
-    
+
         nc = Dataset(FILE_NAME)
 
         data = nc.variables[DATAFIELD_NAME][:, :, 1].astype(np.float64)
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
         pressure = nc.variables['Pressure Grid'][:]
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
-        # Read dataset.
-        data3D = hdf.select(DATAFIELD_NAME)
-        data = data3D[:, :, 1].astype(np.float64)
-
-        # Read coordinates.
+        data = hdf.select(DATAFIELD_NAME)[:, :, 1].astype(np.float64)
         latitude = hdf.select('Latitude')[:]
         longitude = hdf.select('Longitude')[:]
         pressure = hdf.select('Pressure Grid')[:]
 
-
     # Replace the fill value with NaN
     data[data == -9999] = np.nan
     data = np.ma.masked_array(data, np.isnan(data))
-    
+
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat=90,
                 llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90, 91, 45), labels=[True,False,False,True])
-    m.drawmeridians(np.arange(-180, 180, 45), labels=[True,False,False,True])
+    m.drawparallels(np.arange(-90, 91, 45), labels=[True, False, False, True])
+    m.drawmeridians(np.arange(-180, 180, 45),
+                    labels=[True, False, False, True])
     m.pcolormesh(longitude, latitude, data, latlon=True)
     cb = m.colorbar()
     cb.set_label('ppbv')
 
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n{1} at Pressure={2} hPa'.format(basename, DATAFIELD_NAME, pressure[1]))
+    title = '{0}\n{1} at Pressure={2} hPa'.format(basename,
+                                                  DATAFIELD_NAME,
+                                                  pressure[1])
+    plt.title(title)
 
     fig = plt.gcf()
     # plt.show()
@@ -82,14 +92,4 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOP03-20000303-L3V1.0.1.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-
+    run()

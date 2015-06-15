@@ -35,8 +35,14 @@ import numpy as np
 
 USE_GDAL = True
 
-def run(FILE_NAME):
+def run():
     
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'MOD09GA.A2007268.h10v08.005.2007272184810.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
     DATAFIELD_NAME = 'sur_refl_b01_1'
 
@@ -71,15 +77,15 @@ def run(FILE_NAME):
         scale_factor = np.float(meta['scale_factor'])
         valid_range = [np.float(x) for x in meta['valid_range'].split(', ')] 
 
-
-        del gdset
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.double)
+        data = data2D[:].astype(np.double)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
         GEO_FILE_NAME = 'lat_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_500m_2D.output'
@@ -90,30 +96,24 @@ def run(FILE_NAME):
 
         GEO_FILE_NAME = 'lon_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_1km_2D.output'
         GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                      GEO_FILE_NAME)
+                                     GEO_FILE_NAME)
         lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
         lon = lon.reshape(data.shape)
         
         # Read attributes.
         attrs = data2D.attributes(full=1)
-        lna=attrs["long_name"]
-        long_name = lna[0]
-        vra=attrs["valid_range"]
-        valid_range = vra[0]
-        fva=attrs["_FillValue"]
-        _FillValue = fva[0]
-        sfa=attrs["scale_factor"]
-        scale_factor = sfa[0]        
-        ua=attrs["units"]
-        units = ua[0]
-        
+        long_name = attrs["long_name"][0]
+        valid_range = attrs["valid_range"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        units = attrs["units"][0]
+
     invalid = np.logical_or(data > valid_range[1],
                             data < valid_range[0])
     invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
     data = data / scale_factor 
     data = np.ma.masked_array(data, np.isnan(data))
-
 
     m = Basemap(projection='cyl', resolution='h',
                 llcrnrlat=-2.5, urcrnrlat = 12.5,
@@ -133,16 +133,6 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 
-
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MOD09GA.A2007268.h10v08.005.2007272184810.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
+    run()
     

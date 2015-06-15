@@ -31,14 +31,23 @@ import numpy as np
 
 USE_GDAL = False
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AMSR_E_L3_SeaIce12km_V11_20050118.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     # Identify the data field.
     DATAFIELD_NAME = 'SI_12km_NH_18H_DSC'
 
-    if USE_GDAL:    
+    if USE_GDAL:
+
         import gdal
-        GRID_NAME = 'NpPolarGrid12km'    
+
+        GRID_NAME = 'NpPolarGrid12km'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
@@ -50,32 +59,25 @@ def run(FILE_NAME):
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
 
-        del gdset
-
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
+        data = hdf.select(DATAFIELD_NAME)[:].astype(np.float64)
 
-        # Read dataset.
-        data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
-
-        # Read global attribute.
-        fattrs = hdf.attributes(full=1)
-        ga = fattrs["StructMetadata.0"]
-        gridmeta = ga[0]
-            
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
-        # extents of the grid. 
+        # extents of the grid.
+        gridmeta = hdf.attributes(full=1)["StructMetadata.0"][0]
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                                   (?P<upper_left_x>[+-]?\d+\.\d+)
                                   ,
                                   (?P<upper_left_y>[+-]?\d+\.\d+)
                                   \)''', re.VERBOSE)
         match = ul_regex.search(gridmeta)
-        x0 = np.float(match.group('upper_left_x')) 
-        y0 = np.float(match.group('upper_left_y')) 
+        x0 = np.float(match.group('upper_left_x'))
+        y0 = np.float(match.group('upper_left_y'))
 
         lr_regex = re.compile(r'''LowerRightMtrs=\(
                                   (?P<lower_right_x>[+-]?\d+\.\d+)
@@ -89,14 +91,13 @@ def run(FILE_NAME):
         xinc = (x1 - x0) / nx
         yinc = (y1 - y0) / ny
 
-
     # Apply the attributes information.
     # Ref:  http://nsidc.org/data/docs/daac/ae_si12_12km_seaice/data.html
     data[data == 0] = np.nan
     data *= 0.1
     data = np.ma.masked_array(data, np.isnan(data))
 
-    # Construct the grid.  
+    # Construct the grid.
     # Reproject out of the GCTP stereographic into lat/lon.
     x = np.linspace(x0, x0 + xinc*nx, nx)
     y = np.linspace(y0, y0 + yinc*ny, ny)
@@ -113,13 +114,13 @@ def run(FILE_NAME):
             "+ellps=WGS84",
             "+datum=WGS84"]
     pstereo = pyproj.Proj(' '.join(args))
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(pstereo, wgs84, xv, yv)
+    wgs84 = pyproj.Proj("+init=EPSG:4326")
+    lon, lat = pyproj.transform(pstereo, wgs84, xv, yv)
 
     units = 'K'
     long_name = DATAFIELD_NAME
 
-    m = Basemap(projection='npstere', resolution='l', boundinglat=30, lon_0 = 0)
+    m = Basemap(projection='npstere', resolution='l', boundinglat=30, lon_0=0)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(0, 91, 20), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180, 181, 45), labels=[0, 0, 0, 1])
@@ -137,14 +138,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AMSR_E_L3_SeaIce12km_V11_20050118.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

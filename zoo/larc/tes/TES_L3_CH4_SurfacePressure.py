@@ -30,8 +30,15 @@ from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-def run(FILE_NAME):
-    
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'TES-Aura_L3-CH4_r0000010410_F01_07.he5'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+
     with h5py.File(FILE_NAME, mode='r') as f:
 
         # Need to retrieve the grid metadata.  The hdfeos5 library stores it
@@ -52,7 +59,7 @@ def run(FILE_NAME):
     data = np.ma.masked_array(data, np.isnan(data))
 
     # Construct the grid.  Use regular expressions to tease out the
-    # extents of the grid.  
+    # extents of the grid.
     ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                               (?P<upper_left_x>[+-]?\d+\.\d+)
                               ,
@@ -70,12 +77,12 @@ def run(FILE_NAME):
     match = lr_regex.search(gridmeta)
     x1 = np.float(match.group('lower_right_x')) / 1e6
     y1 = np.float(match.group('lower_right_y')) / 1e6
-        
+
     ny, nx = data.shape
     x = np.linspace(x0, x1, nx)
     y = np.linspace(y0, y1, ny)
     lon, lat = np.meshgrid(x, y)
-    
+
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat=90,
                 llcrnrlon=-180, urcrnrlon=180)
@@ -87,10 +94,9 @@ def run(FILE_NAME):
     cb = m.colorbar()
     cb.set_label(units)
 
-
     fig = plt.gcf()
     # plt.show()
-    
+
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}'.format(basename, title))
 
@@ -99,15 +105,4 @@ def run(FILE_NAME):
 
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'TES-Aura_L3-CH4_r0000010410_F01_07.he5'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
-
+    run()

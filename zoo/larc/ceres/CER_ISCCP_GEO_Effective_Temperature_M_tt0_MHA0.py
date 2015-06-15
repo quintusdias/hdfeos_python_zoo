@@ -29,84 +29,86 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'CER_ISCCP-D2like-GEO_Composite_Beta1_023031.200510.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Effective Temperature - M'
 
-    if USE_NETCDF4:    
+    if USE_NETCDF4:
+
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
-    
+
         # Subset the data to match the size of the swath geolocation fields.
         # Turn off autoscaling, we'll handle that ourselves due to presence of
         # a valid range.
         var = nc.variables[DATAFIELD_NAME]
-        data = var[0,0,:,:].astype(np.float64)
+        data = var[0, 0, :, :].astype(np.float64)
 
         # Read the geolocation.
-        longitude = nc.variables['Longitude - MH'][0,:,:].astype(np.float64)
-        colatitude = nc.variables['Colatitude - MH'][0,:,:].astype(np.float64)
+        longitude = nc.variables['Longitude - MH'][0, :, :].astype(np.float64)
+        colatitude = nc.variables['Colatitude - MH'][0, :, :].astype(np.float64)
 
         # Read attributes.
         fillvalue = var._FillValue
         units = var.units
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data4D = hdf.select(DATAFIELD_NAME)
-        data = data4D[0,0,:,:].astype(np.float64)
+        data = data4D[0, 0, :, :].astype(np.float64)
 
         # Read geolocation dataset.
         lon3D = hdf.select('Longitude - MH')
-        longitude = lon3D[0,:,:].astype(np.float64)
+        longitude = lon3D[0, :, :].astype(np.float64)
         lat3D = hdf.select('Colatitude - MH')
-        colatitude = lat3D[0,:,:].astype(np.float64)
-
+        colatitude = lat3D[0, :, :].astype(np.float64)
 
         # Read attributes.
         attrs = data4D.attributes(full=1)
-        fva=attrs["_FillValue"]
-        fillvalue = fva[0]
-        ua=attrs["units"]
-        units = ua[0]
+        fillvalue = attrs["_FillValue"][0]
+        units = attrs["units"][0]
 
     # Apply the attributes.
     data[data == fillvalue] = np.nan
     datam = np.ma.masked_array(data, mask=np.isnan(data))
 
     latitude = 90 - colatitude
-    
+
     # The data is global, so render in a global projection.
     m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=-90, urcrnrlat=90,
                 llcrnrlon=0, urcrnrlon=360)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-90.,90,45))
-    m.drawmeridians(np.arange(-180.,180,45), labels=[True,False,False,True])
+    m.drawparallels(np.arange(-90, 90, 45))
+    m.drawmeridians(np.arange(-180, 180, 45),
+                    labels=[True, False, False, True])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
     cb = m.colorbar()
     cb.set_label(units)
 
     basename = os.path.basename(FILE_NAME)
-    plt.title('{0}\n{1}'.format(basename, 'Monthly Mean Effective Temperature of Cumulus'))
+    title = '{0}\n{1}'.format(basename,
+                              'Monthly Mean Effective Temperature of Cumulus')
+    plt.title(title)
     fig = plt.gcf()
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-    
-    
+
+
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'CER_ISCCP-D2like-GEO_Composite_Beta1_023031.200510.hdf'
-    try:
-        fname = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        fname = hdffile
-
-    run(fname)
-
+    run()

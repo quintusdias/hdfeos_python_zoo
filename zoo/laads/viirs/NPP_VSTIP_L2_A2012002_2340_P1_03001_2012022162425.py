@@ -31,7 +31,14 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'NPP_VSTIP_L2.A2012002.2340.P1_03001.2012022162425.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'SurfaceTemperature'
 
@@ -40,36 +47,38 @@ def run(FILE_NAME):
     rows = slice(0, 6144, 6)
     cols = slice(0, 6400, 6)
 
-    if USE_NETCDF4:    
+    if USE_NETCDF4:
+
         from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
 
         data = nc.variables[DATAFIELD_NAME][rows, cols]
-    
+
         # Retrieve the geolocation data.
         latitude = nc.variables['Latitude'][rows, cols]
         longitude = nc.variables['Longitude'][rows, cols]
-        
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[rows,cols]
+        data = data2D[rows, cols]
 
         # Read geolocation dataset.
         lat = hdf.select('Latitude')
-        latitude = lat[rows,cols]
+        latitude = lat[rows, cols]
         lon = hdf.select('Longitude')
-        longitude = lon[rows,cols]
-        
+        longitude = lon[rows, cols]
 
     # Apply the fill value.  The valid minimum is zero, although there's no
     # attribute.
     data[data < 0] = np.nan
     data = np.ma.masked_array(data, np.isnan(data))
-    
+
     # Render the data in a lambert azimuthal equal area projection.
     m = Basemap(projection='nplaea', resolution='l',
                 boundinglat=60, lon_0=43)
@@ -89,14 +98,4 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'NPP_VSTIP_L2.A2012002.2340.P1_03001.2012022162425.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

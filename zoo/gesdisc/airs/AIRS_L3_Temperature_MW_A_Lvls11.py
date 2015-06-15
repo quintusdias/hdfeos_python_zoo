@@ -32,21 +32,33 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # file, otherwise look in the current directory.
+    FILE_NAME = 'AIRS.2002.08.01.L3.RetStd_H031.v4.0.21.0.G06104133732.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'Temperature_MW_A'
+
     if USE_NETCDF4:
-        from netCDF4 import Dataset    
+
+        from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
 
-        # The variable has a fill value, 
-        # so netCDF4 converts it to a float64 masked array for us.
-        data = nc.variables[DATAFIELD_NAME][11,:,:]
+        # The variable has a fill value, so netCDF4 converts it to a float64
+        # masked array for us.
+        data = nc.variables[DATAFIELD_NAME][11, :, :]
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # List available SDS datasets.
@@ -54,35 +66,34 @@ def run(FILE_NAME):
 
         # Read dataset.
         data3D = hdf.select(DATAFIELD_NAME)
-        data = data3D[11,:,:]
+        data = data3D[11, :, :]
 
         # Read geolocation dataset.
         lat = hdf.select('Latitude')
-        latitude = lat[:,:]
+        latitude = lat[:]
         lon = hdf.select('Longitude')
-        longitude = lon[:,:]
+        longitude = lon[:]
 
         # Handle fill value.
         attrs = data3D.attributes(full=1)
-        fillvalue=attrs["_FillValue"]
+        fillvalue = attrs["_FillValue"]
 
         # fillvalue[0] is the attribute value.
         fv = fillvalue[0]
         data[data == fv] = np.nan
         data = np.ma.masked_array(data, np.isnan(data))
 
-    
     # Draw an equidistant cylindrical projection using the low resolution
     # coastline database.
     m = Basemap(projection='cyl', resolution='l',
-                llcrnrlat=-90, urcrnrlat = 90,
-                llcrnrlon=-180, urcrnrlon = 180)
+                llcrnrlat=-90, urcrnrlat=90,
+                llcrnrlon=-180, urcrnrlon=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90., 120., 30.), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1])
     m.pcolormesh(longitude, latitude, data, latlon=True, alpha=0.90)
     cb = m.colorbar()
-    cb.set_label('Unit:K')
+    cb.set_label('Units: K')
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n {1} at TempPrsLvls=11'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
@@ -91,14 +102,4 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'AIRS.2002.08.01.L3.RetStd_H031.v4.0.21.0.G06104133732.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()

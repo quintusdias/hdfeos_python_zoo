@@ -32,13 +32,20 @@ import numpy as np
 
 USE_NETCDF4 = False
 
-def run(FILE_NAME):
+
+def run():
+
+    # If a certain environment variable is set, look there for the input
+    # files, otherwise look in the current directory.
+    FILE_NAME = 'MYD07_L2.A2002184.2200.005.2006133121629.hdf'
+    if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+        FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
     DATAFIELD_NAME = 'Water_Vapor'
 
-    if USE_NETCDF4:    
-        
-        from netCDF4 import Dataset    
+    if USE_NETCDF4:
+
+        from netCDF4 import Dataset
         nc = Dataset(FILE_NAME)
 
         # The netCDF4 module will correctly apply fill value and
@@ -47,40 +54,36 @@ def run(FILE_NAME):
 
         latitude = nc.variables['Latitude'][:]
         longitude = nc.variables['Longitude'][:]
-        
+
         # Retrieve attributes.
         units = nc.variables[DATAFIELD_NAME].units
         long_name = nc.variables[DATAFIELD_NAME].long_name
 
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.double)
+        data = data2D[:].astype(np.double)
 
         # Read geolocation dataset.
         lat = hdf.select('Latitude')
-        latitude = lat[:,:]
+        latitude = lat[:]
         lon = hdf.select('Longitude')
-        longitude = lon[:,:]
+        longitude = lon[:]
 
         # Retrieve attributes.
         attrs = data2D.attributes(full=1)
-        lna=attrs["long_name"]
-        long_name = lna[0]
-        aoa=attrs["add_offset"]
-        add_offset = aoa[0]
-        fva=attrs["_FillValue"]
-        _FillValue = fva[0]
-        sfa=attrs["scale_factor"]
-        scale_factor = sfa[0]        
-        ua=attrs["units"]
-        units = ua[0]
-        vra=attrs["valid_range"]
-        valid_min = vra[0][0]        
-        valid_max = vra[0][1]        
+        long_name = attrs["long_name"][0]
+        add_offset = attrs["add_offset"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        valid_min = attrs["valid_range"][0][0]
+        valid_max = attrs["valid_range"][0][1]
+        units = attrs["units"][0]
 
         # Apply _FillValue, scale and offset.
         invalid = np.logical_or(data > valid_max,
@@ -89,12 +92,12 @@ def run(FILE_NAME):
         data[invalid] = np.nan
         data = data * scale_factor + add_offset
         data = np.ma.masked_array(data, np.isnan(data))
-    
+
     # The data is local to Alaska, so no need for a global or hemispherical
     # projection.
     m = Basemap(projection='laea', resolution='l',
                 lat_ts=65, lat_0=65, lon_0=-150,
-                width=4800000,height=3500000)
+                width=4800000, height=3500000)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(40, 81, 10), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-210, -89., 30), labels=[0, 0, 0, 1])
@@ -110,14 +113,4 @@ def run(FILE_NAME):
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-
-    # If a certain environment variable is set, look there for the input
-    # file, otherwise look in the current directory.
-    hdffile = 'MYD07_L2.A2002184.2200.005.2006133121629.hdf'
-    try:
-        hdffile = os.path.join(os.environ['HDFEOS_ZOO_DIR'], hdffile)
-    except KeyError:
-        pass
-
-    run(hdffile)
-    
+    run()
