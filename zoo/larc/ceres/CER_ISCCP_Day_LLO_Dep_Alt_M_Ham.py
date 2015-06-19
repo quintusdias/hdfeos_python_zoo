@@ -33,6 +33,7 @@ import numpy as np
 
 USE_NETCDF4 = False
 
+
 def run():
 
     # If a certain environment variable is set, look there for the input
@@ -102,7 +103,7 @@ def run():
     plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, units))
 
     fig = plt.gcf()
-    #plt.show()
+    # plt.show()
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = basename + ".png"

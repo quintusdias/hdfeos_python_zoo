@@ -33,6 +33,7 @@ import numpy as np
 
 USE_NETCDF4 = False
 
+
 def run():
 
     # If a certain environment variable is set, look there for the input
@@ -93,7 +94,7 @@ def run():
     plt.title('{0} ({1}) at channel 567'.format(DATAFIELD_NAME, units))
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
+    pngfile = "{0}.py.png".format(basename)
     fig = plt.gcf()
     fig.savefig(pngfile)
 

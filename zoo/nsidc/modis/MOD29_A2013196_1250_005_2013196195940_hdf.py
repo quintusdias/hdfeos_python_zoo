@@ -32,6 +32,7 @@ import numpy as np
 
 USE_NETCDF4 = False
 
+
 def run():
 
     # If a certain environment variable is set, look there for the input
@@ -47,7 +48,7 @@ def run():
         from netCDF4 import Dataset
 
         nc = Dataset(FILE_NAME)
-    
+
         # Subset the data to match the size of the swath geolocation fields.
         # Turn off autoscaling, we'll handle that ourselves due to presence of
         # a valid range.
@@ -76,20 +77,17 @@ def run():
 
         # Retrieve attributes.
         attrs = data2D.attributes(full=1)
-        aoa=attrs["add_offset"]
-        add_offset = aoa[0]
-        fva=attrs["_FillValue"]
-        _FillValue = fva[0]
-        sfa=attrs["scale_factor"]
-        scale_factor = sfa[0]        
-        ua=attrs["units"]
-        units = ua[0]
-        va=attrs["valid_range"]
-        valid_range = va[0]
+        add_offset = attrs["add_offset"][0]
+        _FillValue = attrs["_FillValue"][0]
+        scale_factor = attrs["scale_factor"][0]
+        units = attrs["units"][0]
+        valid_range = attrs["valid_range"][0]
 
         # Read lat and lon data from the matching geo-location file.
         GEO_FILE_NAME = 'MOD03.A2013196.1250.005.2013196194144.hdf'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], GEO_FILE_NAME)
+        if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+            GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+                                         GEO_FILE_NAME)
         hdf_geo = SD(GEO_FILE_NAME, SDC.READ)
 
         # Read geolocation dataset from MOD03 product.
@@ -97,7 +95,7 @@ def run():
         latitude = lat[:]
         lon = hdf_geo.select('Longitude')
         longitude = lon[:]
-        
+
     # Apply the attributes.
     invalid = np.logical_or(data < valid_range[0],
                             data > valid_range[1])
@@ -105,18 +103,18 @@ def run():
     data[invalid] = np.nan
     data = data * scale_factor + add_offset
     datam = np.ma.masked_array(data, mask=np.isnan(data))
-    
+
     # Draw a southern polar stereographic projection using the low resolution
     # coastline database.
     m = Basemap(projection='spstere', resolution='l',
-                boundinglat=-64, lon_0 = 180)
+                boundinglat=-64, lon_0=180)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(-80.,-59,10.))
-    m.drawmeridians(np.arange(-180.,179.,30.), labels=[True,False,False,True])
+    m.drawparallels(np.arange(-80, -59, 10))
+    m.drawmeridians(np.arange(-180, 179, 30),
+                    labels=[True, False, False, True])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
     cb = m.colorbar()
     cb.set_label(units)
-
 
     basename = os.path.basename(FILE_NAME)
     long_name = DATAFIELD_NAME
@@ -125,6 +123,6 @@ def run():
     # plt.show()
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
-    
+
 if __name__ == "__main__":
     run()

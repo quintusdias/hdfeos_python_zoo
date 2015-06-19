@@ -94,7 +94,6 @@ def run():
     data[invalid] = np.nan
     data = (data - add_offset) * scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
-        
 
     # Normally we would use the HDF-EOS metadata to reconstruct the grid, but
     # the grid metadata is incorrect in this case, specifically the upper left

@@ -35,8 +35,9 @@ import numpy as np
 
 USE_GDAL = True
 
+
 def run():
-    
+
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
     FILE_NAME = 'MOD09GA.A2007268.h10v08.005.2007272184810.hdf'
@@ -46,15 +47,16 @@ def run():
     # Identify the data field.
     DATAFIELD_NAME = 'sur_refl_b01_1'
 
-    if  USE_GDAL:    
+    if USE_GDAL:
+
         import gdal
+
         GRID_NAME = 'MODIS_Grid_500m_2D'
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
         gdset = gdal.Open(gname)
         data = gdset.ReadAsArray().astype(np.float64)
-
 
         # Construct the grid.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
@@ -66,16 +68,16 @@ def run():
         # In basemap, the sinusoidal projection is global, so we won't use it.
         # Instead we'll convert the grid back to lat/lons.
         sinu = pyproj.Proj("+proj=sinu +R=6371007.181 +nadgrids=@null +wktext")
-        wgs84 = pyproj.Proj("+init=EPSG:4326") 
-        lon, lat= pyproj.transform(sinu, wgs84, xv, yv)
+        wgs84 = pyproj.Proj("+init=EPSG:4326")
+        lon, lat = pyproj.transform(sinu, wgs84, xv, yv)
 
         # Read the attributes.
         meta = gdset.GetMetadata()
-        long_name = meta['long_name']        
+        long_name = meta['long_name']
         units = meta['units']
         _FillValue = np.float(meta['_FillValue'])
         scale_factor = np.float(meta['scale_factor'])
-        valid_range = [np.float(x) for x in meta['valid_range'].split(', ')] 
+        valid_range = [np.float(x) for x in meta['valid_range'].split(', ')]
 
     else:
 
@@ -88,18 +90,19 @@ def run():
         data = data2D[:].astype(np.double)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
-        GEO_FILE_NAME = 'lat_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_500m_2D.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                     GEO_FILE_NAME)
-        lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        lat_GEO_FILE_NAME = 'lat_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_500m_2D.output'
+        lon_GEO_FILE_NAME = 'lon_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_1km_2D.output'
+        if 'HDFEOS_ZOO_DIR' in os.environ.keys():
+            lat_GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+                                             lon_GEO_FILE_NAME)
+            lon_GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+                                             lon_GEO_FILE_NAME)
+        lat = np.genfromtxt(lat_GEO_FILE_NAME, delimiter=',', usecols=[0])
         lat = lat.reshape(data.shape)
 
-        GEO_FILE_NAME = 'lon_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_1km_2D.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
-                                     GEO_FILE_NAME)
-        lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
+        lon = np.genfromtxt(lon_GEO_FILE_NAME, delimiter=',', usecols=[0])
         lon = lon.reshape(data.shape)
-        
+
         # Read attributes.
         attrs = data2D.attributes(full=1)
         long_name = attrs["long_name"][0]
@@ -112,12 +115,12 @@ def run():
                             data < valid_range[0])
     invalid = np.logical_or(invalid, data == _FillValue)
     data[invalid] = np.nan
-    data = data / scale_factor 
+    data = data / scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
 
     m = Basemap(projection='cyl', resolution='h',
-                llcrnrlat=-2.5, urcrnrlat = 12.5,
-                llcrnrlon=-82.5, urcrnrlon = -67.5)
+                llcrnrlat=-2.5, urcrnrlat=12.5,
+                llcrnrlon=-82.5, urcrnrlon=-67.5)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(0, 15, 5), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-80, -65, 5), labels=[0, 0, 0, 1])
@@ -135,4 +138,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-    

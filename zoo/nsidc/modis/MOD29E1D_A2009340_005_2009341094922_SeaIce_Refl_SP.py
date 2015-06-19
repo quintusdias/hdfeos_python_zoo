@@ -34,8 +34,9 @@ import numpy as np
 
 USE_NETCDF4 = False
 
+
 def run():
-    
+
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
     FILE_NAME = 'MOD29E1D.A2009340.005.2009341094922.hdf'
@@ -45,18 +46,23 @@ def run():
     DATAFIELD_NAME = 'Sea_Ice_by_Reflectance_SP'
 
     if USE_NETCDF4:
+
         from netCDF4 import Dataset
+
         nc = Dataset(FILE_NAME)
         ncvar = nc.variables[DATAFIELD_NAME]
         data = ncvar[:].astype(np.float64)
         gridmeta = getattr(nc, 'StructMetadata.0')
+
     else:
+
         from pyhdf.SD import SD, SDC
+
         hdf = SD(FILE_NAME, SDC.READ)
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
 
         # Read global attribute.
         fattrs = hdf.attributes(full=1)
@@ -65,7 +71,7 @@ def run():
 
     # Construct the grid.  The needed information is in a global attribute
     # called 'StructMetadata.0'.  Use regular expressions to tease out the
-    # extents of the grid.  
+    # extents of the grid.
     ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                               (?P<upper_left_x>[+-]?\d+\.\d+)
                               ,
@@ -83,17 +89,17 @@ def run():
     match = lr_regex.search(gridmeta)
     x1 = np.float(match.group('lower_right_x'))
     y1 = np.float(match.group('lower_right_y'))
-        
+
     ny, nx = data.shape
     x = np.linspace(x0, x1, nx)
     y = np.linspace(y0, y1, ny)
     xv, yv = np.meshgrid(x, y)
-    
+
     # Reproject into latlon
     # Reproject the coordinates out of lamaz into lat/lon.
     lamaz = pyproj.Proj("+proj=laea +a=6371228 +lat_0=-90 +lon_0=0 +units=m")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(lamaz, wgs84, xv, yv)
+    wgs84 = pyproj.Proj("+init=EPSG:4326")
+    lon, lat = pyproj.transform(lamaz, wgs84, xv, yv)
 
     # Use a south polar azimuthal equal area projection.
     m = Basemap(projection='splaea', resolution='l',
@@ -111,7 +117,7 @@ def run():
     # 39=ocean
     # 50=cloud
     # 200=sea ice
-    # 253=no input tile expected    
+    # 253=no input tile expected
     # 254=non-production mask"
     lst = ['#727272',
            '#b7b7b7',
@@ -126,13 +132,13 @@ def run():
     cmap = mpl.colors.ListedColormap(lst)
     bounds = [0, 1, 11, 25, 37, 39, 50, 200, 253, 254, 255]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-    
+
     # Render only a subset of the mesh.
     rows = slice(500, 4000, 5)
     cols = slice(500, 4000, 5)
-    m.pcolormesh(lon[rows,cols], lat[rows,cols], data[rows,cols],
+    m.pcolormesh(lon[rows, cols], lat[rows, cols], data[rows, cols],
                  latlon=True, cmap=cmap, norm=norm)
-    
+
     color_bar = plt.colorbar()
     color_bar.set_ticks([0.5, 5.5, 18, 31, 38, 44.5, 125, 226.5, 253.5, 254.5])
     color_bar.set_ticklabels(['missing', 'no decision', 'night', 'land',
@@ -153,4 +159,3 @@ def run():
 
 if __name__ == "__main__":
     run(hdffile)
-    

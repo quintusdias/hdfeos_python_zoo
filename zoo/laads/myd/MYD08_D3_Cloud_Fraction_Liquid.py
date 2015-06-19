@@ -30,7 +30,7 @@ USE_GDAL = False
 
 
 def run():
-    
+
     # If a certain environment variable is set, look there for the input
     # files, otherwise look in the current directory.
     FILE_NAME = 'MYD08_D3.A2009001.005.2009048010832.hdf'
@@ -39,21 +39,22 @@ def run():
 
     # Identify the data field.
     DATAFIELD_NAME = 'Cloud_Fraction_Liquid'
-    
+
     if USE_GDAL:
 
         import gdal
+
         gname = 'HDF4_EOS:EOS_GRID:"{0}":{1}:{2}'.format(FILE_NAME,
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
         gdset = gdal.Open(gname)
-    
+
         data = gdset.ReadAsArray().astype(np.float64)
         meta = gdset.GetMetadata()
-    
+
         # Apply the scale factor, valid range, fill value because GDAL does not
-        # do this.  Also, GDAL reads the attributes as character values, so we have
-        # to properly convert them.
+        # do this.  Also, GDAL reads the attributes as character values, so we
+        # have to properly convert them.
         fill_value = float(meta['_FillValue'])
         valid_range = [float(x) for x in meta['valid_range'].split(', ')]
         invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
@@ -61,16 +62,17 @@ def run():
         data[invalid] = np.nan
         scale_factor = float(meta['scale_factor'])
         data = data * scale_factor
-    
+
         data = np.ma.masked_array(data, np.isnan(data))
-    
-        # Construct the grid.  It's a GCTP_GEO grid, so it's already in lat/lon.
+
+        # Construct the grid.  It's a GCTP_GEO grid, so it's already in
+        # lat/lon.
         x0, xinc, _, y0, _, yinc = gdset.GetGeoTransform()
         nx, ny = (gdset.RasterXSize, gdset.RasterYSize)
         x = np.linspace(x0, x0 + xinc*nx, nx)
         y = np.linspace(y0, y0 + yinc*ny, ny)
         lon, lat = np.meshgrid(x, y)
-    
+
         m = Basemap(projection='cyl', resolution='l',
                     llcrnrlat=-90, urcrnrlat=90,
                     llcrnrlon=-180, urcrnrlon=180)
@@ -80,10 +82,10 @@ def run():
         m.pcolormesh(lon, lat, data, latlon=True)
         m.colorbar()
         plt.title(DATAFIELD_NAME.replace('_', ' '))
-        
+
         fig = plt.gcf()
-        #plt.show()
-        
+        # plt.show()
+
         basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
         pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)
         fig.savefig(pngfile)

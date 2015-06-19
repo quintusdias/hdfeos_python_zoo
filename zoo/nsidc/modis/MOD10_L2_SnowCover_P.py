@@ -34,7 +34,7 @@ USE_NETCDF4 = False
 
 
 def run():
-    
+
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
     FILE_NAME = 'MOD10_L2.A2000065.0040.005.2008235221207.hdf'
@@ -43,7 +43,7 @@ def run():
 
     # Identify the data field.
     DATAFIELD_NAME = 'Snow_Cover'
-    
+
     if USE_NETCDF4:
 
         from netCDF4 import Dataset
@@ -68,32 +68,32 @@ def run():
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
         GEO_FILE_NAME = 'lat_MOD10_L2.A2000065.0040.005.2008235221207.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
                                      GEO_FILE_NAME)
         lat = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
         latitude = lat.reshape(data.shape)
-        
+
         GEO_FILE_NAME = 'lon_MOD10_L2.A2000065.0040.005.2008235221207.output'
-        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], 
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
                                      GEO_FILE_NAME)
         lon = np.genfromtxt(GEO_FILE_NAME, delimiter=',', usecols=[0])
         longitude = lon.reshape(data.shape)
 
-    
     # Draw a polar stereographic projection using the low resolution coastline
     # database.
     m = Basemap(projection='npstere', resolution='l',
-                boundinglat=64, lon_0 = 0)
+                boundinglat=64, lon_0=0)
     m.drawcoastlines(linewidth=0.5)
-    m.drawparallels(np.arange(60.,81,10.))
-    m.drawmeridians(np.arange(-180.,181.,30.), labels=[True,False,False,True])
-    
+    m.drawparallels(np.arange(60, 81, 10))
+    m.drawmeridians(np.arange(-180, 181, 30),
+                    labels=[True, False, False, True])
+
     # Use a discretized colormap since we have only two levels.
-    cmap = mpl.colors.ListedColormap(['grey','mediumblue'])
+    cmap = mpl.colors.ListedColormap(['grey', 'mediumblue'])
     bounds = [0, 19.5, 39]
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     m.pcolormesh(longitude, latitude, data, latlon=True, cmap=cmap, norm=norm)
-    
+
     # Must reset the alpha level to opaque for the colorbar.
     # See http://stackoverflow.com/questions/4478725/...
     # .../partially-transparent-scatter-plot-but-with-a-solid-color-bar
@@ -111,6 +111,6 @@ def run():
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 
+
 if __name__ == "__main__":
     run()
-    

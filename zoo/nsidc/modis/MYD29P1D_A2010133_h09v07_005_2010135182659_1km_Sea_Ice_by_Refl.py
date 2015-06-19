@@ -31,8 +31,9 @@ import numpy as np
 
 USE_GDAL = False
 
+
 def run():
-    
+
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
     FILE_NAME = 'MYD29P1D.A2010133.h09v07.005.2010135182659.hdf'
@@ -65,7 +66,7 @@ def run():
 
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:,:].astype(np.float64)
+        data = data2D[:].astype(np.float64)
 
         # Read global attribute.
         fattrs = hdf.attributes(full=1)
@@ -74,15 +75,15 @@ def run():
 
         # Construct the grid.  The needed information is in a global attribute
         # called 'StructMetadata.0'.  Use regular expressions to tease out the
-        # extents of the grid. 
+        # extents of the grid.
         ul_regex = re.compile(r'''UpperLeftPointMtrs=\(
                                   (?P<upper_left_x>[+-]?\d+\.\d+)
                                   ,
                                   (?P<upper_left_y>[+-]?\d+\.\d+)
                                   \)''', re.VERBOSE)
         match = ul_regex.search(gridmeta)
-        x0 = np.float(match.group('upper_left_x')) 
-        y0 = np.float(match.group('upper_left_y')) 
+        x0 = np.float(match.group('upper_left_x'))
+        y0 = np.float(match.group('upper_left_y'))
 
         lr_regex = re.compile(r'''LowerRightMtrs=\(
                                   (?P<lower_right_x>[+-]?\d+\.\d+)
@@ -102,13 +103,13 @@ def run():
 
     # Reproject the coordinates out of lamaz into lat/lon.
     lamaz = pyproj.Proj("+proj=laea +a=6371228 +lat_0=90 +lon_0=0 +units=m")
-    wgs84 = pyproj.Proj("+init=EPSG:4326") 
-    lon, lat= pyproj.transform(lamaz, wgs84, xv, yv)
+    wgs84 = pyproj.Proj("+init=EPSG:4326")
+    lon, lat = pyproj.transform(lamaz, wgs84, xv, yv)
 
     # Draw a lambert equal area azimuthal basemap.
     m = Basemap(projection='laea', resolution='l', lat_ts=70,
                 lat_0=70, lon_0=-180,
-                width=2500000,height=2500000)
+                width=2500000, height=2500000)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(50, 91, 10), labels=[1, 0, 0, 0])
     m.drawmeridians(np.arange(-220, -139, 10), labels=[0, 0, 0, 1])
@@ -122,7 +123,7 @@ def run():
     # 39=ocean
     # 50=cloud
     # 200=sea ice
-    # 253=no input tile expected    
+    # 253=no input tile expected
     # 254=non-production mask"
     # 255=fill
     lst = ['#727272',
@@ -141,11 +142,12 @@ def run():
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
     m.pcolormesh(lon, lat, data, latlon=True, cmap=cmap, norm=norm)
     color_bar = plt.colorbar()
-    color_bar.set_ticks([0.5, 5.5, 18, 31, 38, 44.5, 125, 226.5, 253.5, 254.5, 255.5])
+    color_bar.set_ticks([0.5, 5.5, 18, 31, 38, 44.5, 125, 226.5, 253.5, 254.5,
+                         255.5])
     color_bar.set_ticklabels(['missing', 'no decision', 'night', 'land',
                               'inland water', 'ocean', 'cloud', 'sea ice',
-                              'no input tile\nexpected', 'non-production\nmask',
-                              'fill'])
+                              'no input tile\nexpected',
+                              'non-production\nmask', 'fill'])
     color_bar.draw_all()
 
     basename = os.path.basename(FILE_NAME)

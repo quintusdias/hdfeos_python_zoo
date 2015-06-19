@@ -21,15 +21,17 @@ class TestAll(unittest.TestCase):
                                       'tes'),
                             'lpdaac':  ('mcd', 'mod', 'myd', 'vip', 'weld',
                                         'ged'),
-                            'nsidc': ('icesat', 'modis', 'nise', 'amsre')}
+                            'nsidc': ('icesat', 'modis', 'nise', 'amsre'),
+                            'podaac': ('aquarius', 'avhrr', 'quikscat',
+                                       'seawinds')}
 
     def test_all(self):
         for center_name in self.data_centers.keys():
             center = getattr(zoo, center_name)
-            #if center_name != 'laads':
-            #    continue
+            if center_name != 'podaac':
+                continue
             for product_name in self.data_centers[center_name]:
-                #if product_name != 'myd':
+                #if product_name != 'quikscat':
                 #    continue
                 product_module = getattr(center, product_name)
                 pargs = (product_module, inspect.ismodule)

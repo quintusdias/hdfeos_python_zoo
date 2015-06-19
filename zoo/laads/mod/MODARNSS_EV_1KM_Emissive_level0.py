@@ -113,7 +113,7 @@ def run():
 
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}\n'.format(basename,
-                                 'Radiance derived from ' + long_name),
+                                  'Radiance derived from ' + long_name),
               fontsize=11)
     fig = plt.gcf()
     # plt.show()

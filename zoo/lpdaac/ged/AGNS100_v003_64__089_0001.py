@@ -32,6 +32,7 @@ import numpy as np
 
 USE_NETCDF4 = False
 
+
 def run():
 
     # If a certain environment variable is set, look there for the input
