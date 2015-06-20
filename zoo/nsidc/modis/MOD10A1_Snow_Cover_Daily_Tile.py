@@ -44,6 +44,7 @@ def run():
     DATAFIELD_NAME = 'Snow_Cover_Daily_Tile'
 
     if USE_GDAL:
+
         import gdal
 
         GRID_NAME = 'MOD_Grid_Snow_500m'

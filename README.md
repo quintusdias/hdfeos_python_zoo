@@ -14,26 +14,14 @@ is also provided for reading the file with h5py.
 
 GDAL is used to read some HDF-EOS grid files (both version 2 and 5).
 
-Fedora 20
-=========
-The Fedora 20 netcdf RPM is built with hdf4 support, so therefore
-netcdf4-python can read HDF4 files out of the box, and the gdal RPM
-includes support for HDFEOS, so for python2, everything just works.
-This is the ideal situation, yay Fedora!
-
-The Fedora 20 repositories do not include a Python3 RPM for basemap, but you can
-still install basemap via pip.
-
-    $ pip-python3 install basemap --user
-
-The RPM for the GDAL library includes support for HDF-EOS2.
-
 Anaconda
 ========
-Anaconda is ideal for the Windows platform although the netcdf4 library was not 
-compiled with hdf4 support. For HDF4, you can use PyHDF at http://hdfeos.org/software/pyhdf.php. The H5PY package that is installed by default will
-read HDF5 swath files, and the gdal package (not installed by default) will 
-read both HDF4 and HDF5 grid files.
+Anaconda is ideal for the Windows platform although the netcdf4
+library was not compiled with hdf4 support. For HDF4, you can use
+PyHDF at http://hdfeos.org/software/pyhdf.php. The H5PY package
+that is installed by default will read HDF5 swath files, and the
+gdal package (not installed by default) will read both HDF4 and
+HDF5 grid files.
 
     $ conda install basemap
     $ conda install netcdf4

@@ -28,8 +28,9 @@ import os
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from netCDF4 import Dataset
 import numpy as np
+
+USE_NETCDF4 = False
 
 
 def run():
@@ -40,23 +41,44 @@ def run():
     if 'HDFEOS_ZOO_DIR' in os.environ.keys():
         FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
-    nc = Dataset(FILE_NAME)
-
     # Identify the data field.
     DATAFIELD_NAME = 'rep_wind_speed'
 
-    # Subset the data to match the size of the swath geolocation fields.
-    # Turn off autoscaling, we'll handle that ourselves due to the existance
-    # of the valid range attribute.
-    var = nc.variables[DATAFIELD_NAME]
-    var.set_auto_maskandscale(False)
-    data = var[:, :, 0]
+    if USE_NETCDF4:
 
-    # Retrieve the needed attributes.  By inspection, the fill value is 0.
-    fillvalue = 0
-    scale = var.scale_factor
-    offset = var.add_offset
-    valid_range = var.valid_range
+        from netCDF4 import Dataset
+
+        nc = Dataset(FILE_NAME)
+
+        # Turn off autoscaling, we'll handle that ourselves due to the
+        # existance of the valid range attribute.
+        var = nc.variables[DATAFIELD_NAME]
+        var.set_auto_maskandscale(False)
+        data = var[:, :, 0]
+
+        # Retrieve the needed attributes.  By inspection, the fill value is 0.
+        fillvalue = 0
+        scale = var.scale_factor
+        offset = var.add_offset
+        units = var.units
+        valid_range = var.valid_range
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        variable = hdf.select(DATAFIELD_NAME)
+        data = variable[:, :, 0].astype(np.float64)
+
+        # Retrieve the needed attributes.  By inspection, the fill value is 0.
+        fillvalue = 0
+        attrs = variable.attributes(full=1)
+        scale = attrs["scale_factor"][0]
+        offset = attrs["add_offset"][0]
+        units = attrs["units"][0]
+        valid_range = attrs["valid_range"][0]
 
     invalid = np.logical_or(data < valid_range[0], data > valid_range[1])
     invalid = np.logical_or(invalid, data == fillvalue)
@@ -83,7 +105,7 @@ def run():
                     labels=[True, False, False, True])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
-    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, var.units))
+    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, units))
 
     fig = plt.gcf()
     # plt.show()
