@@ -115,7 +115,7 @@ def run():
     color_bar.set_label('Unit:'+units)
 
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
 
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)

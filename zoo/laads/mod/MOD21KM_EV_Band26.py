@@ -120,7 +120,7 @@ def run():
     plt.title('{0}\n{1}'.format(basename,
                                 'Radiance derived from ' + long_name))
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

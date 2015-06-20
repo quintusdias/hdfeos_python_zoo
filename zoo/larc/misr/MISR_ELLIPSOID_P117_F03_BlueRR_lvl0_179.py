@@ -126,7 +126,7 @@ def run():
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}'.format(basename, 'Blue Radiance'))
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

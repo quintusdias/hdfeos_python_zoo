@@ -105,7 +105,7 @@ def run():
     title = '{0}\n{1} at Monthly_Hourly_Avgs=0 and Stats=1'
     plt.title(title.format(basename, long_name))
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

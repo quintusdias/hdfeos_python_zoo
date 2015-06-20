@@ -147,7 +147,7 @@ def run():
                               'water\nmask', 'fill'])
     color_bar.draw_all()
 
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

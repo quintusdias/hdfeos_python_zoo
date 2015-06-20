@@ -92,7 +92,7 @@ def run():
     title = '{0}\n{1}'.format(basename, '/'.join(title_parts))
     plt.title(title, fontsize=11)
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

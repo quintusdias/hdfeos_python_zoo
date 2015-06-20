@@ -84,7 +84,7 @@ def run():
     cb.set_label('ppbv')
 
     fig = plt.gcf()
-    #  plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.h.png".format(basename)
     fig.savefig(pngfile)
 

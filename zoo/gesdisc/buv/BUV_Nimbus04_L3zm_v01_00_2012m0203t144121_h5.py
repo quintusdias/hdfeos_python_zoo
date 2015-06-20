@@ -114,7 +114,7 @@ def run():
     plt.text(80.0, -1.2, 'Date:{0}'.format(datestr.strftime('%Y-%m')),
              fontsize=12)
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
 
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)

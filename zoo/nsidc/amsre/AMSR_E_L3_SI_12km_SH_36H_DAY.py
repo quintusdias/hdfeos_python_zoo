@@ -125,7 +125,7 @@ def run():
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}'.format(basename, long_name))
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.1.py.png".format(basename)
     fig.savefig(pngfile)
 

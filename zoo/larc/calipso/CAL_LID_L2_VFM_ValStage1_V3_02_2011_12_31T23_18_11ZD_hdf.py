@@ -118,7 +118,7 @@ def run():
                    'subsurf', 'no signal']
     cb.ax.set_yticklabels(yticklabels, fontsize=5)
 
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

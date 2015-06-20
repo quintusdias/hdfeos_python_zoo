@@ -97,7 +97,7 @@ def run():
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n {1} at H20PrsLvls=11'.format(basename, DATAFIELD_NAME))
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.{1}.py.png".format(basename, DATAFIELD_NAME)
     fig.savefig(pngfile)
 

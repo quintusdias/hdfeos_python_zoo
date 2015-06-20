@@ -170,7 +170,7 @@ def run():
                          'Reflectance derived from ' + long_name, dimname)
     plt.title(title, fontsize=10)
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

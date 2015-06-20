@@ -84,7 +84,7 @@ def run():
         plt.title(DATAFIELD_NAME.replace('_', ' '))
 
         fig = plt.gcf()
-        # plt.show()
+        plt.show(block=False)
 
         basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
         pngfile = "{0}.{1}.png".format(basename, DATAFIELD_NAME)

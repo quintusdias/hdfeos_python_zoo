@@ -111,7 +111,7 @@ def run():
     plt.title('{0}\n{1} at Time = {2}'.format(basename, title, time1lvl))
 
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
 
     pngfile = "{0}.py.png".format(basename)
 

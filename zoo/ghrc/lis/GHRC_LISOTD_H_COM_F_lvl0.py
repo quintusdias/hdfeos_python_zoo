@@ -75,7 +75,7 @@ def run():
     plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, var.units))
 
     fig = plt.gcf()
-    plt.show()
+    plt.show(block=False)
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
     pngfile = basename + ".py..png"

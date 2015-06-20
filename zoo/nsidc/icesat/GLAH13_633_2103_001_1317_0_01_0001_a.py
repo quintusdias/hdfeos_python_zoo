@@ -120,7 +120,7 @@ def run():
     plt.title('Trajectory of Flight Path')
 
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.a.py.png".format(basename)
     fig.savefig(pngfile)
 

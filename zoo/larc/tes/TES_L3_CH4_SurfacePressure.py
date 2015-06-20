@@ -95,7 +95,7 @@ def run():
     cb.set_label(units)
 
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
 
     basename = os.path.basename(FILE_NAME)
     plt.title('{0}\n{1}'.format(basename, title))

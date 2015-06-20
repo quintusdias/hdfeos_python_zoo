@@ -106,7 +106,7 @@ def run():
     title = '\n'.join(parts)
     plt.title(title)
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

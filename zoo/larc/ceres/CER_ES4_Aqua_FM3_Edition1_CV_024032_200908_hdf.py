@@ -104,7 +104,7 @@ def run():
     title = title.format(basename, long_name, DATAFIELD_NAME, longitude[0])
     plt.title(title, fontsize=11)
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

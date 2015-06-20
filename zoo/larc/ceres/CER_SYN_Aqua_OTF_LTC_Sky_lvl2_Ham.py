@@ -105,7 +105,7 @@ def run():
                               DATAFIELD_NAME + ' at Synoptic_Hours=2')
     plt.title(title)
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

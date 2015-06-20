@@ -99,7 +99,7 @@ def run():
 
     plt.figtext(0.25, 0.01, description, fontsize=8)
     fig = plt.gcf()
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

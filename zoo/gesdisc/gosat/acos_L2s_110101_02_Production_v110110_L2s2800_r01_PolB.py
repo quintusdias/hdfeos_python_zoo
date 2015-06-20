@@ -154,7 +154,7 @@ def run():
              fontsize=12,
              transform=ax2.transAxes)
 
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.py.png".format(basename)
     fig.savefig(pngfile)
 

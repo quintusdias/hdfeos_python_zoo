@@ -132,7 +132,7 @@ def run():
     cb = mpl.colorbar.ColorbarBase(ax2, cmap=cmap, boundaries=bounds)
     cb.ax.set_yticklabels(['Others', '', 'Cloud'], fontsize=8)
 
-    # plt.show()
+    plt.show(block=False)
     pngfile = "{0}.v.py.png".format(basename)
     fig.savefig(pngfile)
 
