@@ -9,6 +9,37 @@ import matplotlib.pyplot as plt
 
 import zoo
 
+class TestDocstrings(unittest.TestCase):
+    """
+    Verify information in the docstrings of the examples.
+    """
+
+    def test_docstring_contact_info(self):
+        """
+        Verify that the docstring in each example has the EOS contact info.
+        """
+        for center_name, center_module in inspect.getmembers(zoo, inspect.ismodule):
+            for inst_name, inst_module in inspect.getmembers(center_module, inspect.ismodule):
+                for example_name, example_module in inspect.getmembers(inst_module, inspect.ismodule):
+                    msg = "Failed to verify docstring in {0}".format(example_name)
+                    docstring = example_module.__doc__.replace('\n', ' ')
+                    contact_info = fixtures.contact_info.replace('\n', ' ')
+                    self.assertTrue(contact_info in docstring, msg)
+
+    def test_docstring_run_instructions(self):
+        """
+        Verify instructions to run each script.
+        """
+        for center_name, center_module in inspect.getmembers(zoo, inspect.ismodule):
+            for inst_name, inst_module in inspect.getmembers(center_module, inspect.ismodule):
+                for example_name, example_module in inspect.getmembers(inst_module, inspect.ismodule):
+                    msg = "Failed to verify docstring in {0}".format(example_name)
+                    docstring = example_module.__doc__.replace('\n', ' ')
+                    run_info = fixtures.run_info.replace('\n', ' ')
+                    run_info = run_info.format(example_name)
+                    self.assertTrue(run_info in docstring, msg)
+
+
 class TestAll(unittest.TestCase):
 
     @classmethod
