@@ -1,1 +1,1 @@
-from . import test2
+from . import test_all
