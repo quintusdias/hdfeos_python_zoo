@@ -14,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python CER_ES4_Aqua-FM3_Edition1-CV_024032.200908.hdf.py
+    python CER_ES4_Aqua_FM3_Edition1_CV_024032_200908_hdf.py
 
 The HDF4 file must either be in your current working directory
 or in a directory specified by the environment variable HDFEOS_ZOO_DIR.

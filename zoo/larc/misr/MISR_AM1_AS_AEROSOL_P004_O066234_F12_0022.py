@@ -14,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python MISR_ELLIPSOID_P117_F03_BlueRR_lvl0_179.py
+    python MISR_AM1_AS_AEROSOL_P004_O066234_F12_0022.py
 
 The HDF file must either be in your current working directory or in a directory
 specified by the environment variable HDFEOS_ZOO_DIR.

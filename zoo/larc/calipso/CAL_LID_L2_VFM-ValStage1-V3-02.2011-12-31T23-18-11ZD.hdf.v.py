@@ -14,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python CAL_LID_L2_VFM-ValStage1-V3-02.2011-12-31T23-18-11ZD.hdf.v.py
+    python CAL_LID_L2_VFM_ValStage1_V3_02_2011_12_31T23_18_11ZD_hdf_v.py
 
 The netCDF file must either be in your current working directory
 or in a directory specified by the environment variable HDFEOS_ZOO_DIR.

@@ -14,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python CER_AVG_Aqua-FM3-MODIS_Edition2B_007005.200510.hdf.py
+    python CER_AVG_Aqua_FM3_MODIS_Edition2B_007005_200510_hdf.py
 
 The netCDF file must either be in your current working directory
 or in a directory specified by the environment variable HDFEOS_ZOO_DIR.

@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 
 import zoo
 
+from . import fixtures
+
 class TestDocstrings(unittest.TestCase):
     """
     Verify information in the docstrings of the examples.

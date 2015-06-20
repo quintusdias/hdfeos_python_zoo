@@ -14,7 +14,7 @@ contact us at eoshelp@hdfgroup.org or post it at the HDF-EOS Forum
 
 Usage:  save this script and run
 
-    python CER_ISCCP_Day_LLO_Dep_Alt_M_Ham.py
+    python CER_ISCCP_Day_LLO_Dep_Alt_M_equ.py
 
 The netCDF file must either be in your current working directory
 or in a directory specified by the environment variable HDFEOS_ZOO_DIR.
