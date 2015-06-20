@@ -28,7 +28,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
-from netCDF4 import Dataset
+
+USE_NETCDF4 = False
 
 
 def run():
@@ -41,12 +42,30 @@ def run():
 
     DATAFIELD_NAME = 'binDIDHmean'
 
-    nc = Dataset(FILE_NAME)
-    data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
+    if USE_NETCDF4:
 
-    # Retrieve the geolocation data.
-    latitude = nc.variables['geolocation'][:, :, 0]
-    longitude = nc.variables['geolocation'][:, :, 1]
+        from netCDF4 import Dataset
+
+        nc = Dataset(FILE_NAME)
+        data = nc.variables[DATAFIELD_NAME][:].astype(np.float64)
+
+        # Retrieve the geolocation data.
+        latitude = nc.variables['geolocation'][:, :, 0]
+        longitude = nc.variables['geolocation'][:, :, 1]
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        # Read the dataset and geolocation data.
+        # Subset by a factor of 8 to speed up plotting.
+        variable = hdf.select(DATAFIELD_NAME)
+        data = variable[:].astype(np.float64)
+        geovar = hdf.select('geolocation')
+        latitude = geovar[:, :, 1]
+        longitude = geovar[:, :, 1]
 
     # The swath crosses the international dateline between row 8000 and 9000.
     # This causes the mesh to smear, so we'll adjust the longitude (modulus

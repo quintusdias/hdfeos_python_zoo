@@ -28,6 +28,21 @@ HDF5 grid files.
     $ conda install gdal
 
 Mac
+---
+
+    $ conda create -n hdfeos python=3.4
+    $ source activate hdfeos
+    $ conda install basemap
+    $ conda install netcdf4
+    $ conda install -c jevans hdf4
+    $ git clone https://github.com/fhs/python-hdf4.git && cd python-hdf4
+    $ export INCLUDE_DIRS=$HOME/anaconda3/envs/hdfeos/include
+    $ export LIBRARY_DIRS=$HOME/anaconda3/envs/hdfeos/lib
+    $ python setup.py install
+    $ export DYLD_FALLBACK_LIBRARY_PATH=$HOME/anaconda3/envs/hdfeos/lib
+
+
+Mac
 ===
 
 If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
