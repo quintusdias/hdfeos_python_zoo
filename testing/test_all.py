@@ -28,11 +28,17 @@ class TestAll(unittest.TestCase):
     def test_all(self):
         for center_name in self.data_centers.keys():
             center = getattr(zoo, center_name)
-            if center_name != 'podaac':
-                continue
+
+            if 'TEST_CENTER' in os.environ.keys():
+                if center_name != os.environ['TEST_CENTER']:
+                    continue
+
             for product_name in self.data_centers[center_name]:
-                #if product_name != 'quikscat':
-                #    continue
+
+                if 'TEST_PRODUCT' in os.environ.keys():
+                    if product_name != os.environ['TEST_PRODUCT']:
+                        continue
+
                 product_module = getattr(center, product_name)
                 pargs = (product_module, inspect.ismodule)
                 for example_name, example_module in inspect.getmembers(*pargs):

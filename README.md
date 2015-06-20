@@ -31,27 +31,29 @@ Mac
 ===
 
 If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
-port.
+port and the hdf4/hdf5/netcdf variant of the gdal port.
 
     $ sudo port install netcdf +hdf4 +dap
-
-Python2
--------
-Also with MacPorts, you should install the hdf4, hdf5, and netcdf
-variant of the gdal port along with basemap.
-
     $ sudo port install gdal +hdf4 +hdf5 +netcdf
-    $ sudo port install py27-matplotlib-basemap
-    $ sudo port install py27-netcdf4
 
-Python3
--------
-Again with MacPorts, there is as of 2014-07-22 no basemap port for Python 3.4.
-The following steps will work, though.
+The python modules for interfacing with the gdal and netcdf libraries should
+then be able to read a broader range of formats.
 
-1.  If already installed, uninstall the py34-matplotlib port.
-2.  Create a virtual environment using pyvenv-3.4 (with system site 
-    packages) and activate it.
-3.  Build and install matplotlib 1.3.1 from source.
-4.  Download and install basemap 1.0.7.
-5.  Download and install the python module for gdal from PyPi.
+Testing
+=======
+You can run through all examples with default settings as follows:
+
+    $ python -m unittest discover
+
+Some scripts have a choice as to how a file is read.  HDF-EOS grids, for
+example, might be read with either GDAL or pyhdf, and pyhdf is usually the
+default choice in these cases.  Those scripts can have their GDAL code tested
+as follows:
+
+    $ TEST_GDAL=1 python -m unittest discover
+
+Finally, only those scripts for a specific data center or product may be
+tested.  For example, to test just NSIDC/MODIS codes, you could use
+
+    $ TEST_CENTER=nsidc TEST_PRODUCT=modis python -m unittest discover
+
