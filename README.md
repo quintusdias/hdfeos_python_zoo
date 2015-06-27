@@ -27,8 +27,8 @@ HDF5 grid files.
     $ conda install netcdf4
     $ conda install gdal
 
-Mac
----
+Mac and Linux
+-------------
 
     $ conda create -n hdfeos python=3.4
     $ source activate hdfeos
@@ -39,6 +39,7 @@ Mac
     $ export INCLUDE_DIRS=$HOME/anaconda3/envs/hdfeos/include
     $ export LIBRARY_DIRS=$HOME/anaconda3/envs/hdfeos/lib
     $ python setup.py install
+    # Mac only
     $ export DYLD_FALLBACK_LIBRARY_PATH=$HOME/anaconda3/envs/hdfeos/lib
 
 
