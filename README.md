@@ -27,8 +27,12 @@ HDF5 grid files.
     $ conda install netcdf4
     $ conda install gdal
 
-Mac and Linux
--------------
+Mac
+---
+If you have root access to your Mac and you are comfortable with the command
+line, I would recommend using MacPorts instead of Anaconda since MacPorts
+already has packages for HDF4.  If you wish to use Anaconda, however, follow
+these instructions. 
 
     $ conda create -n hdfeos python=3.4
     $ source activate hdfeos
@@ -42,9 +46,18 @@ Mac and Linux
     # Mac only
     $ export DYLD_FALLBACK_LIBRARY_PATH=$HOME/anaconda3/envs/hdfeos/lib
 
+Linux
+-----
+If you only have access to a rather conservative Linux distribution such as 
+RedHat/Centos or your linux box is just plain old, then Anaconda might be your
+best bet.  Just follow the same instructions as for the Mac above, except you
+do not need to set DYLD_FALLBACK_LIBRARY_PATH.  If you have a fairly cutting
+edge Linux distribution such as Fedora, you might be better off going with the
+system Python (you will probably still need to install python-hdf4 via git,
+though).
 
-Mac
-===
+MacPorts
+========
 
 If you use MacPorts, you should install the hdf4 and dap variant of the netcdf
 port and the hdf4/hdf5/netcdf variant of the gdal port.
@@ -53,4 +66,4 @@ port and the hdf4/hdf5/netcdf variant of the gdal port.
     $ sudo port install gdal +hdf4 +hdf5 +netcdf
 
 The python modules for interfacing with the gdal and netcdf libraries should
-then be able to read a broader range of formats.
+then be able to read a broader range of file formats.
