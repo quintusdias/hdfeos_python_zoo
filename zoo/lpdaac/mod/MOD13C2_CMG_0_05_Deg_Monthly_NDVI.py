@@ -52,8 +52,9 @@ def run():
                                                          GRID_NAME,
                                                          DATAFIELD_NAME)
 
+        # Subset the data, make it easy on low-memory machines.
         gdset = gdal.Open(gname)
-        data = gdset.ReadAsArray().astype(np.float64)
+        data = gdset.ReadAsArray().astype(np.float64)[::5, ::5]
 
         # Read the attributes.
         meta = gdset.GetMetadata()
@@ -70,9 +71,9 @@ def run():
 
         hdf = SD(FILE_NAME, SDC.READ)
 
-        # Read dataset.
+        # Subset the data, make it easy on low-memory machines.
         data2D = hdf.select(DATAFIELD_NAME)
-        data = data2D[:].astype(np.double)
+        data = data2D[::5, ::5].astype(np.double)
 
         # Read attributes.
         attrs = data2D.attributes(full=1)
