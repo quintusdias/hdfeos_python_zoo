@@ -21,8 +21,8 @@ specified by the environment variable HDFEOS_ZOO_DIR.
 
 References:
 
-[1] http://eosweb.larc.nasa.gov/PRODOCS/misr/DPS/DPS_v50_RevS.pdf
-[2] http://eospso.gsfc.nasa.gov/eos_homepae/for_scientists/atbd/docs/MISR/atbd-misr-01.pdf
+[1] http://eosweb.larc.nasa.gov/eosweb/project/misr/DPS/DPS_v50_RevS.pdf
+[2] http://eospso.gsfc.nasa.gov/sites/default/files/atbd/atbd-misr-01.pdf
 """
 
 import os
@@ -42,14 +42,19 @@ def run():
 
     # If a certain environment variable is set, look there for the input
     # file, otherwise look in the current directory.
+    # Read geolocation dataset from another file.
     FILE_NAME = 'MISR_AM1_GRP_ELLIPSOID_GM_P117_O058421_BA_F03_0024.hdf'
+    GEO_FILE_NAME = 'MISR_AM1_AGP_P117_F01_24.hdf'
     if 'HDFEOS_ZOO_DIR' in os.environ.keys():
         FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
+        GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
+                                     GEO_FILE_NAME)
 
     # Identify the data field.
     DATAFIELD_NAME = 'Blue Radiance/RDQI'
 
     hdf = SD(FILE_NAME, SDC.READ)
+    hdf_geo = SD(GEO_FILE_NAME, SDC.READ)
 
     # Read dataset.
     data3D = hdf.select(DATAFIELD_NAME)
@@ -58,13 +63,6 @@ def run():
     # Read attributes.
     attrs = data3D.attributes(full=1)
     _FillValue = attrs["_FillValue"][0]
-
-    # Read geolocation dataset from another file.
-    GEO_FILE_NAME = 'MISR_AM1_AGP_P117_F01_24.hdf'
-    GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
-                                 GEO_FILE_NAME)
-
-    hdf_geo = SD(GEO_FILE_NAME, SDC.READ)
 
     # Read geolocation dataset.
     lat = hdf_geo.select('GeoLatitude')[:]
