@@ -155,7 +155,7 @@ def run():
 
     # Use a hemispherical projection for the southern hemisphere since the
     # swath is over Antarctica.
-    m = Basemap(projection='splaea', resolution='h',
+    m = Basemap(projection='splaea', resolution='i',
                 boundinglat=-65, lon_0=180)
     m.drawcoastlines(linewidth=0.5)
     m.drawparallels(np.arange(-90, -50, 10), labels=[1, 0, 0, 0])

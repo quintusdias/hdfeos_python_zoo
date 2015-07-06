@@ -74,7 +74,7 @@ def run():
     datam = np.ma.masked_array(data, mask=np.isnan(data))
 
     # Set the limit for the plot.
-    m = Basemap(projection='cyl', resolution='h',
+    m = Basemap(projection='cyl', resolution='l',
                 llcrnrlat=np.min(lat), urcrnrlat=np.max(lat),
                 llcrnrlon=np.min(lon), urcrnrlon=np.max(lon))
     m.drawcoastlines(linewidth=0.5)

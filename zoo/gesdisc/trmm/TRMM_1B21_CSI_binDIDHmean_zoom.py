@@ -67,7 +67,7 @@ def run():
 
     # Draw an equidistant cylindrical projection using the high resolution
     # coastline database.
-    m = Basemap(projection='cyl', resolution='h',
+    m = Basemap(projection='cyl', resolution='i',
                 llcrnrlat=31, urcrnrlat=36,
                 llcrnrlon=122, urcrnrlon=133)
     m.drawcoastlines(linewidth=0.5)
