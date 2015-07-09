@@ -49,6 +49,7 @@ class TestAll(unittest.TestCase):
         cls.data_centers = {'gesdisc': ('airs', 'buv', 'gosat', 'gsstf',
                                         'hirdls', 'merra', 'mls', 'oco2',
                                         'omi', 'swdb', 'toms', 'trmm'),
+                            'ghrc':  ('lis', ),
                             'laads':  ('mod', 'myd', 'viirs'),
                             'larc':  ('calipso', 'ceres', 'misr', 'mopitt',
                                       'tes'),

@@ -28,6 +28,8 @@ from mpl_toolkits.basemap import Basemap
 from netCDF4 import Dataset
 import numpy as np
 
+USE_NETCDF4 = False
+
 
 def run():
 
@@ -37,24 +39,48 @@ def run():
     if 'HDFEOS_ZOO_DIR' in os.environ.keys():
         FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'], FILE_NAME)
 
-    nc = Dataset(FILE_NAME)
-
     # Identify the data field.
     DATAFIELD_NAME = 'HRAC_COM_FR'
 
-    # Subset the data to match the size of the swath geolocation fields.
-    # Turn off autoscaling, we'll handle that ourselves due to the existance
-    # of the valid range attribute.
-    var = nc.variables[DATAFIELD_NAME]
-    var.set_auto_maskandscale(False)
-    data = var[:, :, 0]
+    if USE_NETCDF4:
+        nc = Dataset(FILE_NAME)
+    
+        # Subset the data to match the size of the swath geolocation fields.
+        # Turn off autoscaling, we'll handle that ourselves due to the existance
+        # of the valid range attribute.
+        var = nc.variables[DATAFIELD_NAME]
+        var.set_auto_maskandscale(False)
+        data = var[:, :, 0]
+    
+        # Retrieve the geolocation.  There's a minor wraparound issue.
+        latitude = nc.variables['Latitude'][:]
+        longitude = nc.variables['Longitude'][:]
 
-    data[data == var._FillValue] = np.nan
+        fillvalue = var._FillValue
+        units = var.units
+
+    else:
+
+        from pyhdf.SD import SD, SDC
+
+        hdf = SD(FILE_NAME, SDC.READ)
+
+        variable = hdf.select(DATAFIELD_NAME)
+        data = variable[:, :, 0]
+
+        # Retrieve the geolocation.  There's a minor wraparound issue.
+        latitude = hdf.select('Latitude')[:]
+        longitude = hdf.select('Longitude')[:]
+
+        attrs = variable.attributes(full=-1)
+        fillvalue = attrs["_FillValue"][0]
+        units = attrs["units"][0]
+
+    # Mask out the fill value
+    data[data == fillvalue] = np.nan
     datam = np.ma.masked_array(data, np.isnan(data))
 
-    # Retrieve the geolocation.  There's a minor wraparound issue.
-    latitude = nc.variables['Latitude'][:]
-    longitude = nc.variables['Longitude'][:]
+    # Deal with the wraparound issue.
     latitude[0] += 180
     longitude[0] += 360
 
@@ -72,14 +98,14 @@ def run():
                     labels=[True, False, False, True])
     m.pcolormesh(longitude, latitude, datam, latlon=True)
     m.colorbar()
-    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, var.units))
+    plt.title('{0} ({1})\n'.format(DATAFIELD_NAME, units))
 
     fig = plt.gcf()
     plt.show(block=False)
 
     basename = os.path.splitext(os.path.basename(FILE_NAME))[0]
-    pngfile = basename + ".py..png"
+    pngfile = basename + ".py.png"
     fig.savefig(pngfile)
 
 if __name__ == "__main__":
-    run(fname)
+    run()
