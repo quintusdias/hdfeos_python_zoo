@@ -115,7 +115,7 @@ def run():
     data = scale_factor * (data - add_offset)
     data = np.ma.masked_array(data, np.isnan(data))
 
-    m = Basemap(projection='cyl', resolution='h',
+    m = Basemap(projection='cyl', resolution='i',
                 llcrnrlat=-12.5, urcrnrlat=2.5,
                 llcrnrlon=-72.5, urcrnrlon=-57.5)
     m.drawcoastlines(linewidth=0.5)

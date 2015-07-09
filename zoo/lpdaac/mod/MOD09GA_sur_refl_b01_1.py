@@ -33,7 +33,7 @@ from mpl_toolkits.basemap import Basemap
 import mpl_toolkits.basemap.pyproj as pyproj
 import numpy as np
 
-USE_GDAL = True
+USE_GDAL = False
 
 
 def run():
@@ -88,6 +88,7 @@ def run():
         # Read dataset.
         data2D = hdf.select(DATAFIELD_NAME)
         data = data2D[:].astype(np.double)
+        print(data.shape)
 
         # Read geolocation dataset from HDF-EOS2 dumper output.
         lat_GEO_FILE_NAME = 'lat_MOD09GA.A2007268.h10v08.005.2007272184810_MODIS_Grid_500m_2D.output'
@@ -98,6 +99,7 @@ def run():
             lon_GEO_FILE_NAME = os.path.join(os.environ['HDFEOS_ZOO_DIR'],
                                              lon_GEO_FILE_NAME)
         lat = np.genfromtxt(lat_GEO_FILE_NAME, delimiter=',', usecols=[0])
+        print(lat.shape)
         lat = lat.reshape(data.shape)
 
         lon = np.genfromtxt(lon_GEO_FILE_NAME, delimiter=',', usecols=[0])
@@ -118,7 +120,7 @@ def run():
     data = data / scale_factor
     data = np.ma.masked_array(data, np.isnan(data))
 
-    m = Basemap(projection='cyl', resolution='h',
+    m = Basemap(projection='cyl', resolution='i',
                 llcrnrlat=-2.5, urcrnrlat=12.5,
                 llcrnrlon=-82.5, urcrnrlon=-67.5)
     m.drawcoastlines(linewidth=0.5)

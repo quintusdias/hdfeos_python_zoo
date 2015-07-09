@@ -115,7 +115,7 @@ def run():
     # doesn't like that.
     lon[lon > 0] -= 360
 
-    m = Basemap(projection='cyl', resolution='h',
+    m = Basemap(projection='cyl', resolution='i',
                 lon_0=-10,
                 llcrnrlat=-5, urcrnrlat=30,
                 llcrnrlon=-185, urcrnrlon=-150)
